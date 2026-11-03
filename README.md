@@ -103,7 +103,7 @@ you explore the AI actions without audio.
 - Optional recordings: `recordings/<meeting-id>/` next to the database.
 - API keys: OS credential store, service `app.meetinglens.desktop`.
 
-More: [Architecture](docs/ARCHITECTURE.md) ·
+More: [Architecture](docs/ARCHITECTURE.md) · [Design system](docs/DESIGN_SYSTEM.md) ·
 [Findings & coverage](docs/FINDINGS.md) ·
 [Test results & limitations](docs/TESTING.md) ·
 [Third-party notices](THIRD_PARTY_NOTICES.md)

@@ -103,7 +103,7 @@ export function LiveView({
           />
         </section>
         <div className="side">
-          <AiPanel title="Simple meaning" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
+          <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
           <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
         </div>
       </div>

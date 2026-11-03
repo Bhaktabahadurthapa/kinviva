@@ -362,6 +362,14 @@ MeetingLens is proprietary software (see LICENSE). It includes or depends on the
 | react-dom | 18.3.1 | MIT |
 | scheduler | 0.23.2 | MIT |
 
+## Bundled fonts
+
+| Font | Package | License |
+|---|---|---|
+| Fraunces | @fontsource-variable/fraunces 5.3.0 | SIL Open Font License 1.1 |
+| Instrument Sans | @fontsource-variable/instrument-sans 5.3.0 | SIL Open Font License 1.1 |
+| IBM Plex Mono | @fontsource/ibm-plex-mono 5.3.0 | SIL Open Font License 1.1 |
+
 ## Runtime tools and models (not bundled)
 
 - whisper.cpp `whisper-cli` (MIT) and ggml Whisper models (MIT, OpenAI Whisper weights): installed and downloaded by the user for the optional local speech provider.

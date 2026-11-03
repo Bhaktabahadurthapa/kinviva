@@ -13,10 +13,10 @@ type Tab = "live" | "history" | "documents" | "settings";
 
 function Logo() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
-      <circle cx="12" cy="12" r="10.5" fill="var(--ink-2)" />
-      <circle cx="12" cy="12" r="7" fill="none" stroke="var(--accent)" strokeWidth="2" />
-      <circle cx="12" cy="12" r="3.4" fill="var(--amber)" />
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="10.5" fill="none" stroke="var(--c-line-strong)" strokeWidth="1.2" />
+      <circle cx="12" cy="12" r="6.8" fill="none" stroke="var(--c-text)" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="3" fill="var(--c-signal)" />
     </svg>
   );
 }
@@ -28,7 +28,10 @@ function Elapsed({ since }: { since: number }) {
     return () => clearInterval(t);
   }, []);
   const s = Math.floor((Date.now() - since) / 1000);
-  return <span className="elapsed">{`${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`}</span>;
+  const hh = String(Math.floor(s / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return <span className="timecode">{`${hh}:${mm}:${ss}`}</span>;
 }
 
 export default function App() {
@@ -98,7 +101,10 @@ export default function App() {
     <div className="app">
       <nav className="rail">
         <div className="brand">
-          <Logo /> <span>MeetingLens</span>
+          <Logo />
+          <span>
+            Meeting<em>Lens</em>
+          </span>
         </div>
         {(
           [
@@ -107,44 +113,51 @@ export default function App() {
             ["documents", "Documents"],
             ["settings", settings?.onboarded === false ? "Setup" : "Settings"],
           ] as [Tab, string][]
-        ).map(([t, label]) => (
-          <button key={t} className={tab === t ? "active" : ""} onClick={() => setTab(t)}>
+        ).map(([t, label], i) => (
+          // The index is drawn by CSS so the button's text stays just its label.
+          <button key={t} className={`rail-btn ${tab === t ? "active" : ""}`} data-idx={String(i + 1).padStart(2, "0")} onClick={() => setTab(t)}>
             {label}
           </button>
         ))}
         <div className="rail-foot">
-          <button onClick={() => api.toggleOverlay().catch((e) => setError(errorText(e)))}>Overlay</button>
+          <button className="rail-btn" onClick={() => api.toggleOverlay().catch((e) => setError(errorText(e)))}>
+            Overlay
+          </button>
+          <span className="rail-tag">local-first · v0.1</span>
         </div>
       </nav>
       <main>
-        <header className="topbar">
-          <div className="meeting-ctl">
+        <header className="console">
+          <div className="onair">
+            <span className={`lamp ${running ? "is-live" : ""}`}>
+              {running ? <span className="rec" aria-label="Capturing" /> : <span className="rec-off" />}
+              {running ? "On air" : busy ? status?.state : "Standby"}
+            </span>
+            {running && status?.started_at ? <Elapsed since={status.started_at} /> : <span className="timecode idle">00:00:00</span>}
+          </div>
+          <div className="console-mid">
             {running ? (
-              <>
-                <span className="rec" aria-label="Capturing" />
-                <strong className="mtitle">{status?.title}</strong>
-                {status?.started_at && <Elapsed since={status.started_at} />}
-              </>
+              <strong className="mtitle">{status?.title}</strong>
             ) : (
               <input
                 className="title-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Meeting title (optional)"
+                placeholder="Name this meeting…"
                 disabled={busy}
               />
             )}
-            <button className={`btn ${running ? "btn-danger" : "btn-primary"}`} onClick={toggleMeeting} disabled={busy}>
-              {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Stopping…" : running ? "Stop" : "Start meeting"}
-            </button>
+            {status && (
+              <div className="strips">
+                <SourcePill name="Them" source="system" st={status.system} level={live.levels.system} idle={status.state === "idle"} idleEnabled={settings?.capture_system} />
+                <SourcePill name="Me" source="mic" st={status.mic} level={live.levels.mic} idle={status.state === "idle"} idleEnabled={settings?.capture_mic} />
+                <PrivacyPills status={status} llmHost={llmHost} llmLocal={llmLocal} />
+              </div>
+            )}
           </div>
-          {status && (
-            <div className="pills">
-              <SourcePill name="System" source="system" st={status.system} level={live.levels.system} idle={status.state === "idle"} idleEnabled={settings?.capture_system} />
-              <SourcePill name="Mic" source="mic" st={status.mic} level={live.levels.mic} idle={status.state === "idle"} idleEnabled={settings?.capture_mic} />
-              <PrivacyPills status={status} llmHost={llmHost} llmLocal={llmLocal} />
-            </div>
-          )}
+          <button className={`btn btn-lg ${running ? "btn-danger" : "btn-primary"}`} onClick={toggleMeeting} disabled={busy}>
+            {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Stopping…" : running ? "Stop" : "Start meeting"}
+          </button>
         </header>
         {error && (
           <div className="banner banner-bad toast" role="alert">

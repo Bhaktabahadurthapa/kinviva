@@ -14,11 +14,14 @@ export function AiPanel({
   slot,
   editable,
   placeholder,
+  voice,
 }: {
   title: string;
   slot?: AiSlot;
   editable?: boolean;
   placeholder: string;
+  /** "serif" renders the answer in the editorial display face. */
+  voice?: "serif";
 }) {
   const [draft, setDraft] = useState("");
   const [copied, setCopied] = useState(false);
@@ -34,7 +37,7 @@ export function AiPanel({
   };
 
   return (
-    <section className="panel">
+    <section className={`panel ${voice ? `voice-${voice}` : ""} ${streaming ? "is-streaming" : ""}`}>
       <header>
         <h2>{slot?.action && slot.action !== "suggest" ? actionLabel[slot.action] : title}</h2>
         <div className="panel-tools">
@@ -60,7 +63,7 @@ export function AiPanel({
           <textarea className="reply-edit" value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Editable suggested reply" />
         ) : (
           <div className="ai-text">
-            {slot.text || (streaming ? <span className="thinking">Thinking…</span> : null)}
+            {slot.text || (streaming ? <span className="thinking">Thinking </span> : null)}
             {streaming && slot.text && <span className="caret" />}
           </div>
         )}

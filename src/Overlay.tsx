@@ -18,8 +18,8 @@ export default function Overlay() {
     <div className="overlay">
       <header className="ov-head" data-tauri-drag-region>
         <span className={`rec ${running ? "" : "rec-off"}`} data-tauri-drag-region />
-        <span className="ov-title" data-tauri-drag-region>
-          {running ? "Capturing" : "Idle"}
+        <span className={`ov-title ${running ? "is-live" : ""}`} data-tauri-drag-region>
+          {running ? "On air" : "Standby"}
           {running && st?.audio_to_cloud ? " · audio → cloud" : ""}
         </span>
         <div className="ov-tabs">
@@ -54,7 +54,7 @@ export default function Overlay() {
                 emptyHint={running ? "Listening…" : "No meeting running."}
               />
             </div>
-            <AiPanel title="Simple meaning" slot={live.ai.meaning} placeholder="Explain shows the latest point in plain English." />
+            <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Explain shows the latest point in plain English." />
             <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Suggest reply drafts a short answer to review." />
           </>
         )}

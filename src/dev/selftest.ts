@@ -25,6 +25,21 @@ async function until(pred: () => boolean, ms: number) {
 export async function runSelfTest(mode: string) {
   const w = getCurrentWindow();
   const step = (s: string) => w.setTitle(`MeetingLens — selftest: ${s}`);
+  if (mode === "tour") {
+    // Visit each screen and pause so it can be captured.
+    for (const tab of ["Documents", "Settings", "History", "Live"]) {
+      await wait(1200);
+      clickButton(tab);
+      if (tab === "History") {
+        await wait(600);
+        (document.querySelector(".history-list li button") as HTMLButtonElement | null)?.click();
+      }
+      await wait(900);
+      await step(`tab-${tab.toLowerCase()}`);
+      await wait(2500);
+    }
+    return step("tour-done");
+  }
   if (mode === "history") {
     // After a restart: show saved meetings without starting anything.
     await wait(1500);
