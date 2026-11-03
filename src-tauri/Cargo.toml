@@ -1,0 +1,48 @@
+[package]
+name = "meetinglens"
+version = "0.1.0"
+description = "MeetingLens - local-first desktop meeting assistant"
+edition = "2021"
+license-file = "../LICENSE"
+publish = false
+
+[lib]
+name = "meetinglens_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = ["macos-private-api"] }
+tauri-plugin-dialog = "2.8"
+tauri-plugin-global-shortcut = "2.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "net", "io-util", "process", "fs"] }
+tokio-util = "0.7"
+futures-util = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-native-roots"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+keyring = { version = "3.6", features = ["apple-native", "windows-native", "sync-secret-service"] }
+cpal = "0.16"
+pdf-extract = "0.9"
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+thiserror = "2"
+log = "0.4"
+hound = "3.5"
+url = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+screencapturekit = "1"
+
+[dev-dependencies]
+tempfile = "3"
+
+# On macOS 27 the default release `strip = "debuginfo"` produced proc-macro
+# dylibs that dyld rejects ("mis-aligned LINKEDIT string pool"). Build scripts
+# and proc-macros are not shipped, so leave them unstripped.
+[profile.release.build-override]
+strip = "none"

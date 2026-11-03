@@ -1,0 +1,14 @@
+[final]   System 2580-14780ms: Thanks for joining. We moved the tutorial behind the sign-up step and activation dropped by about 10%. Before we decide anything, can you walk us through how the new export feature affects onboarding?
+[stop] System released in 29 ms
+[stop] Mic released in 14 ms
+[stop] speech tasks ended 0 ms after capture stop
+[audio] System: 22.1 s captured at 16 kHz, peak 25612
+[audio] Mic: 21.8 s captured at 16 kHz, peak 1211
+[ai] Explain: 36 deltas, first token 478 ms, total 1517 ms
+Them said the activation rate dropped by 10% after moving the tutorial behind the sign-up step. 
+They want the user to explain how the new export feature affects onboarding.
+[ai] Suggest: 47 deltas, first token 450 ms, total 1837 ms
+I'd be happy to help you walk through how the new export feature affects onboarding. Can you elaborate on what you mean by "affects onboarding" and how the export feature is integrated into the sign-up and activation process?
+[ai] cancel after 3 deltas -> Some(Cancelled) in 242 ms, deltas seen 3
+[db] reopened: 1 segments, 2 ai messages
+[export] markdown contains every segment and response: true (/var/folders/07/wsth8l1s6hl17_0cs7zk0k500000gn/T/meetinglens-probe/probe.md)
