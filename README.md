@@ -10,6 +10,17 @@ you can review. Meetings are saved on your computer.
 **Core flow:** meeting audio → speech recognition → live transcript →
 simple-English explanation → suggested reply → local meeting history.
 
+## Demo
+
+[![MeetingLens demo: live transcript, plain-English explanation and suggested reply](docs/media/meetinglens-demo.gif)](docs/media/meetinglens-demo.mp4)
+
+**[▶ Watch the full 36-second demo (MP4, 1080p)](docs/media/meetinglens-demo.mp4)**
+
+Every screen in the video is a real capture of MeetingLens on macOS, with
+system audio transcribed by whisper.cpp and answers from a local Ollama
+model. The video itself is built with Remotion from
+[`demo-video/`](demo-video/) (`npm install && npm run render`).
+
 ## Features
 
 - **Separate sources:** system audio ("Them") and microphone ("Me"), each with
