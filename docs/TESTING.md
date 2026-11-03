@@ -88,6 +88,7 @@ for audio played by processes started from the same app (diagnosed with
   captured; this is not guaranteed.
 - **Auto-assist cost and privacy:** it calls the AI after every finished sentence from the other side (after a 2 s pause, sentences of 6+ words). With a cloud provider this streams the conversation continuously and uses tokens accordingly. An automatic answer can replace a reply you are still editing in the reply panel; the side-by-side notes keep every answer.
 - **Concurrent instances:** fixed a clash where two running copies shared whisper temp files (now unique per process and clip).
+- **Detailed, labelled answers:** Explain now uses `Meaning / Details / Terms / Unclear` and answers use `Answer / Details / Fill in`, with the newest lines passed as the focus. In a side-by-side trial on a few real passages, `llama3.2:3b` added filler and stray tags, while `qwen2.5:7b` followed the format and was more accurate. A 7B local model still invented tools and libraries when asked about the user's own work, so with no notes or documents the app now gives **coaching tips** ("Say which method you used") instead of speaking for the user, and rhetorical questions return no answer. The trial transcripts contained meeting content and are deliberately not published.
 - **Answer quality:** with a 3B local model, explanations were accurate. One
   suggested reply added a mild opinion ("we should review the tutorial")
   despite instructions. Larger models should follow the grounding rules

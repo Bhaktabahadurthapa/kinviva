@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { SideNote } from "../lib/liveReducer";
 import type { Segment } from "../lib/types";
-import { AiText } from "./AiText";
+import { AiText, isNoAnswer } from "./AiText";
 
 /** Minimum time between new explanations appearing, so each can be read. */
 const REVEAL_GAP_MS = 4500;
@@ -88,9 +88,9 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
             <div className="simple-meaning">
               <AiText text={note.meaning.text} />
             </div>
-            {answer && isDone(answer) && (
+            {answer && isDone(answer) && !isNoAnswer(answer.text) && (
               <div className="simple-answer">
-                <span className="note-label">You could say</span>
+                <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : "You could say"}</span>
                 <AiText text={answer.text} />
               </div>
             )}

@@ -41,11 +41,19 @@ pub fn llm_config(state: &AppState) -> Result<LlmConfig, String> {
 }
 
 pub fn start(app: &AppHandle, state: &AppState, action: Action, question: Option<String>) -> Result<String, String> {
-    start_with(app, state, action, question, None)
+    start_with(app, state, action, question, None, None)
 }
 
-/// `auto_for` is the transcript segment an auto-assist request answers; `None` for a click.
-pub fn start_with(app: &AppHandle, state: &AppState, action: Action, question: Option<String>, auto_for: Option<i64>) -> Result<String, String> {
+/// `auto_for` is the transcript segment an auto-assist request answers (`None`
+/// for a click); `focus` holds the new lines it should explain or answer.
+pub fn start_with(
+    app: &AppHandle,
+    state: &AppState,
+    action: Action,
+    question: Option<String>,
+    auto_for: Option<i64>,
+    focus: Option<String>,
+) -> Result<String, String> {
     let settings = state.settings();
     let cfg = llm_config(state)?;
     if action == Action::Ask && question.as_deref().map(str::trim).unwrap_or("").is_empty() {
@@ -66,7 +74,10 @@ pub fn start_with(app: &AppHandle, state: &AppState, action: Action, question: O
     }
     let passages = if settings.use_documents {
         let tail: String = transcript.chars().rev().take(600).collect::<Vec<_>>().into_iter().rev().collect();
-        let q = docs::fts_query(&format!("{} {}", tail, question.clone().unwrap_or_default()), 12);
+        let q = docs::fts_query(
+            &format!("{} {} {}", tail, focus.clone().unwrap_or_default(), question.clone().unwrap_or_default()),
+            12,
+        );
         state.db.search_passages(&q, 4).unwrap_or_default()
     } else {
         Vec::new()
@@ -77,6 +88,7 @@ pub fn start_with(app: &AppHandle, state: &AppState, action: Action, question: O
         notes: &notes,
         passages: &passages,
         question: question.as_deref(),
+        focus: focus.as_deref(),
     });
 
     // One request per panel: a new one replaces the previous.

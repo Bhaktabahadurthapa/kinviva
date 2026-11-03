@@ -869,3 +869,28 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
   color: var(--c-text-3);
 }
 .simple-writing::before { content: "● "; color: var(--c-signal); animation: pulse 1.2s infinite; }
+
+/* ---- Labelled answers: Meaning / Details / Terms / Answer / Fill in / Unclear ---- */
+.ai-label { margin: 0 0 8px; }
+.ai-label + ul { margin-top: -2px; }
+.ai-label-name {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--t-2xs);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-text-3);
+  margin: 10px 0 3px;
+}
+.ai-label:first-child .ai-label-name { margin-top: 0; }
+.ai-label.is-meaning .ai-label-name, .ai-label.is-answer .ai-label-name { color: var(--c-signal); }
+.simple-answer .ai-label.is-answer .ai-label-name { color: var(--c-me); }
+.ai-label.is-unclear .ai-label-name, .ai-label.is-unclear p { color: var(--c-warn); }
+.ai-label.is-fill-in .ai-label-name { color: var(--c-warn); }
+.ai-label.is-terms + ul li { color: var(--c-text-2); }
+.note-muted { color: var(--c-text-3); font-style: italic; margin: 0; }
+/* In the reading view, the meaning sentence is the headline; details read like a list. */
+.simple-item.is-latest .simple-meaning .ai-label.is-meaning p { font-size: var(--t-2xl); }
+.simple-meaning .ai-rich li { font-family: var(--f-ui); }
+.ai-label.is-asking .ai-label-name, .ai-label.is-points-to-cover .ai-label-name { color: var(--c-me); }

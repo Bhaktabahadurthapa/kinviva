@@ -73,7 +73,7 @@ account. Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 | Layer | Choices |
 |---|---|
 | Speech-to-text | **whisper.cpp** on device, or **Deepgram** streaming |
-| Language model | **Ollama** / LM Studio on device, or any OpenAI-compatible API. You pick the model; none is hardcoded. |
+| Language model | **Ollama** / LM Studio on device, or any OpenAI-compatible API. You pick the model; none is hardcoded. A 7B model such as `qwen2.5:7b` is recommended over 3B for accuracy. |
 | Storage | SQLite with versioned migrations, on device |
 | Secrets | macOS Keychain / Windows Credential Manager |
 
@@ -92,7 +92,7 @@ cd meetinglens-desktop && npm install && npm run tauri dev
 For a fully local setup (free, nothing leaves your Mac):
 
 ```bash
-brew install whisper-cpp ollama && ollama pull llama3.2:3b
+brew install whisper-cpp ollama && ollama pull qwen2.5:7b
 ```
 
 Download a Whisper model such as
