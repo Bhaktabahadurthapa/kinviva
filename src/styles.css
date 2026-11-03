@@ -852,3 +852,20 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 }
 .simple-answer .note-label { color: var(--c-me); }
 .simple-answer .ai-rich p { font-size: var(--t-md); line-height: 1.5; }
+
+/* ---- Calm reading: complete notes only, newest large, earlier ones recede ---- */
+.simple-item { max-width: 62ch; animation: calm-in 700ms var(--ease-out) both; }
+@keyframes calm-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.simple-item.is-earlier { opacity: 0.5; transition: opacity 600ms var(--ease-out); }
+.simple-item.is-earlier .simple-meaning .ai-rich p { font-size: var(--t-md); }
+.simple-item.is-earlier .simple-answer { display: none; }
+.simple-item.is-latest .simple-meaning .ai-rich p { font-size: var(--t-2xl); line-height: 1.45; }
+.simple-item.is-latest .simple-meaning .ai-rich li { font-size: var(--t-lg); line-height: 1.5; }
+.simple-answer .ai-rich p, .simple-answer .ai-rich li { font-size: var(--t-lg); line-height: 1.55; }
+.simple-writing {
+  font-family: var(--f-mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  color: var(--c-text-3);
+}
+.simple-writing::before { content: "● "; color: var(--c-signal); animation: pulse 1.2s infinite; }

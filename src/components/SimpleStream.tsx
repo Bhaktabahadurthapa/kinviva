@@ -1,71 +1,103 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SideNote } from "../lib/liveReducer";
 import type { Segment } from "../lib/types";
 import { AiText } from "./AiText";
+
+/** Minimum time between new explanations appearing, so each can be read. */
+const REVEAL_GAP_MS = 4500;
+/** If the speaker races ahead, skip older waiting notes instead of flooding. */
+const MAX_WAITING = 1;
 
 function fmt(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
+const isDone = (n?: SideNote["meaning"]) => n?.state === "done" && !!n.text.trim();
+
 /**
- * The reading pane: what the other side said, rewritten in simple words,
- * newest at the bottom. Questions also show a draft answer.
+ * The reading pane: what the other side said, in simple words. Notes appear
+ * only once complete (no word-by-word typing), one at a time with a pause
+ * between them; the newest is large and earlier ones fade back.
  */
 export function SimpleStream({ finals, side, running }: { finals: Segment[]; side: Record<number, SideNote>; running: boolean }) {
   const end = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
-  const items = finals.filter((s) => s.source === "system" && (side[s.id]?.meaning || side[s.id]?.answer));
+  const lastReveal = useRef(0);
+  const [shown, setShown] = useState<number[]>([]);
+
+  const ready = finals.filter((s) => s.source === "system" && isDone(side[s.id]?.meaning)).map((s) => s.id);
+  const writing = finals.some((s) => s.source === "system" && side[s.id]?.meaning?.state === "streaming");
+
+  // Reveal ready notes one at a time, at a readable pace.
+  useEffect(() => {
+    let pending = ready.filter((id) => !shown.includes(id));
+    if (!pending.length) return;
+    if (pending.length > MAX_WAITING + 1) {
+      // Keep the newest; older waiting notes stay in History instead.
+      const skipped = pending.slice(0, pending.length - (MAX_WAITING + 1));
+      pending = pending.slice(skipped.length);
+      setShown((s) => [...s, ...skipped.map((id) => -id - 1)]);
+      return;
+    }
+    const wait = Math.max(0, lastReveal.current + REVEAL_GAP_MS - Date.now());
+    const t = window.setTimeout(() => {
+      lastReveal.current = Date.now();
+      setShown((s) => [...s, pending[0]]);
+    }, wait);
+    return () => window.clearTimeout(t);
+  }, [ready.join(","), shown]);
+
+  // New meeting: start fresh.
+  useEffect(() => {
+    if (finals.length === 0) setShown([]);
+  }, [finals.length === 0]);
+
+  const visible = shown.filter((id) => id >= 0);
+  const latest = visible[visible.length - 1];
 
   useEffect(() => {
     if (stick.current) end.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [side, finals.length]);
+  }, [visible.length, side]);
 
   const onScroll = () => {
     const el = box.current;
     if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
   };
 
+  const byId = new Map(finals.map((s) => [s.id, s]));
+
   return (
     <div className="simple-stream" ref={box} onScroll={onScroll} aria-live="polite">
-      {items.length === 0 && (
-        <p className="empty">{running ? "As they speak, what they mean will appear here in simple words." : "Start a meeting. Simple explanations appear here automatically."}</p>
+      {visible.length === 0 && (
+        <p className="empty">
+          {running ? "When they finish a thought, its meaning appears here in simple words." : "Start a meeting. Simple explanations appear here automatically."}
+        </p>
       )}
-      {items.map((s) => {
-        const note = side[s.id];
-        const meaning = note.meaning;
+      {visible.map((id) => {
+        const seg = byId.get(id);
+        const note = side[id];
+        if (!seg || !note?.meaning) return null;
         const answer = note.answer;
         return (
-          <article key={s.id} className="simple-item">
+          <article key={id} className={`simple-item ${id === latest ? "is-latest" : "is-earlier"}`}>
             <div className="simple-said">
-              <span className="when">{fmt(s.start_ms)}</span> “{s.text}”
+              <span className="when">{fmt(seg.start_ms)}</span> They said: “{seg.text}”
             </div>
-            {meaning &&
-              (meaning.state === "error" ? (
-                <p className="note-error">{meaning.error}</p>
-              ) : meaning.text ? (
-                <div className="simple-meaning">
-                  <AiText text={meaning.text} streaming={meaning.state === "streaming"} />
-                </div>
-              ) : (
-                <span className="thinking">Thinking </span>
-              ))}
-            {answer && (
+            <div className="simple-meaning">
+              <AiText text={note.meaning.text} />
+            </div>
+            {answer && isDone(answer) && (
               <div className="simple-answer">
                 <span className="note-label">You could say</span>
-                {answer.state === "error" ? (
-                  <p className="note-error">{answer.error}</p>
-                ) : answer.text ? (
-                  <AiText text={answer.text} streaming={answer.state === "streaming"} />
-                ) : (
-                  <span className="thinking">Thinking </span>
-                )}
+                <AiText text={answer.text} />
               </div>
             )}
           </article>
         );
       })}
+      {running && writing && <div className="simple-writing">Writing it in simple words…</div>}
       <div ref={end} />
     </div>
   );
