@@ -151,7 +151,7 @@ export default function App() {
               <div className="strips">
                 <SourcePill name="Them" source="system" st={status.system} level={live.levels.system} idle={status.state === "idle"} idleEnabled={settings?.capture_system} />
                 <SourcePill name="Me" source="mic" st={status.mic} level={live.levels.mic} idle={status.state === "idle"} idleEnabled={settings?.capture_mic} />
-                <PrivacyPills status={status} llmHost={llmHost} llmLocal={llmLocal} />
+                <PrivacyPills status={status} llmHost={llmHost} llmLocal={llmLocal} auto={(settings?.auto_assist ?? "off") !== "off"} />
               </div>
             )}
           </div>
@@ -169,7 +169,20 @@ export default function App() {
         )}
         {status && <SourceErrors status={status} />}
         <div className="content">
-          {tab === "live" && <LiveView live={live} dispatch={dispatch} onError={setError} />}
+          {tab === "live" && (
+            <LiveView
+              live={live}
+              dispatch={dispatch}
+              onError={setError}
+              autoMode={settings?.auto_assist ?? "off"}
+              onAutoChange={(m) => {
+                if (!settings) return;
+                const next = { ...settings, auto_assist: m };
+                setSettings(next);
+                api.saveSettings(next).catch((e) => setError(errorText(e)));
+              }}
+            />
+          )}
           {tab === "history" && <HistoryView onError={setError} onOpenLive={() => setTab("live")} refreshKey={historyKey} />}
           {tab === "documents" && <DocumentsView onError={setError} />}
           {tab === "settings" && <SettingsView onError={setError} onSaved={setSettings} />}

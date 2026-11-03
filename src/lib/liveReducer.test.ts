@@ -50,7 +50,7 @@ describe("liveReducer transcript handling", () => {
 
   it("drops late events from a replaced AI request", () => {
     const ev = (id: string, state: AiEvent["state"], text: string): AiEvent => ({
-      slot: "reply", request_id: id, action: "suggest", state, text, error: null, sources: [], destination: null, question: null,
+      slot: "reply", request_id: id, action: "suggest", state, text, error: null, sources: [], destination: null, question: null, auto: false, segment_id: null,
     });
     let s = liveReducer(initialLive, { type: "ai", event: ev("a", "streaming", "old") });
     s = liveReducer(s, { type: "ai", event: ev("b", "streaming", "") });
@@ -58,5 +58,32 @@ describe("liveReducer transcript handling", () => {
     expect(s.ai.reply?.request_id).toBe("b");
     s = liveReducer(s, { type: "ai", event: ev("b", "done", "new") });
     expect(s.ai.reply?.text).toBe("new");
+  });
+});
+
+describe("side-by-side automatic answers", () => {
+  it("keeps each automatic answer next to the line it explains", () => {
+    const ev = (id: string, slot: "meaning" | "reply", seg: number, text: string, state: AiEvent["state"] = "done"): AiEvent => ({
+      slot, request_id: id, action: slot === "reply" ? "suggest" : "explain", state, text,
+      error: null, sources: [], destination: null, question: null, auto: true, segment_id: seg,
+    });
+    let s = liveReducer(initialLive, { type: "ai", event: ev("a", "meaning", 1, "first meaning") });
+    // The backend always announces a new request as streaming before it finishes.
+    s = liveReducer(s, { type: "ai", event: ev("b", "meaning", 2, "", "streaming") });
+    s = liveReducer(s, { type: "ai", event: ev("b", "meaning", 2, "second meaning") });
+    s = liveReducer(s, { type: "ai", event: ev("c", "reply", 2, "an answer") });
+    expect(s.side[1].meaning?.text).toBe("first meaning");
+    expect(s.side[2].meaning?.text).toBe("second meaning");
+    expect(s.side[2].answer?.text).toBe("an answer");
+    // The panels still show the latest.
+    expect(s.ai.meaning?.text).toBe("second meaning");
+  });
+
+  it("manual answers do not attach to a line", () => {
+    const manual: AiEvent = {
+      slot: "meaning", request_id: "m", action: "explain", state: "done", text: "x",
+      error: null, sources: [], destination: null, question: null, auto: false, segment_id: null,
+    };
+    expect(liveReducer(initialLive, { type: "ai", event: manual }).side).toEqual({});
   });
 });

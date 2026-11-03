@@ -9,6 +9,7 @@ use super::vad::{Segment, Segmenter};
 use super::SttEvent;
 use crate::audio::Source;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
@@ -53,7 +54,14 @@ pub fn clean_output(raw: &str) -> String {
     out
 }
 
-async fn transcribe(binary: &str, model: &str, language: &str, wav: &Path, samples: &[i16]) -> Result<String, String> {
+static NEXT_CLIP: AtomicU64 = AtomicU64::new(0);
+
+/// `base` names this process and source; each clip gets its own file so
+/// overlapping transcriptions (or two app instances) never share one.
+async fn transcribe(binary: &str, model: &str, language: &str, base: &Path, samples: &[i16]) -> Result<String, String> {
+    let stem = base.file_name().and_then(|n| n.to_str()).unwrap_or("utterance");
+    let wav_path = base.with_file_name(format!("{stem}-{}.wav", NEXT_CLIP.fetch_add(1, Ordering::Relaxed)));
+    let wav = wav_path.as_path();
     write_wav(wav, samples)?;
     let output = tokio::process::Command::new(binary)
         .args(["-m", model, "-f"])
@@ -65,9 +73,14 @@ async fn transcribe(binary: &str, model: &str, language: &str, wav: &Path, sampl
     let _ = std::fs::remove_file(wav);
     let output = output.map_err(|e| format!("Could not run whisper-cli at \"{binary}\": {e}"))?;
     if !output.status.success() {
+        // Prefer whisper-cli's own error line over the tail of its usage text.
         let err = String::from_utf8_lossy(&output.stderr);
-        let last = err.lines().rev().find(|l| !l.trim().is_empty()).unwrap_or("unknown error");
-        return Err(format!("whisper-cli failed: {last}"));
+        let line = err
+            .lines()
+            .find(|l| l.to_lowercase().contains("error"))
+            .or_else(|| err.lines().rev().find(|l| !l.trim().is_empty()))
+            .unwrap_or("unknown error");
+        return Err(format!("whisper-cli failed: {}", line.trim()));
     }
     Ok(clean_output(&String::from_utf8_lossy(&output.stdout)))
 }
@@ -92,7 +105,7 @@ pub async fn run(
         return;
     }
     let _ = std::fs::create_dir_all(work_dir);
-    let wav = work_dir.join(format!("utterance-{}.wav", source.as_str()));
+    let wav = work_dir.join(format!("utterance-{}-{}", std::process::id(), source.as_str()));
     let _ = events.send(SttEvent::Connected { source });
     let mut seg = Segmenter::new(0.01, 700, 15_000);
     let mut last_partial = tokio::time::Instant::now();

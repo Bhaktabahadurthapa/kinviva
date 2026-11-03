@@ -42,6 +42,8 @@ export interface Passage {
   text: string;
 }
 
+export type AutoMode = "off" | "explain" | "explain_reply";
+
 export type AiAction = "ask" | "explain" | "suggest" | "recap";
 export type Slot = "meaning" | "reply";
 
@@ -54,6 +56,8 @@ export interface AiSlot {
   sources: Passage[];
   destination: string | null;
   question: string | null;
+  auto: boolean;
+  segment_id: number | null;
 }
 
 export interface AiEvent extends AiSlot {
@@ -94,6 +98,8 @@ export interface Settings {
   use_documents: boolean;
   question_detection: boolean;
   question_cooldown_secs: number;
+  auto_assist: AutoMode;
+  auto_min_words: number;
   overlay_content_protection: boolean;
   shortcuts: Shortcuts;
 }

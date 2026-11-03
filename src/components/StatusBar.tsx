@@ -61,7 +61,17 @@ export function SourcePill({
   );
 }
 
-export function PrivacyPills({ status, llmHost, llmLocal }: { status: MeetingStatus; llmHost: string; llmLocal: boolean }) {
+export function PrivacyPills({
+  status,
+  llmHost,
+  llmLocal,
+  auto,
+}: {
+  status: MeetingStatus;
+  llmHost: string;
+  llmLocal: boolean;
+  auto?: boolean;
+}) {
   const running = status.state === "running";
   return (
     <>
@@ -70,8 +80,11 @@ export function PrivacyPills({ status, llmHost, llmLocal }: { status: MeetingSta
           audio → <b>{status.audio_to_cloud ? `${status.stt_host ?? "cloud"} · cloud` : "this device"}</b>
         </span>
       )}
-      <span className={`route ${llmLocal ? "local" : "cloud"}`} title="Where text is sent when you use an AI action">
-        ai text → <b>{llmLocal ? "this device" : `${llmHost} · cloud`}</b> · on request
+      <span
+        className={`route ${llmLocal ? "local" : "cloud"}`}
+        title={auto ? "Auto-assist sends what others say to the AI as they speak" : "Where text is sent when you use an AI action"}
+      >
+        ai text → <b>{llmLocal ? "this device" : `${llmHost} · cloud`}</b> · {auto ? "automatic" : "on request"}
       </span>
       {running && status.recording_audio && <span className="route rec-disk">● recording audio to disk</span>}
     </>

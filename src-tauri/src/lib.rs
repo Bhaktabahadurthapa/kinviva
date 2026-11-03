@@ -1,6 +1,7 @@
 //! MeetingLens desktop backend.
 
 pub mod assistant;
+pub mod auto_assist;
 pub mod audio;
 pub mod commands;
 pub mod db;
@@ -38,6 +39,7 @@ pub fn run() {
                 session: tokio::sync::Mutex::new(None),
                 ai_tasks: Mutex::new(Default::default()),
                 questions: Arc::new(Mutex::new(question::QuestionDetector::new(20))),
+                auto: Default::default(),
             };
             let settings = state.settings();
             app.manage(state);

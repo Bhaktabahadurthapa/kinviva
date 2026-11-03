@@ -12,7 +12,7 @@
 ![tauri](https://img.shields.io/badge/Tauri-2-1b1814?style=flat-square&labelColor=110f0d)
 ![rust](https://img.shields.io/badge/Rust-backend-1b1814?style=flat-square&labelColor=110f0d)
 ![react](https://img.shields.io/badge/React-18%20%2B%20TS-1b1814?style=flat-square&labelColor=110f0d)
-![tests](https://img.shields.io/badge/tests-44%20passing%20(local)-9cc8a0?style=flat-square&labelColor=110f0d)
+![tests](https://img.shields.io/badge/tests-49%20passing%20(local)-9cc8a0?style=flat-square&labelColor=110f0d)
 ![local-first](https://img.shields.io/badge/local--first-whisper.cpp%20%2B%20Ollama-ff5f2e?style=flat-square&labelColor=110f0d)
 ![license](https://img.shields.io/badge/license-proprietary-463e34?style=flat-square&labelColor=110f0d)
 
@@ -42,6 +42,7 @@ model. The video is built with Remotion from [`demo-video/`](demo-video/).
 |---|---|
 | 🎧 **Two channels** | Other participants ("Them", system audio) and you ("Me", microphone), each with status, a level meter and clear errors. Switch microphones mid-meeting. |
 | 📝 **Live transcript** | Partial text appears as people talk and settles into timecoded final lines. |
+| ⚡ **Hands-free reading view** | **Auto-assist** (on by default): the screen splits into *Captured audio* on top and *In simple words* below. When someone else finishes a sentence, its meaning appears below in large, plain language, and questions get a draft answer — no clicks. Switch to *Explain only* or *Off* any time. |
 | 💬 **Explain** | The latest point in short, plain-English sentences that keep the speaker's meaning and flag what the transcript left unclear. |
 | ✍️ **Suggest reply** | A short, editable draft grounded in the transcript, your notes and your documents. It never invents your experience, and nothing is sent into the meeting. |
 | 🧭 **Recap and Ask** | Bullet recap of the meeting so far, or a direct question answered from what was said. |
@@ -50,7 +51,7 @@ model. The video is built with Remotion from [`demo-video/`](demo-video/).
 | 🗂️ **History** | Search, rename, reopen in the assistant, export Markdown or text. |
 | ⌨️ **Shortcuts** | Configurable global shortcuts, plus optional question highlighting with cooldown and duplicate suppression. |
 
-All AI actions run on demand, stream as they generate, and can be cancelled.
+Answers stream as they generate and can be cancelled. With Auto-assist off, the AI runs only when you press a button.
 
 ## How it works
 
@@ -139,7 +140,9 @@ npm run tauri build
 - **On device by default:** with whisper.cpp and Ollama, no audio or text
   leaves your computer.
 - **You can always see where data goes:** chips in the app show whether
-  audio and AI text stay local or go to a named cloud host.
+  audio and AI text stay local or go to a named cloud host, and whether AI
+  help is *automatic* or *on request*. With a cloud AI provider, Auto-assist
+  sends what others say as they speak; turn it off if that isn't what you want.
 - **Keys** live in the OS credential store, never in files or logs.
 - **Recordings are off by default;** a visible indicator shows when they're
   on.

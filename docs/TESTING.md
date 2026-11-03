@@ -7,9 +7,9 @@ Run 2026-11-03.
 
 | Suite | Command | Result |
 |---|---|---|
-| Rust unit/integration | `cd src-tauri && cargo test` | **40 passed**, 1 ignored (network); `cargo clippy --all-targets` clean |
+| Rust unit/integration | `cd src-tauri && cargo test` | **43 passed**, 1 ignored (network); `cargo clippy --all-targets` clean |
 | Rust network (real Deepgram endpoint, invalid key) | `cargo test -- --ignored` | **1 passed**: HTTP 401 is reported as a readable error and the key does not appear in the message |
-| Frontend reducer | `npm test` | **4 passed** |
+| Frontend reducer | `npm test` | **6 passed** |
 | Type check | `npx tsc --noEmit` | clean |
 | Release bundle | `npm run tauri build -- --bundles app` | builds `MeetingLens.app` (19 MB, unsigned), launches; dev self-test code absent from the production JS |
 
@@ -52,6 +52,7 @@ Setup: whisper.cpp 1.9.4 `whisper-cli` + `ggml-base.en.bin`; Ollama
 | Exported files contain the correct content | ✅ probe export contains every segment and response (plus unit tests) | `probe3.log` |
 | Stopping releases capture resources | ✅ ScreenCaptureKit stream stopped and mic stream dropped, capture threads joined in 14–29 ms; speech tasks ended immediately after | `probe3.log` |
 | Overlay | ✅ always-on-top, frameless, transparent window shown via command and shortcut path | `ui-overlay.png` |
+| Auto-assist, hands-free (14:23–14:24) | ✅ with real meeting audio playing, every finished "Them" sentence got an automatic "In simple words" note beside it (jargon as bullets), and a question got an automatic "You could say" answer with detail bullets — no clicks. Superseded requests are cancelled by newer speech by design | `ai_messages` rows for the 14:23/14:24 meetings |
 | Repeat run after hardening (08:24) | ✅ real meeting saved (`is_demo = 0`) with the spoken question as a "Them" segment, no noise lines from the mic, Explain and Suggest reply saved as `done` | `ui-answered.png`, `ui-history.png` |
 
 Release-build fix: on macOS 27, Cargo's default release stripping produced proc-macro dylibs that dyld rejected. `Cargo.toml` now sets `strip = "none"` for `profile.release.build-override` (build-time artifacts only).
@@ -85,6 +86,8 @@ for audio played by processes started from the same app (diagnosed with
 - **Compatibility with specific meeting apps** (Zoom, Teams, Meet) was not
   tested. Any app whose audio plays through the system mix should be
   captured; this is not guaranteed.
+- **Auto-assist cost and privacy:** it calls the AI after every finished sentence from the other side (after a 0.9 s settle). With a cloud provider this streams the conversation continuously and uses tokens accordingly. An automatic answer can replace a reply you are still editing in the reply panel; the side-by-side notes keep every answer.
+- **Concurrent instances:** fixed a clash where two running copies shared whisper temp files (now unique per process and clip).
 - **Answer quality:** with a 3B local model, explanations were accurate. One
   suggested reply added a mild opinion ("we should review the tutorial")
   despite instructions. Larger models should follow the grounding rules

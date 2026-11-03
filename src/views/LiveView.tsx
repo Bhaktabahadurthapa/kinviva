@@ -1,19 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "../components/AiPanel";
 import { ActionBar } from "../components/ActionBar";
+import { SimpleStream } from "../components/SimpleStream";
 import { TranscriptView } from "../components/TranscriptView";
 import { api, errorText } from "../lib/api";
 import type { LiveEvent, LiveState } from "../lib/liveReducer";
-import type { DeviceInfo } from "../lib/types";
+import type { AutoMode, DeviceInfo } from "../lib/types";
+
+const AUTO_OPTIONS: [AutoMode, string, string][] = [
+  ["off", "Off", "Answer only when you press a button"],
+  ["explain", "Explain only", "Explain each thing they say, automatically"],
+  ["explain_reply", "Explain + answer", "Explain everything, and draft an answer to every question, automatically"],
+];
 
 export function LiveView({
   live,
   dispatch,
   onError,
+  autoMode,
+  onAutoChange,
 }: {
   live: LiveState;
   dispatch: (e: LiveEvent) => void;
   onError: (m: string) => void;
+  autoMode: AutoMode;
+  onAutoChange: (m: AutoMode) => void;
 }) {
   const status = live.status;
   const running = status?.state === "running";
@@ -64,11 +75,19 @@ export function LiveView({
           </span>
         </div>
       )}
-      <div className="live-grid">
+      <div className={autoMode === "off" ? "live-grid" : "live-stack"}>
         <section className="panel transcript-panel">
           <header>
-            <h2>Live transcript</h2>
+            <h2>{autoMode === "off" ? "Live transcript" : "Captured audio"}</h2>
             <div className="panel-tools">
+              <div className="seg" role="group" aria-label="Automatic help">
+                <span className="seg-label">Auto</span>
+                {AUTO_OPTIONS.map(([m, label, title]) => (
+                  <button key={m} className={autoMode === m ? "active" : ""} title={title} aria-pressed={autoMode === m} onClick={() => onAutoChange(m)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
               {running && status?.mic.enabled && devices.length > 0 && (
                 <select
                   className="select-sm"
@@ -102,10 +121,21 @@ export function LiveView({
             emptyHint={running ? "Listening… speech will appear here." : "Start a meeting to see the live transcript."}
           />
         </section>
-        <div className="side">
-          <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
-          <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
-        </div>
+        {autoMode === "off" ? (
+          <div className="side">
+            <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
+            <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
+          </div>
+        ) : (
+          // Reading view: what they said (top) becomes simple words (bottom), hands-free.
+          <section className="panel simple-panel">
+            <header>
+              <h2>In simple words</h2>
+              <span className="auto-tag">automatic</span>
+            </header>
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
+          </section>
+        )}
       </div>
       <ActionBar live={live} onError={onError} />
     </div>

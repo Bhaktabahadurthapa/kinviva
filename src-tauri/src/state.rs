@@ -81,6 +81,10 @@ pub struct AiSlot {
     pub sources: Vec<Passage>,
     pub destination: Option<String>,
     pub question: Option<String>,
+    /// Started automatically by auto-assist, not by a click.
+    pub auto: bool,
+    /// The "Them" line an automatic answer belongs to.
+    pub segment_id: Option<i64>,
 }
 
 #[derive(Default)]
@@ -106,6 +110,7 @@ pub struct AppState {
     pub session: tokio::sync::Mutex<Option<Session>>,
     pub ai_tasks: Mutex<HashMap<String, CancellationToken>>,
     pub questions: Arc<Mutex<QuestionDetector>>,
+    pub auto: crate::auto_assist::AutoAssist,
 }
 
 impl AppState {

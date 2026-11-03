@@ -49,6 +49,10 @@ pub struct Settings {
     // Assist
     pub question_detection: bool,
     pub question_cooldown_secs: u32,
+    /// "off" | "explain" | "explain_reply": answer automatically when others speak.
+    pub auto_assist: String,
+    /// Ignore utterances shorter than this many words (e.g. "okay", "right").
+    pub auto_min_words: u32,
     // Overlay
     pub overlay_content_protection: bool,
     pub shortcuts: Shortcuts,
@@ -76,6 +80,8 @@ impl Default for Settings {
             use_documents: true,
             question_detection: false,
             question_cooldown_secs: 20,
+            auto_assist: "explain_reply".into(),
+            auto_min_words: 4,
             overlay_content_protection: false,
             shortcuts: Shortcuts::default(),
         }

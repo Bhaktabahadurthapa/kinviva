@@ -44,16 +44,21 @@ fn instructions(action: Action) -> &'static str {
 - Preserve the speaker's meaning. Do not add opinions or advice.\n\
 - Use short, plain sentences (aim for under 15 words each). Avoid jargon; if a technical term is essential, define it in a few words.\n\
 - Focus on the last thing \"Them\" said, using earlier lines only for context.\n\
-- If words seem missing, garbled or cut off, add a final line starting with \"Unclear:\" naming what is uncertain.\n\
-- 2 to 5 sentences. No headings.",
-        Action::Suggest => "Draft a short reply the user could say next, for the user to review and edit.\n\
+- 2 to 4 sentences. No headings.\n\
+- If they mentioned specific details (numbers, dates, names, steps, requirements), list them after the sentences \
+as 1 to 4 short lines starting with \"- \".\n\
+- If words seem missing, garbled or cut off, end with a line starting with \"Unclear:\" naming what is uncertain.",
+        Action::Suggest => "Draft an answer the user could say next, for the user to review and edit.\n\
 - Respond to the most recent question or point from \"Them\".\n\
 - Ground every claim in the transcript, the user's notes, or the document excerpts.\n\
 - Do NOT invent the user's experience, opinions, numbers or facts. Where a personal detail is needed but not provided, \
 leave a clear placeholder in square brackets, e.g. [your years of experience].\n\
-- Never write \"from my notes\" or describe the user's work unless it appears in <my_notes> or <document_excerpts>.
-- 1 to 3 sentences, first person, natural spoken tone.\n\
-- Output only the reply text. If there is nothing to reply to, say: \"No question or point to reply to yet.\"",
+- Never write \"from my notes\" or describe the user's work unless it appears in <my_notes> or <document_excerpts>.\n\
+- Use this simple format, first person, natural spoken tone:\n\
+  1. One or two plain sentences that directly answer.\n\
+  2. Then 2 to 4 short supporting details, each on its own line starting with \"- \" \
+(facts, examples or steps from the material above, or a [placeholder] the user should fill in).\n\
+- No headings, no quotation marks around the answer. If there is nothing to reply to, say: \"No question or point to reply to yet.\"",
         Action::Recap => "Summarise the meeting so far for the user.\n\
 - Use 3 to 6 short bullet points: main topics, decisions, open questions, and any action items with owners if stated.\n\
 - Only include what is in the transcript. Mark anything uncertain due to transcription with \"(unclear)\".",
@@ -128,6 +133,7 @@ mod tests {
         assert!(u.contains("<my_notes>\nMention the audio project"));
         assert!(u.contains("[cv.md #3]\nFive years of Rust."));
         assert!(u.contains("Do NOT invent"));
+        assert!(u.contains("supporting details"));
         assert!(m[0].content.contains("may contain recognition errors"));
     }
 

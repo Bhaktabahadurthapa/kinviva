@@ -8,6 +8,13 @@ export interface LiveState {
   ai: Partial<Record<Slot, AiSlot>>;
   levels: Partial<Record<Source, number>>;
   question: { text: string; at: number } | null;
+  /** Automatic answers keyed by the "Them" segment they explain. */
+  side: Record<number, SideNote>;
+}
+
+export interface SideNote {
+  meaning?: AiSlot;
+  answer?: AiSlot;
 }
 
 export const initialLive: LiveState = {
@@ -18,6 +25,7 @@ export const initialLive: LiveState = {
   ai: {},
   levels: {},
   question: null,
+  side: {},
 };
 
 export type LiveEvent =
@@ -54,6 +62,7 @@ export function liveReducer(state: LiveState, ev: LiveEvent): LiveState {
         notes: started ? "" : state.notes,
         levels: ev.status.state === "running" ? state.levels : {},
         question: started ? null : state.question,
+        side: started ? {} : state.side,
       };
     }
     case "partial": {
@@ -76,8 +85,14 @@ export function liveReducer(state: LiveState, ev: LiveEvent): LiveState {
       const { slot, ...rest } = ev.event;
       const prev = state.ai[slot];
       // Drop stale events from a request that has been replaced.
-      if (prev && prev.request_id && rest.request_id !== prev.request_id && rest.state !== "streaming") return state;
-      return { ...state, ai: { ...state.ai, [slot]: rest } };
+      // Side notes are keyed by their own line, so they always update.
+      let side = state.side;
+      if (rest.auto && rest.segment_id !== null) {
+        const key = slot === "reply" ? "answer" : "meaning";
+        side = { ...side, [rest.segment_id]: { ...side[rest.segment_id], [key]: rest } };
+      }
+      if (prev && prev.request_id && rest.request_id !== prev.request_id && rest.state !== "streaming") return { ...state, side };
+      return { ...state, ai: { ...state.ai, [slot]: rest }, side };
     }
     case "levels":
       return { ...state, levels: ev.levels };

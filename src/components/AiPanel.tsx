@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, errorText } from "../lib/api";
 import type { AiSlot } from "../lib/types";
+import { AiText } from "./AiText";
 
 const actionLabel: Record<string, string> = {
   explain: "Simple meaning",
@@ -39,7 +40,10 @@ export function AiPanel({
   return (
     <section className={`panel ${voice ? `voice-${voice}` : ""} ${streaming ? "is-streaming" : ""}`}>
       <header>
-        <h2>{slot?.action && slot.action !== "suggest" ? actionLabel[slot.action] : title}</h2>
+        <h2>
+          {slot?.action && slot.action !== "suggest" ? actionLabel[slot.action] : title}
+          {slot?.auto && <span className="auto-tag">auto</span>}
+        </h2>
         <div className="panel-tools">
           {streaming && (
             <button className="btn btn-ghost btn-sm" onClick={() => slot?.request_id && api.aiCancel(slot.request_id).catch(errorText)}>
@@ -63,8 +67,7 @@ export function AiPanel({
           <textarea className="reply-edit" value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Editable suggested reply" />
         ) : (
           <div className="ai-text">
-            {slot.text || (streaming ? <span className="thinking">Thinking </span> : null)}
-            {streaming && slot.text && <span className="caret" />}
+            {slot.text ? <AiText text={slot.text} streaming={streaming} /> : streaming ? <span className="thinking">Thinking </span> : null}
           </div>
         )}
         {slot?.state === "cancelled" && <p className="note">Cancelled. Partial text shown.</p>}

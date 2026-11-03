@@ -25,6 +25,23 @@ async function until(pred: () => boolean, ms: number) {
 export async function runSelfTest(mode: string) {
   const w = getCurrentWindow();
   const step = (s: string) => w.setTitle(`MeetingLens — selftest: ${s}`);
+  if (mode === "auto") {
+    // Hands-free check: start, then wait for automatic notes with no clicks.
+    await wait(1500);
+    clickButton("Live");
+    clickButton("Start meeting");
+    await until(() => !!document.querySelector(".rec"), 15000);
+    await step("listening");
+    const answered = await until(
+      () => !!document.querySelector(".simple-answer .ai-rich") && !document.querySelector(".simple-stream .caret, .simple-stream .thinking"),
+      90000,
+    );
+    await step(answered ? "auto-answered" : "auto-timeout");
+    await wait(4000);
+    clickButton("Stop");
+    await until(() => !document.querySelector(".rec"), 20000);
+    return step("done");
+  }
   if (mode === "tour") {
     // Visit each screen and pause so it can be captured.
     for (const tab of ["Documents", "Settings", "History", "Live"]) {

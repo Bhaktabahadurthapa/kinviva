@@ -264,6 +264,23 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
 
       <section className="card">
         <h2>Assist</h2>
+        <div className="field narrow">
+          <label>Automatic help when others speak</label>
+          <select value={s.auto_assist} onChange={(e) => set("auto_assist", e.target.value as Settings["auto_assist"])}>
+            <option value="explain_reply">Explain + answer questions</option>
+            <option value="explain">Explain only</option>
+            <option value="off">Off (buttons only)</option>
+          </select>
+        </div>
+        <p className="hint">
+          When on, each finished sentence from other participants is sent to your AI provider and explained in simple words beside the
+          transcript; questions also get a draft answer. Nothing is ever said or typed into the meeting. With a cloud provider this sends
+          the conversation continuously.
+        </p>
+        <div className="field narrow">
+          <label>Ignore sentences shorter than (words)</label>
+          <input type="number" min="1" value={s.auto_min_words} onChange={(e) => set("auto_min_words", Number(e.target.value))} />
+        </div>
         <label className="check">
           <input type="checkbox" checked={s.question_detection} onChange={(e) => set("question_detection", e.target.checked)} />
           Highlight questions from other participants (shows a prompt; never answers automatically)

@@ -100,6 +100,7 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>) -> 
     }
     emit_status(app, &state.live);
     state.questions.lock().unwrap().set_cooldown(settings.question_cooldown_secs);
+    state.auto.reset();
 
     let cancel = CancellationToken::new();
     let (ev_tx, ev_rx) = mpsc::unbounded_channel::<SttEvent>();
@@ -334,6 +335,9 @@ async fn pump_events(
                 let _ = app.emit("transcript-final", &seg);
                 if detect_questions && source == Source::System && questions.lock().unwrap().check(&text, now_ms()) {
                     let _ = app.emit("question-detected", serde_json::json!({ "text": text, "segment_id": id }));
+                }
+                if source == Source::System {
+                    crate::auto_assist::on_their_final(&app, id, &text);
                 }
             }
             SttEvent::Error { source, message, fatal } => {

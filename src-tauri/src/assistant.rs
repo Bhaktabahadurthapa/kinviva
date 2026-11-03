@@ -41,6 +41,11 @@ pub fn llm_config(state: &AppState) -> Result<LlmConfig, String> {
 }
 
 pub fn start(app: &AppHandle, state: &AppState, action: Action, question: Option<String>) -> Result<String, String> {
+    start_with(app, state, action, question, None)
+}
+
+/// `auto_for` is the transcript segment an auto-assist request answers; `None` for a click.
+pub fn start_with(app: &AppHandle, state: &AppState, action: Action, question: Option<String>, auto_for: Option<i64>) -> Result<String, String> {
     let settings = state.settings();
     let cfg = llm_config(state)?;
     if action == Action::Ask && question.as_deref().map(str::trim).unwrap_or("").is_empty() {
@@ -98,6 +103,8 @@ pub fn start(app: &AppHandle, state: &AppState, action: Action, question: Option
             sources: passages.clone(),
             destination,
             question: question.clone(),
+            auto: auto_for.is_some(),
+            segment_id: auto_for,
         }
     });
 
