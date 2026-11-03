@@ -86,7 +86,7 @@ for audio played by processes started from the same app (diagnosed with
 - **Compatibility with specific meeting apps** (Zoom, Teams, Meet) was not
   tested. Any app whose audio plays through the system mix should be
   captured; this is not guaranteed.
-- **Auto-assist cost and privacy:** it calls the AI after every finished sentence from the other side (after a 0.9 s settle). With a cloud provider this streams the conversation continuously and uses tokens accordingly. An automatic answer can replace a reply you are still editing in the reply panel; the side-by-side notes keep every answer.
+- **Auto-assist cost and privacy:** it calls the AI after every finished sentence from the other side (after a 2 s pause, sentences of 6+ words). With a cloud provider this streams the conversation continuously and uses tokens accordingly. An automatic answer can replace a reply you are still editing in the reply panel; the side-by-side notes keep every answer.
 - **Concurrent instances:** fixed a clash where two running copies shared whisper temp files (now unique per process and clip).
 - **Answer quality:** with a 3B local model, explanations were accurate. One
   suggested reply added a mild opinion ("we should review the tutorial")

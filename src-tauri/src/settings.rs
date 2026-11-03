@@ -81,7 +81,7 @@ impl Default for Settings {
             question_detection: false,
             question_cooldown_secs: 20,
             auto_assist: "explain_reply".into(),
-            auto_min_words: 4,
+            auto_min_words: 6,
             overlay_content_protection: false,
             shortcuts: Shortcuts::default(),
         }
