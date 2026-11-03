@@ -1,73 +1,116 @@
-# MeetingLens
+<div align="center">
 
-A local-first desktop meeting assistant. It transcribes your meeting audio
-live, explains what was just said in plain English, and drafts a short reply
-you can review. Meetings are saved on your computer.
+<img src="docs/media/architecture-hero.png" alt="MeetingLens: system audio and microphone flow through speech-to-text into a live transcript; the assistant combines recent lines with document passages, asks a local or cloud model, and shows answers in the window and overlay while meetings are saved on device." width="100%">
 
-> Temporary product name. Independent implementation; see
-> [docs/FINDINGS.md](docs/FINDINGS.md) for how the reference app was studied.
+<br>
 
-**Core flow:** meeting audio → speech recognition → live transcript →
-simple-English explanation → suggested reply → local meeting history.
+### A desktop meeting assistant that hears the call, explains it in plain English, and drafts a reply you can edit. Local-first. No telemetry.
+
+<br>
+
+![platform](https://img.shields.io/badge/platform-macOS%2013%2B-1b1814?style=flat-square&labelColor=110f0d)
+![tauri](https://img.shields.io/badge/Tauri-2-1b1814?style=flat-square&labelColor=110f0d)
+![rust](https://img.shields.io/badge/Rust-backend-1b1814?style=flat-square&labelColor=110f0d)
+![react](https://img.shields.io/badge/React-18%20%2B%20TS-1b1814?style=flat-square&labelColor=110f0d)
+![tests](https://img.shields.io/badge/tests-44%20passing%20(local)-9cc8a0?style=flat-square&labelColor=110f0d)
+![local-first](https://img.shields.io/badge/local--first-whisper.cpp%20%2B%20Ollama-ff5f2e?style=flat-square&labelColor=110f0d)
+![license](https://img.shields.io/badge/license-proprietary-463e34?style=flat-square&labelColor=110f0d)
+
+**[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
+
+</div>
+
+---
 
 ## Demo
+
+<div align="center">
 
 [![MeetingLens demo: live transcript, plain-English explanation and suggested reply](docs/media/meetinglens-demo.gif)](docs/media/meetinglens-demo.mp4)
 
 **[▶ Watch the full 36-second demo (MP4, 1080p)](docs/media/meetinglens-demo.mp4)**
 
+</div>
+
 Every screen in the video is a real capture of MeetingLens on macOS, with
 system audio transcribed by whisper.cpp and answers from a local Ollama
-model. The video itself is built with Remotion from
-[`demo-video/`](demo-video/) (`npm install && npm run render`).
+model. The video is built with Remotion from [`demo-video/`](demo-video/).
 
 ## Features
 
-- **Separate sources:** system audio ("Them") and microphone ("Me"), each with
-  status, level meter and errors. Switch microphones mid-meeting.
-- **Speech providers:** Deepgram streaming (cloud) or whisper.cpp (local).
-- **AI provider:** any OpenAI-compatible Chat Completions endpoint, e.g.
-  OpenAI, or Ollama / LM Studio running locally. The model is chosen in
-  Settings and never hardcoded.
-- **Actions:** Explain, Suggest reply, Recap, Ask. All run on demand, stream
-  as they generate, and can be cancelled. Nothing is ever spoken or typed into
-  the meeting.
-- **Context documents:** TXT, Markdown and PDF, retrieved with SQLite FTS5.
-  Every answer lists the passages it used.
-- **History:** search, rename, delete, reopen in the assistant, export as
-  Markdown or text.
-- **Overlay:** movable, resizable, always-on-top companion window.
-- **Configurable global shortcuts,** plus optional question highlighting with
-  cooldown and duplicate suppression.
-- **Privacy:** keys in Keychain / Credential Manager, recordings off by
-  default, indicators showing when audio or text goes to a cloud provider, no
-  telemetry.
+| | |
+|---|---|
+| 🎧 **Two channels** | Other participants ("Them", system audio) and you ("Me", microphone), each with status, a level meter and clear errors. Switch microphones mid-meeting. |
+| 📝 **Live transcript** | Partial text appears as people talk and settles into timecoded final lines. |
+| 💬 **Explain** | The latest point in short, plain-English sentences that keep the speaker's meaning and flag what the transcript left unclear. |
+| ✍️ **Suggest reply** | A short, editable draft grounded in the transcript, your notes and your documents. It never invents your experience, and nothing is sent into the meeting. |
+| 🧭 **Recap and Ask** | Bullet recap of the meeting so far, or a direct question answered from what was said. |
+| 📚 **Documents** | TXT, Markdown and PDF, indexed with SQLite FTS5. Every answer lists the passages it used. |
+| 🪟 **Overlay** | A movable, resizable, always-on-top companion window. |
+| 🗂️ **History** | Search, rename, reopen in the assistant, export Markdown or text. |
+| ⌨️ **Shortcuts** | Configurable global shortcuts, plus optional question highlighting with cooldown and duplicate suppression. |
 
-## Requirements
+All AI actions run on demand, stream as they generate, and can be cancelled.
 
-| | macOS (primary target) | Windows |
-|---|---|---|
-| OS | macOS 13+ (ScreenCaptureKit audio) | Windows 10/11 |
-| Toolchain | Rust stable, Node 20+, Xcode Command Line Tools | Rust stable (MSVC), Node 20+, WebView2 |
-| Status | Built and verified on macOS 27.0.1 / Apple Silicon | Code path written, **not built or tested** |
+## How it works
 
-Optional, for fully local use:
+```
+Them (ScreenCaptureKit) ─┐
+                         ├─► speech-to-text ─► live transcript ─► SQLite history
+Me (cpal / CoreAudio) ───┘   whisper.cpp |          │
+                             Deepgram               ▼
+                       your documents ─► assistant ─► language model
+                       (FTS5 passages)      │        Ollama | OpenAI-compatible
+                                            ▼
+                                   window + overlay
+```
 
-- `brew install whisper-cpp`, plus a model such as
-  [`ggml-base.en.bin`](https://huggingface.co/ggerganov/whisper.cpp/tree/main).
-- [Ollama](https://ollama.com) and a model, e.g. `ollama pull llama3.2:3b`.
+One Tauri 2 app: a Rust backend for native audio, speech providers, SQLite
+and the OS keychain, and a React + TypeScript interface. No server, no
+account. Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Develop
+| Layer | Choices |
+|---|---|
+| Speech-to-text | **whisper.cpp** on device, or **Deepgram** streaming |
+| Language model | **Ollama** / LM Studio on device, or any OpenAI-compatible API. You pick the model; none is hardcoded. |
+| Storage | SQLite with versioned migrations, on device |
+| Secrets | macOS Keychain / Windows Credential Manager |
+
+## Quickstart
+
+**Requirements:** macOS 13+, Rust stable, Node 20+, Xcode Command Line Tools.
 
 ```bash
-npm install
+git clone https://github.com/Bhaktabahadurthapa/meetinglens-desktop.git
 ```
 
 ```bash
-npm run tauri dev
+cd meetinglens-desktop && npm install && npm run tauri dev
 ```
 
-Tests:
+For a fully local setup (free, nothing leaves your Mac):
+
+```bash
+brew install whisper-cpp ollama && ollama pull llama3.2:3b
+```
+
+Download a Whisper model such as
+[`ggml-base.en.bin`](https://huggingface.co/ggerganov/whisper.cpp/tree/main).
+Then open **Setup** in the app:
+
+1. **Audio:** choose system audio and/or microphone. macOS asks for
+   Microphone and Screen & System Audio Recording permission the first time
+   you start a meeting.
+2. **Speech:** choose whisper.cpp and pick the model file, or paste a
+   Deepgram key.
+3. **AI:** pick the Ollama preset (or add an API key), press **Fetch models**
+   and choose one.
+
+No audio handy? **History → + Demo** adds a sample meeting, clearly marked
+DEMO, so you can try the AI actions.
+
+<details>
+<summary><b>Tests, release build and hardware probes</b></summary>
 
 ```bash
 npm test
@@ -77,52 +120,67 @@ npm test
 cd src-tauri && cargo test
 ```
 
-Release bundle (unsigned; nothing is published):
-
 ```bash
 npm run tauri build
 ```
 
-On first launch, open **Setup**:
-
-1. **Audio:** choose system audio and/or microphone. macOS asks for
-   Microphone and Screen & System Audio Recording permission the first time
-   you start a meeting. If you deny it, enable MeetingLens (or, in dev, your
-   terminal app) under System Settings → Privacy & Security, then restart.
-2. **Speech:** paste a Deepgram key, or choose whisper.cpp and pick a model
-   file.
-3. **AI:** pick a preset, add a key if needed, press **Fetch models** and
-   choose one.
-
-Use **History → + Demo** for a sample meeting, clearly marked DEMO, that lets
-you explore the AI actions without audio.
-
-### Hardware probes (developer tools)
-
 - `cargo run --example e2e_probe -- <whisper-cli> <model.bin> <llm-base-url> <model> <seconds>`
   captures real system and mic audio, transcribes it, runs the AI actions,
-  tests cancellation and checks persistence and export.
+  tests cancellation, and checks persistence and export.
 - `cargo run --example sck_probe -- <audio-file>` reports the ScreenCaptureKit
   audio format and level while playing a file.
 - `VITE_SELFTEST=1 npm run tauri dev` runs a dev-only script that clicks
   through Start → Explain → Suggest reply → overlay → Stop → History.
 
-## Data locations
+</details>
 
-- Database: `~/Library/Application Support/app.meetinglens.desktop/meetinglens.sqlite`
-  (Windows: `%APPDATA%\app.meetinglens.desktop\`).
-- Optional recordings: `recordings/<meeting-id>/` next to the database.
-- API keys: OS credential store, service `app.meetinglens.desktop`.
+## Privacy
 
-More: [Architecture](docs/ARCHITECTURE.md) · [Design system](docs/DESIGN_SYSTEM.md) ·
-[Findings & coverage](docs/FINDINGS.md) ·
-[Test results & limitations](docs/TESTING.md) ·
-[Third-party notices](THIRD_PARTY_NOTICES.md)
+- **On device by default:** with whisper.cpp and Ollama, no audio or text
+  leaves your computer.
+- **You can always see where data goes:** chips in the app show whether
+  audio and AI text stay local or go to a named cloud host.
+- **Keys** live in the OS credential store, never in files or logs.
+- **Recordings are off by default;** a visible indicator shows when they're
+  on.
+- **No telemetry,** no account, no update checks.
+- **Consent matters:** some places require everyone's consent to record or
+  transcribe a conversation. Tell participants when you use MeetingLens.
+
+## Status
+
+| | macOS (Apple Silicon) | Windows |
+|---|---|---|
+| Build | ✅ verified on macOS 27 | ⚠️ code path written, not yet built |
+| Real-audio pipeline | ✅ whisper.cpp + Ollama | — |
+| Deepgram, OpenAI | ⚠️ implemented, awaiting live-key testing | — |
+
+Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
+
+## Docs
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Design system](docs/DESIGN_SYSTEM.md)
+- [Test results & limitations](docs/TESTING.md)
+- [Reference investigation & feature coverage](docs/FINDINGS.md): an
+  independent implementation; see that file for how the reference app was
+  studied.
+- [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) ·
+  [Code of conduct](CODE_OF_CONDUCT.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
+
+Data lives in `~/Library/Application Support/app.meetinglens.desktop/`; keys
+are under the credential-store service `app.meetinglens.desktop`.
 
 ## License
 
 Proprietary. Copyright © 2026 Bhakta Thapa. All rights reserved. See
-[LICENSE](LICENSE). No rights are granted without a separate written license
-or subscription agreement. Third-party components keep their own licenses;
-see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), which must ship with
-every distributed copy.
+[LICENSE](LICENSE). The source is public to read; no right to use, copy,
+modify or redistribute it is granted without a separate written license or
+subscription agreement. Third-party components keep their own licenses; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+<div align="center">
+<br>
+<sub>Built by <b>Bhakta Thapa</b> · <b>BKT AI</b></sub>
+</div>
