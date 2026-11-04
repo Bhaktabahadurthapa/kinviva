@@ -5,6 +5,13 @@ import type { DeviceInfo, Settings, Shortcuts } from "../lib/types";
 
 const PRESETS = [
   { label: "OpenAI", url: "https://api.openai.com/v1", key: true },
+  { label: "Google Gemini", url: "https://generativelanguage.googleapis.com/v1beta/openai", key: true },
+  { label: "OpenRouter (many models)", url: "https://openrouter.ai/api/v1", key: true },
+  { label: "Groq", url: "https://api.groq.com/openai/v1", key: true },
+  { label: "Mistral", url: "https://api.mistral.ai/v1", key: true },
+  { label: "DeepSeek", url: "https://api.deepseek.com/v1", key: true },
+  { label: "Together", url: "https://api.together.xyz/v1", key: true },
+  { label: "xAI", url: "https://api.x.ai/v1", key: true },
   { label: "Ollama (local)", url: "http://localhost:11434/v1", key: false },
   { label: "LM Studio (local)", url: "http://localhost:1234/v1", key: false },
 ];
@@ -94,7 +101,8 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
     setModels(null);
     setModelErr(null);
     try {
-      setModels(await api.listModels(s.llm_base_url, s.llm_use_api_key));
+      // Some providers (Gemini) list ids as "models/<name>" but expect "<name>" in requests.
+      setModels((await api.listModels(s.llm_base_url, s.llm_use_api_key)).map((m) => m.replace(/^models\//, "")));
     } catch (e) {
       setModelErr(errorText(e));
     }
@@ -232,14 +240,18 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
 
       <section className="card">
         <h2>3 · AI provider</h2>
-        <p className="hint">Any OpenAI-compatible Chat Completions endpoint. Text is only sent when you press an action.</p>
+        <p className="hint">Any OpenAI-compatible Chat Completions endpoint. Meeting text is sent to this provider when you press an action or when Auto-assist answers; use a local model to keep it on this computer.</p>
         <div className="row presets">
           {PRESETS.map((p) => (
             <button key={p.url} className="btn btn-ghost btn-sm" onClick={() => setS({ ...s, llm_base_url: p.url, llm_use_api_key: p.key })}>
               {p.label}
             </button>
           ))}
+          <button className="btn btn-ghost btn-sm" onClick={() => setS({ ...s, llm_base_url: "", llm_use_api_key: true })}>
+            Other (type your own)
+          </button>
         </div>
+        <p className="hint">Any other service works too: paste its OpenAI-compatible base URL (the part before <code>/chat/completions</code>), your API key, and a model name from its docs.</p>
         <div className="field">
           <label>Base URL</label>
           <input value={s.llm_base_url} onChange={(e) => set("llm_base_url", e.target.value)} />
