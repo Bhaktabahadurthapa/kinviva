@@ -55,12 +55,12 @@ Rules:\n\
 - Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.\n\
 - Everyday words, each bullet under 15 words.",
         Action::Suggest => "Write an answer the user could say to the question in <latest> (if there is no <latest>, the most recent question from \"Them\").\n\
-First decide whether it is a real question asked to the user. If it is rhetorical, the speaker answers it themselves, \
-or it is not directed at the user, output exactly: NO_ANSWER\n\
+Output exactly NO_ANSWER only when the question is clearly rhetorical, the speaker answers it themselves, \
+or it is clearly addressed to someone else. Any question about what or how the user would do, decide, design or recommend is addressed to the user: answer it.\n\
 Otherwise use exactly this layout:\n\
 Answer:\n\
 - 4 to 6 bullets in priority order, the way a senior engineer or manager would answer out loud. The first bullet is the decisive first action or the core of the answer.\n\
-- Each bullet is the action or point, then a short reason or the proof: the tool, command, metric, signal or trade-off (for example: \"Fail over to the replica: restores writes within a minute while you find the cause.\"). Under 25 words each.\n\
+- Each bullet is the action or point, then a short reason or the proof: the tool, command, metric, signal or trade-off in the form \"<action>: <why, with the tool, command, metric or trade-off>\". Under 25 words each.\n\
 - Name concrete tools, commands, metrics and trade-offs. No generic advice, no introduction, and do not repeat or reword the question.\n\
 Fill in: only if a personal detail is missing, list the placeholders in square brackets, e.g. [your years of experience]. Leave this line out otherwise.\n\
 Rules:\n\
