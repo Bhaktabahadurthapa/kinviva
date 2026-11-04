@@ -131,3 +131,27 @@ exists only in development builds); memory use; models above small.en and
 multilingual models; the ≈ 15 s first-ever model load on a fresh install path
 (measured, mitigated by background priming, not reproduced inside a first
 launch of the real packaged app).
+
+## macOS dev builds: stop the repeated Keychain prompt
+
+macOS ties a Keychain "Always Allow" to the program's signature. A dev binary
+that is rebuilt (ad-hoc signed, new hash each time) looks like a new program, so
+it asks for the login password again. `.cargo/config.toml` runs
+`scripts/dev-sign-run.sh`, which signs the dev binary with a local self-signed
+certificate named "MeetingLens Dev" so the signature stays the same.
+
+One-time setup (free; changes no trust settings):
+
+```bash
+cd "$(mktemp -d)"
+printf '[req]\ndistinguished_name=dn\nx509_extensions=v3\nprompt=no\n[dn]\nCN=MeetingLens Dev\n[v3]\nbasicConstraints=critical,CA:false\nkeyUsage=critical,digitalSignature\nextendedKeyUsage=critical,codeSigning\n' > ext.cnf
+openssl req -x509 -newkey rsa:2048 -nodes -keyout k.pem -out c.pem -days 3650 -config ext.cnf
+openssl pkcs12 -export -inkey k.pem -in c.pem -out c.p12 -passout pass:tmp -legacy
+security import c.p12 -k ~/Library/Keychains/login.keychain-db -P tmp -T /usr/bin/codesign
+rm -f k.pem c.p12
+```
+
+Then restart `npm run tauri dev` and click **Always Allow** once. Without the
+certificate the runner simply starts the binary unsigned. Installed (downloaded)
+builds are unaffected; a Developer ID signature is what makes their approval
+survive updates.
