@@ -152,3 +152,17 @@ footer b { color: var(--text2); font-weight: 600; }
   .nav { padding: 12px 20px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Download-started note */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70;
+  width: min(560px, calc(100vw - 32px)); display: flex; gap: 14px; align-items: flex-start; justify-content: space-between;
+  padding: 18px 20px; border-radius: 14px; background: var(--raised); border: 1px solid var(--line2); border-left: 4px solid var(--signal);
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.9); animation: rise 400ms var(--ease) both;
+}
+.toast[hidden] { display: none; }
+.toast p { margin: 4px 0 0; color: var(--text2); font-size: 15px; line-height: 1.5; }
+.toast b { color: var(--text); font-weight: 600; }
+.toast button { background: none; border: 0; color: var(--text3); font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.toast button:hover { color: var(--text); }
+.platform-note { color: var(--warn, #f2b84b); }

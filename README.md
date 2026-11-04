@@ -16,7 +16,7 @@
 ![local-first](https://img.shields.io/badge/local--first-whisper.cpp%20%2B%20Ollama-ff5f2e?style=flat-square&labelColor=110f0d)
 ![license](https://img.shields.io/badge/license-proprietary-463e34?style=flat-square&labelColor=110f0d)
 
-**[Website](https://bhaktathapa.com.np/meetinglens-desktop/)** · **[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
+**[⬇ Download](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg)** · **[Website](https://bhaktathapa.com.np/meetinglens-desktop/)** · **[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
 
 </div>
 
@@ -112,9 +112,10 @@ DEMO, so you can try the AI actions.
 
 ## Install as a Mac app
 
-**Just want the app?** Download the installer from the
-[v0.1.0 release](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/tag/v0.1.0)
-or the [website](https://bhaktathapa.com.np/meetinglens-desktop/).
+**Just want the app?** **[⬇ Download MeetingLens.dmg](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg)**
+(direct download, 7.9 MB, Apple Silicon). Checksums and notes are on the
+[release page](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest);
+the [website](https://bhaktathapa.com.np/meetinglens-desktop/) has the same button.
 
 To build it yourself instead, create a normal app you can drag into Applications (Apple Silicon Mac, macOS 13+):
 

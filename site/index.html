@@ -28,7 +28,7 @@
       <a href="#how">How it works</a>
       <a href="#privacy">Privacy</a>
       <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop">GitHub</a>
-      <a class="btn btn-small" href="#download">Download</a>
+      <a class="btn btn-small" data-download href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download</a>
     </nav>
   </header>
 
@@ -39,10 +39,11 @@
       <h1>Hear it.<br>Understand it.<br><em>Answer it.</em></h1>
       <p class="lead">MeetingLens listens to your call, writes what others say in <strong>simple words</strong> as they say it, and drafts an answer when someone asks you a question. It runs on your Mac. Nothing leaves it unless you choose a cloud service.</p>
       <div class="cta">
-        <a class="btn" href="#download">Download for Mac</a>
+        <a class="btn" data-download href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download for Mac</a>
         <a class="btn btn-ghost" href="#demo">Watch the 36-second demo</a>
       </div>
-      <p class="fine">macOS 13+ · Apple Silicon · free early version · not yet notarized by Apple (<a href="#download">first-open steps</a>)</p>
+      <p class="fine">Version 0.1.0 · 7.9 MB · macOS 13+ · Apple Silicon · free · <a href="#install-steps">first-open steps</a></p>
+      <p class="fine platform-note" id="platform-note" hidden>You're not on a Mac. This download is for macOS; you can still read how it works below.</p>
       </div>
       <figure class="hero-shot">
         <img src="media/app-live.jpg" width="1600" height="995" alt="The MeetingLens live screen during a call: ON AIR bar, live transcript, and the plain-English explanation with a suggested reply.">
@@ -137,10 +138,10 @@
       </div>
       <div class="dl-card">
         <div>
-          <a class="btn btn-big" href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/download/v0.1.0/MeetingLens_0.1.0_aarch64.dmg">Download MeetingLens.dmg</a>
+          <a class="btn btn-big" data-download href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download MeetingLens.dmg</a>
           <p class="fine">Version 0.1.0 · 7.9 MB · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/tag/v0.1.0">release notes and SHA-256 checksum</a></p>
         </div>
-        <ol class="install">
+        <ol class="install" id="install-steps">
           <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
           <li>Open it. macOS will say it can't verify the app, because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
           <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to MeetingLens.</li>
@@ -156,5 +157,24 @@
     <p><b>MeetingLens</b> · Proprietary software · © 2026 Bhakta Thapa. All rights reserved. · Built by <b>BKT AI</b></p>
     <p><a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop">Source on GitHub</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/blob/main/LICENSE">License</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/blob/main/SECURITY.md">Security</a></p>
   </footer>
+  <div class="toast" id="started" role="status" aria-live="polite" hidden>
+    <div>
+      <b>Your download has started.</b>
+      <p>Open <b>MeetingLens.dmg</b> from your Downloads, drag <b>MeetingLens</b> to <b>Applications</b>, then open it. macOS will ask you to approve it once. <a href="#install-steps">See the steps</a></p>
+    </div>
+    <button type="button" aria-label="Dismiss">×</button>
+  </div>
+  <script>
+    // Progressive enhancement: the links download directly without this script.
+    (function () {
+      var toast = document.getElementById("started");
+      document.querySelectorAll("[data-download]").forEach(function (a) {
+        a.addEventListener("click", function () { toast.hidden = false; });
+      });
+      toast.querySelector("button").addEventListener("click", function () { toast.hidden = true; });
+      var isMac = /Mac/i.test(navigator.platform || "") || /Macintosh/i.test(navigator.userAgent || "");
+      if (!isMac) document.getElementById("platform-note").hidden = false;
+    })();
+  </script>
 </body>
 </html>

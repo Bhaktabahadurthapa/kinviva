@@ -3,7 +3,9 @@
 #
 #   ./scripts/build-mac-app.sh
 #
-# Output: dist-mac/MeetingLens.app and dist-mac/MeetingLens_<version>.dmg
+# Output: dist-mac/MeetingLens.app, dist-mac/MeetingLens_<version>_<arch>.dmg and
+# dist-mac/MeetingLens.dmg (same file; upload both to a release so the permanent
+# link .../releases/latest/download/MeetingLens.dmg always works).
 # The app is ad-hoc signed (free, not notarized): fine for your own Mac;
 # other Macs need the "Open anyway" steps in the README, or a paid Apple
 # Developer ID signature + notarization for a warning-free download.
@@ -35,6 +37,7 @@ DMG="$OUT/MeetingLens_${VERSION}_${ARCH}.dmg"
 hdiutil create -volname "MeetingLens" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null 2>&1
 rm -rf "$STAGE"
 hdiutil verify "$DMG" >/dev/null 2>&1
+cp "$DMG" "$OUT/MeetingLens.dmg"
 
 echo "Built:"
 ls -lh "$OUT"
