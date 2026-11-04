@@ -69,7 +69,7 @@ for audio played by processes started from the same app (diagnosed with
 - **Cloud AI providers (OpenAI etc.):** no API key yet. The same client was
   verified against Ollama's OpenAI-compatible endpoint; OpenAI itself is
   untested.
-- **Windows:** WASAPI loopback and mic code compile only under Windows and
+- **Windows (experimental):** the first Windows build (GitHub Actions, `windows-latest`) ran the 4+ frontend tests, type check and 47 Rust unit tests successfully and produced a 5.5 MB NSIS installer; its checksum was recorded and it was published as experimental. **Not done:** installing or running it on real Windows hardware, so WASAPI loopback capture, microphone access, Credential Manager storage, the SmartScreen flow and the whisper-cli.exe setup are all unverified. (Earlier note, now partly superseded:) WASAPI loopback and mic code compile only under Windows and
   were **not built or run**. Credential Manager is untested.
 - **Clicking through the UI by hand:** this session had no Accessibility
   permission, so UI flows were driven by the dev-only `VITE_SELFTEST` script,

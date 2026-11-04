@@ -28,22 +28,23 @@
       <a href="#how">How it works</a>
       <a href="#privacy">Privacy</a>
       <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop">GitHub</a>
-      <a class="btn btn-small" data-download href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download</a>
+      <a class="btn btn-small" href="#download">Download</a>
     </nav>
   </header>
 
   <main id="main">
     <section class="hero" id="top">
       <div class="hero-copy">
-      <p class="eyebrow">Local-first meeting assistant · for Mac</p>
+      <p class="eyebrow">Local-first meeting assistant · for Mac &amp; Windows</p>
       <h1>Hear it.<br>Understand it.<br><em>Answer it.</em></h1>
       <p class="lead">MeetingLens listens to your call, writes what others say in <strong>simple words</strong> as they say it, and drafts an answer when someone asks you a question. It runs on your Mac. Nothing leaves it unless you choose a cloud service.</p>
       <div class="cta">
-        <a class="btn" data-download href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download for Mac</a>
-        <a class="btn btn-ghost" href="#demo">Watch the 36-second demo</a>
+        <a class="btn" id="dl-mac" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download for Mac</a>
+        <a class="btn btn-ghost" id="dl-win" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Windows <span class="tag-exp">experimental</span></a>
+        <a class="link-demo" href="#demo">▶ Watch the demo</a>
       </div>
-      <p class="fine">Version 0.1.0 · 7.9 MB · macOS 13+ · Apple Silicon · free · <a href="#install-steps">first-open steps</a></p>
-      <p class="fine platform-note" id="platform-note" hidden>You're not on a Mac. This download is for macOS; you can still read how it works below.</p>
+      <p class="fine">Version 0.1.0 · free · Mac: 7.9 MB, macOS 13+, Apple Silicon · Windows: 5.5 MB, Windows 10/11 · <a href="#download">install steps</a></p>
+      <p class="fine platform-note" id="platform-note" hidden></p>
       </div>
       <figure class="hero-shot">
         <img src="media/app-live.jpg" width="1600" height="995" alt="The MeetingLens live screen during a call: ON AIR bar, live transcript, and the plain-English explanation with a suggested reply.">
@@ -133,23 +134,39 @@
     <section class="download" id="download">
       <div class="section-head">
         <p class="eyebrow">05 · Get it</p>
-        <h2>Download MeetingLens for Mac.</h2>
-        <p>Early version 0.1.0 for Apple Silicon Macs on macOS 13 or later. Free.</p>
+        <h2>Download MeetingLens.</h2>
+        <p>Early version 0.1.0. Free for Mac and, as an experiment, Windows.</p>
       </div>
-      <div class="dl-card">
-        <div>
-          <a class="btn btn-big" data-download href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download MeetingLens.dmg</a>
-          <p class="fine">Version 0.1.0 · 7.9 MB · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/tag/v0.1.0">release notes and SHA-256 checksum</a></p>
+      <div class="dl-grid">
+        <div class="dl-card">
+          <div>
+            <h3>Mac</h3>
+            <a class="btn btn-big" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download MeetingLens.dmg</a>
+            <p class="fine">Version 0.1.0 · 7.9 MB · macOS 13+ · Apple Silicon (M1 or newer)</p>
+          </div>
+          <ol class="install" id="install-steps">
+            <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
+            <li>Open it. macOS will say it can't verify the app, because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
+            <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to MeetingLens.</li>
+            <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
+            <li>For free local AI, install <a href="https://ollama.com">Ollama</a> and <a href="https://github.com/ggml-org/whisper.cpp">whisper.cpp</a>, then follow Setup in the app.</li>
+          </ol>
         </div>
-        <ol class="install" id="install-steps">
-          <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
-          <li>Open it. macOS will say it can't verify the app, because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
-          <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to MeetingLens.</li>
-          <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
-          <li>For free local AI, install <a href="https://ollama.com">Ollama</a> and <a href="https://github.com/ggml-org/whisper.cpp">whisper.cpp</a>, then follow Setup in the app.</li>
-        </ol>
+        <div class="dl-card">
+          <div>
+            <h3>Windows <span class="tag-exp">experimental</span></h3>
+            <a class="btn btn-big" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Download for Windows</a>
+            <p class="fine">Version 0.1.0 · 5.5 MB · Windows 10/11, 64-bit. Built and unit-tested on a Windows server, not yet tried on a real laptop. Expect rough edges.</p>
+          </div>
+          <ol class="install" id="install-steps-win">
+            <li>Run the installer. Windows shows <b>"Windows protected your PC"</b> because it isn't signed yet: click <b>More info → Run anyway</b>. It installs for your user only; no administrator needed.</li>
+            <li>Open MeetingLens and allow <b>Microphone</b> access when Windows asks.</li>
+            <li>System audio is captured from your default output device, so play the call through your normal speakers or headphones.</li>
+            <li>For free local AI, install <a href="https://ollama.com/download">Ollama for Windows</a> and <a href="https://github.com/ggml-org/whisper.cpp/releases">whisper.cpp</a> (<code>whisper-cli.exe</code>) plus a model, then set the paths in <b>Settings → Speech</b>.</li>
+          </ol>
+        </div>
       </div>
-      <p class="fine">Windows is not available yet. Prefer to build it yourself? See the <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop#install-as-a-mac-app">install guide</a>.</p>
+      <p class="fine">Release notes and SHA-256 checksums: <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/tag/v0.1.0">v0.1.0 on GitHub</a>. Prefer to build it yourself? See the <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop#install-as-a-mac-app">install guide</a>.</p>
     </section>
   </main>
 
@@ -160,7 +177,8 @@
   <div class="toast" id="started" role="status" aria-live="polite" hidden>
     <div>
       <b>Your download has started.</b>
-      <p>Open <b>MeetingLens.dmg</b> from your Downloads, drag <b>MeetingLens</b> to <b>Applications</b>, then open it. macOS will ask you to approve it once. <a href="#install-steps">See the steps</a></p>
+      <p data-for="mac">Open <b>MeetingLens.dmg</b> from your Downloads, drag <b>MeetingLens</b> to <b>Applications</b>, then open it. macOS will ask you to approve it once. <a href="#install-steps">See the steps</a></p>
+      <p data-for="win" hidden>Run <b>MeetingLens-Windows-Setup.exe</b> from your Downloads. If Windows says it protected your PC, click <b>More info → Run anyway</b>. <a href="#install-steps-win">See the steps</a></p>
     </div>
     <button type="button" aria-label="Dismiss">×</button>
   </div>
@@ -169,11 +187,26 @@
     (function () {
       var toast = document.getElementById("started");
       document.querySelectorAll("[data-download]").forEach(function (a) {
-        a.addEventListener("click", function () { toast.hidden = false; });
+        a.addEventListener("click", function () {
+          var os = a.getAttribute("data-download");
+          toast.querySelectorAll("[data-for]").forEach(function (p) { p.hidden = p.getAttribute("data-for") !== os; });
+          toast.hidden = false;
+        });
       });
       toast.querySelector("button").addEventListener("click", function () { toast.hidden = true; });
-      var isMac = /Mac/i.test(navigator.platform || "") || /Macintosh/i.test(navigator.userAgent || "");
-      if (!isMac) document.getElementById("platform-note").hidden = false;
+      var ua = (navigator.userAgent || "") + " " + (navigator.platform || "");
+      var isMac = /Mac/i.test(ua), isWin = /Win/i.test(ua);
+      var note = document.getElementById("platform-note");
+      if (isWin) {
+        // Make the Windows button the primary one for Windows visitors.
+        document.getElementById("dl-win").classList.remove("btn-ghost");
+        document.getElementById("dl-mac").classList.add("btn-ghost");
+        note.textContent = "You're on Windows: the Windows version is experimental. Details below.";
+        note.hidden = false;
+      } else if (!isMac) {
+        note.textContent = "MeetingLens downloads are for Mac and Windows computers.";
+        note.hidden = false;
+      }
     })();
   </script>
 </body>

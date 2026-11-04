@@ -8,7 +8,7 @@
 
 <br>
 
-![platform](https://img.shields.io/badge/platform-macOS%2013%2B-1b1814?style=flat-square&labelColor=110f0d)
+![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20(experimental)-1b1814?style=flat-square&labelColor=110f0d)
 ![tauri](https://img.shields.io/badge/Tauri-2-1b1814?style=flat-square&labelColor=110f0d)
 ![rust](https://img.shields.io/badge/Rust-backend-1b1814?style=flat-square&labelColor=110f0d)
 ![react](https://img.shields.io/badge/React-18%20%2B%20TS-1b1814?style=flat-square&labelColor=110f0d)
@@ -135,7 +135,29 @@ Audio Recording** permission; allow both, then quit and reopen the app once.
   (macOS 15 and later; on older versions right-click the app → **Open**).
   A warning-free download needs an Apple Developer ID ($99/year) to sign and
   notarize it.
-- **Windows:** not built yet.
+
+### Windows (experimental)
+
+**[⬇ Download MeetingLens-Windows-Setup.exe](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/latest/download/MeetingLens-Windows-Setup.exe)**
+(5.5 MB, Windows 10/11 64-bit). This first Windows build compiles and passes
+its unit tests on a Windows build server, but has **not been tried on a real
+Windows laptop yet**, so expect rough edges, especially audio capture.
+
+1. Run the installer. Windows shows **"Windows protected your PC"** because
+   it isn't signed: click **More info → Run anyway**. It installs for your
+   user only (no administrator needed).
+2. Allow **Microphone** access when asked. System audio is captured from your
+   default output device (WASAPI loopback), so play the call through your normal
+   speakers or headphones.
+3. For free local AI install
+   [Ollama for Windows](https://ollama.com/download) and
+   [whisper.cpp](https://github.com/ggml-org/whisper.cpp/releases)
+   (`whisper-cli.exe`) plus a model file, then set the paths in
+   **Settings → Speech**.
+
+The installer is built by the **Build Windows** GitHub Action
+(`.github/workflows/windows.yml`), free for public repositories. Removing the
+SmartScreen warning needs a paid code-signing certificate.
 
 <details>
 <summary><b>Tests, release build and hardware probes</b></summary>
@@ -181,9 +203,9 @@ npm run tauri build
 
 | | macOS (Apple Silicon) | Windows |
 |---|---|---|
-| Build | ✅ verified on macOS 27 | ⚠️ code path written, not yet built |
-| Real-audio pipeline | ✅ whisper.cpp + Ollama | — |
-| Deepgram, OpenAI | ⚠️ implemented, awaiting live-key testing | — |
+| Build | ✅ verified on macOS 27 | ✅ builds and unit tests pass on a Windows build server |
+| Real-audio pipeline | ✅ whisper.cpp + Ollama | ⚠️ not yet tried on a real Windows laptop |
+| Deepgram, OpenAI | ⚠️ implemented, awaiting live-key testing | ⚠️ same |
 
 Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 
