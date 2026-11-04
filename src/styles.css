@@ -907,3 +907,10 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .simple-item.is-latest .simple-meaning .ai-label.is-meaning p { font-size: var(--t-2xl); }
 .simple-meaning .ai-rich li { font-family: var(--f-ui); }
 .ai-label.is-asking .ai-label-name, .ai-label.is-points-to-cover .ai-label-name { color: var(--c-me); }
+
+/* Speaking script: the part the user reads aloud, so it is the largest and clearest block. */
+.script-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin-bottom: var(--s-2); }
+.simple-answer .ai-rich p, .simple-answer .ai-text { font-size: var(--t-lg); line-height: 1.55; }
+.simple-answer .ai-rich li { font-size: var(--t-md); line-height: var(--lh-read); }
+.script-sources { margin: var(--s-3) 0 0; font-size: var(--t-sm); color: var(--c-text-2); }
+.script-sources-none { color: var(--c-text-3); }

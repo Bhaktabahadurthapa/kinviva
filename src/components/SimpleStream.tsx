@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { SideNote } from "../lib/liveReducer";
-import type { Segment } from "../lib/types";
+import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
 
 /** Minimum time between new explanations appearing, so each can be read. */
@@ -96,8 +96,12 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
             </div>
             {answer && isDone(answer) && !isNoAnswer(answer.text) && (
               <div className="simple-answer">
-                <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : "You could say"}</span>
+                <div className="script-head">
+                  <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : "Your script — you could say"}</span>
+                  <CopyButton text={answer.text} />
+                </div>
                 <AiText text={answer.text} />
+                <SourceLine sources={answer.sources} />
               </div>
             )}
           </article>
@@ -106,5 +110,35 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
       {running && writing && <div className="simple-writing">Writing it in simple words…</div>}
       <div ref={end} />
     </div>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      className="btn btn-ghost btn-sm"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text.replace(/^\s*(Answer|Details|Fill in):\s*/gim, "").trim());
+          setDone(true);
+          setTimeout(() => setDone(false), 1500);
+        } catch {
+          /* clipboard unavailable: nothing to do */
+        }
+      }}
+    >
+      {done ? "Copied" : "Copy"}
+    </button>
+  );
+}
+
+/** Which of the user's files were searched for this answer (not a claim the model quoted them). */
+function SourceLine({ sources }: { sources: AiSlot["sources"] }) {
+  const names = [...new Set(sources.map((p) => p.document))];
+  return names.length ? (
+    <p className="script-sources">From your files: {names.join(", ")}</p>
+  ) : (
+    <p className="script-sources script-sources-none">Not based on your files. Add notes or files under Documents to get scripts with your own facts.</p>
   );
 }

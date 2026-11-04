@@ -66,6 +66,9 @@ Rules:\n\
 do not contain those facts, give a clear structure with [placeholders] for every specific detail \
 (e.g. \"I captured system audio using [method] and the microphone using [method].\") and list them under Fill in.\n\
 - Never write \"from my notes\" or describe the user's work unless it appears in <my_notes> or <document_excerpts>.\n\
+- Write it as a script the user can read aloud: everyday words, short sentences (under 20 words each).\n\
+- When <document_excerpts> contain relevant facts, build the answer from them first and use their exact names and numbers.\n\
+- If the excerpts or notes already give every fact the answer needs, leave the Fill in line out completely.\n\
 - Be specific and correct. Prefer the exact names, numbers and terms used in the meeting.",
         Action::Recap => "Summarise the meeting so far for the user.\n\
 - Use 3 to 6 short bullet points: main topics, decisions, open questions, and any action items with owners if stated.\n\
@@ -176,6 +179,8 @@ mod tests {
         assert!(u.contains("Do NOT invent"));
         assert!(u.contains("Answer: one or two clear sentences"));
         assert!(u.contains("NO_ANSWER"));
+        assert!(u.contains("read aloud"));
+        assert!(u.contains("build the answer from them first"));
         assert!(m[0].content.contains("may contain recognition errors"));
     }
 
