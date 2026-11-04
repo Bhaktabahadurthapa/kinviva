@@ -36,7 +36,8 @@ const BASE: &str = "You are MeetingLens, a private assistant that helps the user
 The transcript comes from automatic speech recognition and may contain recognition errors, missing words, \
 or unfinished sentences. Lines from \"Them\" are other participants (computer audio); lines from \"Me\" are the user's microphone. \
 Never invent facts, numbers, names, experience, or opinions that are not in the transcript, the user's notes, or the document excerpts. \
-If something needed is missing, say so briefly.";
+If something needed is missing, say so briefly. \
+Write at senior-professional level: precise and concrete, with no filler and no beginner definitions of common industry terms.";
 
 fn instructions(action: Action) -> &'static str {
     match action {
@@ -45,9 +46,10 @@ Use exactly this layout:\n\
 Key points:\n\
 - 2 to 5 bullets, the most important first. Each is one short, specific fact, step, number, name or decision the speaker actually said.\n\
 Terms:\n\
-- Only for technical words the speaker used: the word, then a dash, then what it means in plain words. At most 3 lines. Leave out the Terms section if there are none.\n\
+- Only for uncommon or ambiguous terms a senior professional might not know; never define common industry words (Kubernetes, deploy, API, CI/CD). Otherwise leave the Terms section out.\n\
 Unclear: only if words were missing or garbled; say what is uncertain. Leave this line out otherwise.\n\
 Rules:\n\
+- If the speaker asked a question, output ONLY \"Answer:\" with the expert answer in 4 to 6 prioritised bullets (decisive first action first, each with its reason, tool or command). No Key points, and do not restate the question.\n\
 - Do not paraphrase. Keep the speaker's exact names, numbers and terms; do not restate the whole sentence in vaguer words.\n\
 - Be accurate: only what the speaker said or clearly meant. No added facts, opinions or advice.\n\
 - Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.\n\
@@ -57,8 +59,9 @@ First decide whether it is a real question asked to the user. If it is rhetorica
 or it is not directed at the user, output exactly: NO_ANSWER\n\
 Otherwise use exactly this layout:\n\
 Answer:\n\
-- 3 to 5 bullets that answer the question directly, the single most important point first. Each is concrete (a step, fact, reason or number), first person where natural, under 15 words.\n\
-- Do not repeat or reword the question, and do not add an introduction.\n\
+- 4 to 6 bullets in priority order, the way a senior engineer or manager would answer out loud. The first bullet is the decisive first action or the core of the answer.\n\
+- Each bullet is the action or point, then a short reason or the proof: the tool, command, metric, signal or trade-off (for example: \"Fail over to the replica: restores writes within a minute while you find the cause.\"). Under 25 words each.\n\
+- Name concrete tools, commands, metrics and trade-offs. No generic advice, no introduction, and do not repeat or reword the question.\n\
 Fill in: only if a personal detail is missing, list the placeholders in square brackets, e.g. [your years of experience]. Leave this line out otherwise.\n\
 Rules:\n\
 - Do NOT invent the user's experience, opinions, numbers or facts; use a [placeholder] instead.\n\
@@ -186,7 +189,7 @@ mod tests {
         assert!(u.contains("<my_notes>\nMention the audio project"));
         assert!(u.contains("[cv.md #3]\nFive years of Rust."));
         assert!(u.contains("Do NOT invent"));
-        assert!(u.contains("the single most important point first"));
+        assert!(u.contains("decisive first action"));
         assert!(u.contains("NO_ANSWER"));
         assert!(u.contains("read aloud"));
         assert!(u.contains("build the answer from them first"));
@@ -209,10 +212,10 @@ mod tests {
     fn personal_question_without_notes_gets_coaching_not_an_answer() {
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "", passages: &[], question: None, focus: None });
         assert!(m[1].content.contains("Points to cover:"));
-        assert!(!m[1].content.contains("the single most important point first"));
+        assert!(!m[1].content.contains("decisive first action"));
         // With notes about the user, a real answer is allowed.
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "I used ScreenCaptureKit", passages: &[], question: None, focus: None });
-        assert!(m[1].content.contains("the single most important point first"));
+        assert!(m[1].content.contains("decisive first action"));
         // A question about the topic itself is answered normally.
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: So what is an API used for?", notes: "", passages: &[], question: None, focus: None });
         assert!(!m[1].content.contains("Points to cover:"));
