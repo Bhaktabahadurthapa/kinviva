@@ -119,9 +119,13 @@ for audio played by processes started from the same app (diagnosed with
 - Python was evaluated for document processing and **not adopted**: three PDF
   extractors scored identically on realistic PDFs.
 
-**Not verified:** Windows for the helper (not built; `whisper-cli` remains the
-Windows engine, and the Windows CI run has not been repeated since this
-change); Intel Macs; a click-through of the packaged `.app` (the UI test script
+**Windows:** after this change the Windows build server still compiles the app,
+passes 58 Rust tests (the Mac has 59: one test is Unix-only) and the frontend
+tests, and builds the installer. The helper tests skip there because the helper
+is not built for Windows, so they prove nothing about it.
+
+**Not verified:** the helper on Windows (not built; `whisper-cli` remains the
+Windows engine); Intel Macs; a click-through of the packaged `.app` (the UI test script
 exists only in development builds); memory use; models above small.en and
 multilingual models; the ≈ 15 s first-ever model load on a fresh install path
 (measured, mitigated by background priming, not reproduced inside a first
