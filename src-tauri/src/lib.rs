@@ -74,6 +74,9 @@ pub fn run() {
             let settings = state.settings();
             app.manage(state);
             prime_speech_engine(&settings);
+            if settings.overlay_content_protection {
+                commands::apply_content_protection(app.handle(), true);
+            }
             for err in shortcuts::apply(app.handle(), &settings.shortcuts) {
                 eprintln!("shortcut: {err}");
             }

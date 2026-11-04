@@ -351,11 +351,12 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
             checked={s.overlay_content_protection}
             onChange={(e) => set("overlay_content_protection", e.target.checked)}
           />
-          Ask the OS to exclude the overlay from screen capture
+          Ask the OS to hide MeetingLens (main window and overlay) from screen sharing and recording
         </label>
         <p className="hint">
-          Best effort only. It relies on the OS window-sharing flag; some capture methods, apps or OS versions ignore it. Always check before sharing your
-          screen.
+          Best effort only. It relies on the OS window-sharing flag; some capture tools, apps and OS versions ignore it, and it does not hide the Dock icon
+          or the running process. Always test it first (for example with a screen-share test call) before relying on it. Follow the rules of the meeting, interview or
+          exam you are in.
         </p>
         <div className="grid2">
           {(

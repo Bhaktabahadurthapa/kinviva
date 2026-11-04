@@ -35,9 +35,7 @@ pub fn save_settings(app: AppHandle, state: State<AppState>, settings: Settings)
         Vec::new()
     };
     if before.overlay_content_protection != settings.overlay_content_protection {
-        if let Some(w) = app.get_webview_window("overlay") {
-            let _ = w.set_content_protected(settings.overlay_content_protection);
-        }
+        apply_content_protection(&app, settings.overlay_content_protection);
     }
     let _ = app.emit("settings-changed", &settings);
     Ok(SaveResult { shortcut_errors })
@@ -238,6 +236,16 @@ pub fn delete_document(state: State<AppState>, id: String) -> R<()> {
 pub fn preview_retrieval(state: State<AppState>, text: Option<String>) -> R<Vec<Passage>> {
     let text = text.filter(|t| !t.trim().is_empty()).unwrap_or_else(|| state.live.lock().unwrap().transcript.recent_window(600));
     state.db.search_passages(&docs::fts_query(&text, 12), 4)
+}
+
+/// Asks the OS to leave MeetingLens windows (main and overlay) out of screen
+/// sharing and recording. Best effort: it sets the window-sharing flag
+/// (`NSWindowSharingNone` on macOS, `WDA_EXCLUDEFROMCAPTURE` on Windows), which
+/// some capture tools and OS versions ignore.
+pub fn apply_content_protection(app: &AppHandle, on: bool) {
+    for w in app.webview_windows().values() {
+        let _ = w.set_content_protected(on);
+    }
 }
 
 pub fn toggle_overlay_inner(app: &AppHandle) -> R<bool> {
