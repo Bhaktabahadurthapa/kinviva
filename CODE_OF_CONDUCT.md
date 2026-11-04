@@ -9,7 +9,7 @@ anyone's private information (including meeting recordings or transcripts)
 are not tolerated.
 
 Report unacceptable behaviour privately to the maintainer through GitHub's
-[private vulnerability reporting](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/security/advisories/new)
+[private vulnerability reporting](https://github.com/Bhaktabahadurthapa/meetinglens/security/advisories/new)
 form or by direct message to @Bhaktabahadurthapa. Reports are handled
 confidentially, and the maintainer may remove content or block participants
 who violate this code.

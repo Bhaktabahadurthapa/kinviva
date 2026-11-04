@@ -4,7 +4,7 @@
 
 Please **do not open a public issue** for security problems. Report them
 privately through GitHub's
-[private vulnerability reporting](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/security/advisories/new)
+[private vulnerability reporting](https://github.com/Bhaktabahadurthapa/meetinglens/security/advisories/new)
 for this repository. Include steps to reproduce, the affected version or
 commit, and the impact you expect.
 
