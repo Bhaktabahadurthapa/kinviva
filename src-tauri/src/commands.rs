@@ -43,6 +43,17 @@ pub fn save_settings(app: AppHandle, state: State<AppState>, settings: Settings)
     Ok(SaveResult { shortcut_errors })
 }
 
+#[derive(Serialize)]
+pub struct SpeechEngines {
+    /// This build includes the bundled on-device speech engine.
+    native_available: bool,
+}
+
+#[tauri::command]
+pub fn speech_engines() -> SpeechEngines {
+    SpeechEngines { native_available: crate::stt::native::locate_helper().is_some() }
+}
+
 #[tauri::command]
 pub fn list_input_devices() -> Vec<crate::audio::DeviceInfo> {
     cpal_capture::list_input_devices()

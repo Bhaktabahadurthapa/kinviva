@@ -1,7 +1,7 @@
 //! Hardware verification probe (not part of the app). Runs the real capture,
 //! speech, AI, persistence and export code paths headlessly:
 //!
-//!   cargo run --example e2e_probe -- <whisper-cli> <ggml-model> <llm-base-url> <llm-model> <seconds>
+//!   cargo run --example e2e_probe -- <whisper-cli> <ggml-model> <llm-base-url> <llm-model> <seconds> [cli|native]
 //!
 //! Play speech through the speakers while it runs (e.g. `say` or `afplay`).
 //! Prints per-source audio statistics, transcripts, streamed AI output,
@@ -11,7 +11,7 @@ use meetinglens_lib::audio::{self, CaptureSink, Source};
 use meetinglens_lib::db::Db;
 use meetinglens_lib::llm::{self, LlmConfig, LlmError};
 use meetinglens_lib::prompts::{self, Action, PromptInput};
-use meetinglens_lib::stt::{self, SttConfig, SttEvent};
+use meetinglens_lib::stt::{self, native, SttConfig, SttEvent};
 use meetinglens_lib::transcript::{Segment, Transcript};
 use meetinglens_lib::export;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
@@ -25,6 +25,15 @@ async fn main() {
     let a: Vec<String> = std::env::args().collect();
     let (bin, model, base, llm_model) = (a[1].clone(), a[2].clone(), a[3].clone(), a[4].clone());
     let secs: u64 = a.get(5).and_then(|s| s.parse().ok()).unwrap_or(12);
+    let engine = a.get(6).map(String::as_str).unwrap_or("cli");
+    let native_hub = (engine == "native").then(|| {
+        let path = native::locate_helper().expect("native helper not built (native/whisperd/build.sh)");
+        native::NativeHub::new(
+            native::Config { path, model: model.clone(), language: "en".into(), threads: 4, env: vec![], extra_load: serde_json::json!({}) },
+            2,
+        )
+    });
+    println!("[engine] {}", if native_hub.is_some() { "bundled C++ helper (native)" } else { "whisper-cli process per clip" });
     let work = std::env::temp_dir().join("meetinglens-probe");
     std::fs::create_dir_all(&work).unwrap();
 
@@ -72,7 +81,10 @@ async fn main() {
                 let _ = stt_tx.send(c).await;
             }
         });
-        let cfg = SttConfig::WhisperCli { binary: bin.clone(), model_path: model.clone(), language: "en".into(), work_dir: work.clone() };
+        let cfg = match &native_hub {
+            Some(hub) => SttConfig::WhisperNative { hub: hub.clone() },
+            None => SttConfig::WhisperCli { binary: bin.clone(), model_path: model.clone(), language: "en".into(), work_dir: work.clone() },
+        };
         stt_tasks.push(tokio::spawn(stt::run(cfg, source, stt_rx, ev_tx.clone(), cancel.clone())));
     }
     drop(ev_tx);

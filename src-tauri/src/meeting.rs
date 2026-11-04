@@ -29,7 +29,7 @@ pub fn emit_status(app: &AppHandle, live: &Arc<Mutex<Live>>) {
     let _ = app.emit("meeting-status", status);
 }
 
-fn stt_config(settings: &Settings, data_dir: &std::path::Path) -> Result<SttConfig, String> {
+fn stt_config(settings: &Settings, data_dir: &std::path::Path, channels: usize) -> Result<SttConfig, String> {
     match settings.stt_provider.as_str() {
         "deepgram" => {
             let key = secrets::get("deepgram_api_key")?
@@ -52,6 +52,30 @@ fn stt_config(settings: &Settings, data_dir: &std::path::Path) -> Result<SttConf
                 work_dir: data_dir.join("tmp"),
             })
         }
+        "whisper_native" => {
+            if settings.whisper_model_path.trim().is_empty() {
+                return Err("Choose a whisper.cpp model file in Settings → Speech.".into());
+            }
+            if !std::path::Path::new(&settings.whisper_model_path).is_file() {
+                return Err(format!("Whisper model file not found: {}", settings.whisper_model_path));
+            }
+            let path = stt::native::locate_helper().ok_or(
+                "The built-in speech engine is not part of this build. Pick \"whisper.cpp command-line tool\" in Settings → Speech, or use the packaged app.",
+            )?;
+            Ok(SttConfig::WhisperNative {
+                hub: stt::native::NativeHub::new(
+                    stt::native::Config {
+                        path,
+                        model: settings.whisper_model_path.clone(),
+                        language: settings.language.clone(),
+                        threads: 4,
+                        env: vec![],
+                        extra_load: serde_json::json!({}),
+                    },
+                    channels,
+                ),
+            })
+        }
         other => Err(format!("Unknown speech provider \"{other}\".")),
     }
 }
@@ -69,7 +93,8 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>) -> 
     if !settings.capture_mic && !settings.capture_system {
         return Err("Enable the microphone or system audio in Settings → Audio.".into());
     }
-    let cfg = stt_config(&settings, &state.data_dir)?;
+    let channels = usize::from(settings.capture_mic) + usize::from(settings.capture_system);
+    let cfg = stt_config(&settings, &state.data_dir, channels)?;
 
     let meeting_id = uuid::Uuid::new_v4().to_string();
     let started_at = now_ms();

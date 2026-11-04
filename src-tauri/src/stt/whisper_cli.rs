@@ -5,7 +5,7 @@
 //! utterances. While an utterance is in progress we periodically transcribe
 //! the audio so far (partial), then once more when it ends (final).
 
-use super::vad::{Segment, Segmenter};
+use super::local::{self, Engine};
 use super::SttEvent;
 use crate::audio::Source;
 use std::path::Path;
@@ -13,7 +13,6 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::mpsc;
 use tokio_util::sync::CancellationToken;
 
-const PARTIAL_EVERY_MS: u64 = 1500;
 
 pub fn write_wav(path: &Path, samples: &[i16]) -> Result<(), String> {
     let spec = hound::WavSpec {
@@ -58,7 +57,7 @@ static NEXT_CLIP: AtomicU64 = AtomicU64::new(0);
 
 /// `base` names this process and source; each clip gets its own file so
 /// overlapping transcriptions (or two app instances) never share one.
-async fn transcribe(binary: &str, model: &str, language: &str, base: &Path, samples: &[i16]) -> Result<String, String> {
+pub(crate) async fn transcribe(binary: &str, model: &str, language: &str, base: &Path, samples: &[i16]) -> Result<String, String> {
     let stem = base.file_name().and_then(|n| n.to_str()).unwrap_or("utterance");
     let wav_path = base.with_file_name(format!("{stem}-{}.wav", NEXT_CLIP.fetch_add(1, Ordering::Relaxed)));
     let wav = wav_path.as_path();
@@ -91,7 +90,7 @@ pub async fn run(
     language: &str,
     work_dir: &Path,
     source: Source,
-    mut audio: mpsc::Receiver<Vec<i16>>,
+    audio: mpsc::Receiver<Vec<i16>>,
     events: mpsc::UnboundedSender<SttEvent>,
     cancel: CancellationToken,
 ) {
@@ -105,69 +104,8 @@ pub async fn run(
     }
     let _ = std::fs::create_dir_all(work_dir);
     let wav = work_dir.join(format!("utterance-{}-{}", std::process::id(), source.as_str()));
-    let _ = events.send(SttEvent::Connected { source });
-    let mut seg = Segmenter::new(0.01, 700, 15_000);
-    let mut last_partial = tokio::time::Instant::now();
-
-    let emit_final = |text: String, start_ms: i64, len: usize| {
-        if !text.is_empty() {
-            let _ = events.send(SttEvent::Final {
-                source,
-                text,
-                start_ms,
-                end_ms: start_ms + (len as i64 * 1000 / 16_000),
-            });
-        }
-    };
-
-    loop {
-        let chunk = tokio::select! {
-            _ = cancel.cancelled() => return,
-            c = audio.recv() => c,
-        };
-        let Some(chunk) = chunk else { break };
-        // Audio keeps arriving while whisper-cli runs. Take everything queued
-        // now so each partial reflects the latest audio instead of falling
-        // further behind on long utterances.
-        let mut batch = vec![chunk];
-        while let Ok(c) = audio.try_recv() {
-            batch.push(c);
-        }
-        for c in &batch {
-            if let Some(Segment::Done { samples, start_ms }) = seg.push(c) {
-                match transcribe(binary, model, language, &wav, &samples).await {
-                    Ok(t) => emit_final(t, start_ms, samples.len()),
-                    Err(e) => {
-                        let _ = events.send(SttEvent::Error { source, message: e, fatal: false });
-                    }
-                }
-                let _ = events.send(SttEvent::Partial { source, text: String::new() });
-                last_partial = tokio::time::Instant::now();
-            }
-        }
-        if seg.is_speaking()
-            && last_partial.elapsed().as_millis() as u64 >= PARTIAL_EVERY_MS
-            && seg.current().len() > 16_000
-        {
-            last_partial = tokio::time::Instant::now();
-            let samples = seg.current().to_vec();
-            match transcribe(binary, model, language, &wav, &samples).await {
-                Ok(t) if !t.is_empty() => {
-                    let _ = events.send(SttEvent::Partial { source, text: t });
-                }
-                Ok(_) => {}
-                Err(e) => {
-                    let _ = events.send(SttEvent::Error { source, message: e, fatal: false });
-                }
-            }
-        }
-    }
-    // Capture stopped: flush the utterance in progress.
-    if let Some(Segment::Done { samples, start_ms }) = seg.finish() {
-        if let Ok(t) = transcribe(binary, model, language, &wav, &samples).await {
-            emit_final(t, start_ms, samples.len());
-        }
-    }
+    let engine = Engine::Cli { binary: binary.to_string(), model: model.to_string(), language: language.to_string(), wav };
+    local::run(engine, source, audio, events, cancel).await;
 }
 
 #[cfg(test)]

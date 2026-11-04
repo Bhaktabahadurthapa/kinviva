@@ -16,7 +16,7 @@ The only network traffic goes to the speech and AI providers the user configures
 | Module | Responsibility |
 |---|---|
 | `audio/` | `Source` (Mic = "Me", System = "Them"). `CaptureHandle` owns each platform stream on its own thread and joins it on stop. `cpal_capture` (mic; Windows loopback), `macos_system` (ScreenCaptureKit), `resample` (downmix + 16 kHz). |
-| `stt/` | `deepgram` (WebSocket streaming, interim + final, KeepAlive/CloseStream), `whisper_cli` (local whisper.cpp binary, utterance segmentation via `vad`). A common `SttEvent` stream. |
+| `stt/` | `deepgram` (WebSocket streaming), `local` (the loop shared by on-device engines: utterance segmentation via `vad`, live partials, finals, noise/hallucination filtering), `whisper_cli` (a `whisper-cli` process per clip) and `native` (supervises the bundled C++ helper). A common `SttEvent` stream. |
 | `meeting` | Session lifecycle: start captures and providers, pump events, persist finals, emit levels, ordered teardown (release devices → flush providers → cancel stragglers). Live mic switching. |
 | `transcript` | Live transcript state and the bounded prompt window (partials marked as possibly incomplete). |
 | `assistant`, `prompts`, `llm` | Action runner (one request per panel, cancellation tokens), prompt rules, OpenAI-compatible SSE client with readable errors that never contain the key. |
@@ -57,3 +57,18 @@ speech provider. The local whisper.cpp provider drains everything queued
 before each partial, so it catches up after slow transcriptions. If audio
 still has to be dropped, the source's status reports how many blocks were
 lost.
+
+## Speech engines
+
+```
+audio chunks ─► stt::local loop ─► Engine::Cli     (new whisper-cli process per clip)
+                  (VAD, partials,  Engine::Native  ─► NativeHub ─► meetinglens-whisperd (C++, whisper.cpp)
+                   finals, filter)                       │  JSON lines + binary PCM over stdin/stdout
+                                                         └─ one process per meeting, one state per channel
+```
+
+`NativeHub` owns the helper for a meeting: handshake, per-clip timeout, cancel,
+restart after a crash (3 times), graceful shutdown when the last channel
+finishes, and a drop backstop. The helper also exits by itself if its parent
+disappears. Languages and the reasoning behind them: [LANGUAGES.md](LANGUAGES.md).
+Protocol: [native/whisperd/README.md](../native/whisperd/README.md).

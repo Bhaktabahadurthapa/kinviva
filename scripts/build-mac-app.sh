@@ -17,8 +17,20 @@ export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
 VERSION=$(node -p "require('./package.json').version")
 ARCH=$(uname -m); [ "$ARCH" = "arm64" ] && ARCH=aarch64
 
-npm run tauri build -- --bundles app
+# The bundled speech engine (C++, static whisper.cpp). Built once; rebuild with
+# native/whisperd/build.sh after changing it.
+TRIPLE=$([ "$(uname -m)" = "arm64" ] && echo aarch64-apple-darwin || echo x86_64-apple-darwin)
+[ -x "native/whisperd/dist/meetinglens-whisperd-$TRIPLE" ] || ./native/whisperd/build.sh
+
+# The overlay adds the engine as a sidecar for this build only, so development
+# runs and the Windows build (which has no engine yet) are unaffected.
+npm run tauri build -- --bundles app --config src-tauri/tauri.sidecar.conf.json
 APP="src-tauri/target/release/bundle/macos/MeetingLens.app"
+
+# The engine must be inside the app and runnable from there.
+ENGINE="$APP/Contents/MacOS/meetinglens-whisperd"
+[ -x "$ENGINE" ] || { echo "speech engine missing from the app bundle" >&2; exit 1; }
+"$ENGINE" --version
 
 # Seal the whole bundle with a stable identifier. Without this the bundle
 # is only partly signed and macOS may forget microphone permissions.

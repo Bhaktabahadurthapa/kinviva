@@ -72,7 +72,7 @@ account. Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 | Layer | Choices |
 |---|---|
-| Speech-to-text | **whisper.cpp** on device, or **Deepgram** streaming |
+| Speech-to-text | **whisper.cpp** on device (bundled C++ engine in the Mac app, or the `whisper-cli` tool), or **Deepgram** streaming |
 | Language model | **Ollama** / LM Studio on device, or any OpenAI-compatible API. You pick the model; none is hardcoded. A 7B model such as `qwen2.5:7b` is recommended over 3B for accuracy. |
 | Storage | SQLite with versioned migrations, on device |
 | Secrets | macOS Keychain / Windows Credential Manager |
@@ -92,11 +92,15 @@ cd meetinglens-desktop && npm install && npm run tauri dev
 For a fully local setup (free, nothing leaves your Mac):
 
 ```bash
-brew install whisper-cpp ollama && ollama pull qwen2.5:7b
+brew install ollama && ollama pull qwen2.5:7b
 ```
 
 Download a Whisper model such as
-[`ggml-base.en.bin`](https://huggingface.co/ggerganov/whisper.cpp/tree/main).
+[`ggml-small.en.bin`](https://huggingface.co/ggerganov/whisper.cpp/tree/main)
+(more accurate than base). The speech engine itself is built into the Mac app;
+when running from source, build it once with `./native/whisperd/build.sh`
+(needs `cmake` and a C++ compiler) or install `whisper-cpp` and choose the
+command-line tool in Settings.
 Then open **Setup** in the app:
 
 1. **Audio:** choose system audio and/or microphone. macOS asks for
@@ -204,14 +208,14 @@ npm run tauri build
 | | macOS (Apple Silicon) | Windows |
 |---|---|---|
 | Build | ✅ verified on macOS 27 | ✅ builds and unit tests pass on a Windows build server |
-| Real-audio pipeline | ✅ whisper.cpp + Ollama | ⚠️ not yet tried on a real Windows laptop |
+| Real-audio pipeline | ✅ whisper.cpp (bundled C++ engine and `whisper-cli`) + Ollama | ⚠️ not yet tried on a real Windows laptop; uses `whisper-cli` |
 | Deepgram, OpenAI | ⚠️ implemented, awaiting live-key testing | ⚠️ same |
 
 Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 
 ## Docs
 
-- [Architecture](docs/ARCHITECTURE.md)
+- [Architecture](docs/ARCHITECTURE.md) · [Languages and why](docs/LANGUAGES.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Test results & limitations](docs/TESTING.md)
 - [Reference investigation & feature coverage](docs/FINDINGS.md): an

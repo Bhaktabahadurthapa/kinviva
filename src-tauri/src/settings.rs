@@ -33,7 +33,7 @@ pub struct Settings {
     pub mic_device: Option<String>,
     pub save_audio: bool,
     // Speech-to-text
-    pub stt_provider: String, // "deepgram" | "whisper_cli"
+    pub stt_provider: String, // "whisper_native" | "whisper_cli" | "deepgram"
     pub deepgram_model: String,
     pub deepgram_endpoint: String,
     pub language: String,
@@ -66,7 +66,7 @@ impl Default for Settings {
             capture_system: true,
             mic_device: None,
             save_audio: false,
-            stt_provider: "deepgram".into(),
+            stt_provider: default_stt_provider(),
             deepgram_model: "nova-3".into(),
             deepgram_endpoint: crate::stt::deepgram::DEFAULT_ENDPOINT.into(),
             language: "en".into(),
@@ -86,6 +86,12 @@ impl Default for Settings {
             shortcuts: Shortcuts::default(),
         }
     }
+}
+
+/// Fresh installs use the bundled on-device engine when this build has it
+/// (nothing leaves the computer); otherwise Deepgram, which needs a key.
+fn default_stt_provider() -> String {
+    if crate::stt::native::locate_helper().is_some() { "whisper_native" } else { "deepgram" }.into()
 }
 
 fn default_whisper_cli() -> String {

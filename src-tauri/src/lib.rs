@@ -23,12 +23,41 @@ use state::AppState;
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
+/// Loads the bundled speech engine once in the background so macOS compiles
+/// its GPU shaders now (about 15 s on the very first run) instead of during
+/// the first meeting.
+fn prime_speech_engine(settings: &settings::Settings) {
+    if settings.stt_provider != "whisper_native" || !std::path::Path::new(&settings.whisper_model_path).is_file() {
+        return;
+    }
+    let Some(path) = stt::native::locate_helper() else { return };
+    let cfg = stt::native::Config {
+        path,
+        model: settings.whisper_model_path.clone(),
+        language: settings.language.clone(),
+        threads: 4,
+        env: vec![],
+        extra_load: serde_json::json!({}),
+    };
+    tauri::async_runtime::spawn(async move {
+        match stt::native::prime(cfg).await {
+            Ok(d) => log::info!("speech engine ready in {} ms", d.as_millis()),
+            Err(e) => log::warn!("speech engine warm-up failed: {e}"),
+        }
+    });
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
-            let data_dir = app.path().app_data_dir()?;
+            // MEETINGLENS_DATA_DIR gives tests (or a portable setup) their own
+            // database and settings without touching the real ones.
+            let data_dir = match std::env::var_os("MEETINGLENS_DATA_DIR") {
+                Some(dir) => std::path::PathBuf::from(dir),
+                None => app.path().app_data_dir()?,
+            };
             std::fs::create_dir_all(&data_dir)?;
             let db = db::Db::open(&data_dir.join("meetinglens.sqlite"))?;
             db.close_dangling_meetings()?;
@@ -43,6 +72,7 @@ pub fn run() {
             };
             let settings = state.settings();
             app.manage(state);
+            prime_speech_engine(&settings);
             for err in shortcuts::apply(app.handle(), &settings.shortcuts) {
                 eprintln!("shortcut: {err}");
             }
@@ -52,6 +82,7 @@ pub fn run() {
             commands::get_settings,
             commands::save_settings,
             commands::list_input_devices,
+            commands::speech_engines,
             commands::set_secret,
             commands::delete_secret,
             commands::secret_status,

@@ -84,7 +84,7 @@ export interface Settings {
   capture_system: boolean;
   mic_device: string | null;
   save_audio: boolean;
-  stt_provider: "deepgram" | "whisper_cli";
+  stt_provider: "deepgram" | "whisper_cli" | "whisper_native";
   deepgram_model: string;
   deepgram_endpoint: string;
   language: string;

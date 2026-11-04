@@ -24,6 +24,7 @@ export const api = {
   getSettings: () => invoke<Settings>("get_settings"),
   saveSettings: (settings: Settings) => invoke<{ shortcut_errors: string[] }>("save_settings", { settings }),
   listInputDevices: () => invoke<DeviceInfo[]>("list_input_devices"),
+  speechEngines: () => invoke<{ native_available: boolean }>("speech_engines"),
   setSecret: (name: string, value: string) => invoke<void>("set_secret", { name, value }),
   deleteSecret: (name: string) => invoke<void>("delete_secret", { name }),
   secretStatus: () => invoke<Record<string, boolean>>("secret_status"),

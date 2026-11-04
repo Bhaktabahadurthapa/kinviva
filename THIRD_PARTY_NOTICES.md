@@ -370,6 +370,45 @@ MeetingLens is proprietary software (see LICENSE). It includes or depends on the
 | Instrument Sans | @fontsource-variable/instrument-sans 5.3.0 | SIL Open Font License 1.1 |
 | IBM Plex Mono | @fontsource/ibm-plex-mono 5.3.0 | SIL Open Font License 1.1 |
 
+## Bundled native code (speech engine)
+
+The Mac app contains `meetinglens-whisperd`, a small C++ program (MeetingLens
+code) statically linked with the following third-party code. All are MIT
+licensed; the license text below must accompany every copy.
+
+| Component | Version | Copyright |
+|---|---|---|
+| whisper.cpp | v1.9.4 | Copyright (c) 2023-2026 The ggml authors |
+| ggml (part of the whisper.cpp source tree) | as in v1.9.4 | Copyright (c) 2023-2026 The ggml authors |
+| JSON for Modern C++ (nlohmann/json) | 3.11.2 | Copyright (c) 2013-2022 Niels Lohmann |
+
+Apple frameworks used by the engine (Accelerate, Metal, MetalKit, Foundation)
+are part of macOS and are not redistributed.
+
+```
+MIT License
+
+Copyright (c) 2023-2026 The ggml authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Runtime tools and models (not bundled)
 
 - whisper.cpp `whisper-cli` (MIT) and ggml Whisper models (MIT, OpenAI Whisper weights): installed and downloaded by the user for the optional local speech provider.

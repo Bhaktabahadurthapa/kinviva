@@ -7,9 +7,10 @@ Run 2026-11-03.
 
 | Suite | Command | Result |
 |---|---|---|
-| Rust unit/integration | `cd src-tauri && cargo test` | **43 passed**, 1 ignored (network); `cargo clippy --all-targets` clean |
+| Rust unit/integration | `cd src-tauri && cargo test` | **59 passed**, 1 ignored (network); `cargo clippy --all-targets` clean |
 | Rust network (real Deepgram endpoint, invalid key) | `cargo test -- --ignored` | **1 passed**: HTTP 401 is reported as a readable error and the key does not appear in the message |
 | Frontend reducer | `npm test` | **6 passed** |
+| C++ helper protocol | driver script against the real binary and real models | load, two parallel channels, cancel (13–47 ms), unknown op, empty audio, oversize payload (exit 2), stdin close (2 ms), shutdown mid-inference (17–39 ms): all as designed |
 | Type check | `npx tsc --noEmit` | clean |
 | Release bundle | `npm run tauri build -- --bundles app` | builds `MeetingLens.app` (19 MB, unsigned), launches; dev self-test code absent from the production JS |
 
@@ -97,3 +98,31 @@ for audio played by processes started from the same app (diagnosed with
   local server (AI) are supported. No model is bundled or downloaded by the
   app.
 - **REA runtime observation of NexQ:** passive only (launch, sockets, files, window capture); no workflows exercised. See `FINDINGS.md`.
+
+## Bundled C++ speech engine (macOS, Apple Silicon)
+
+- 12 new Rust tests, 8 of them against the **real helper binary** in its fake
+  mode: two channels on one process, prompt cancellation, a hung engine timing
+  out and being replaced, crashes reported and restarted then given up on after
+  3, release of the last channel stopping the process, a dropped hub leaving no
+  process, a missing helper giving a clear fatal error. Plus a loop test
+  (partials then one final through the helper) and noise-filter tests.
+- **Real workflow, real audio, real window:** with the engine selected, the
+  full flow (start, speech captured from the speakers, live transcript, automatic
+  explanation and coaching, stop, meeting saved) ran twice in an isolated app
+  instance. The first run exposed junk lines ("You", "♪♪") from the quiet
+  microphone; a filter was added and the second run saved only the spoken
+  sentence. Latency, sizes and costs: [LANGUAGES.md](LANGUAGES.md).
+- **Packaged app:** the bundle contains the engine (3.8 MB), the signature is
+  valid, the app found and started it (as its child), and killing the app with
+  SIGKILL during a model load removed the engine in 0.34 s.
+- Python was evaluated for document processing and **not adopted**: three PDF
+  extractors scored identically on realistic PDFs.
+
+**Not verified:** Windows for the helper (not built; `whisper-cli` remains the
+Windows engine, and the Windows CI run has not been repeated since this
+change); Intel Macs; a click-through of the packaged `.app` (the UI test script
+exists only in development builds); memory use; models above small.en and
+multilingual models; the ≈ 15 s first-ever model load on a fresh install path
+(measured, mitigated by background priming, not reproduced inside a first
+launch of the real packaged app).

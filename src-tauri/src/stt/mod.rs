@@ -2,6 +2,8 @@
 //! audio and emits partial and final transcript events.
 
 pub mod deepgram;
+pub mod local;
+pub mod native;
 pub mod vad;
 pub mod whisper_cli;
 
@@ -23,6 +25,8 @@ pub enum SttEvent {
 pub enum SttConfig {
     Deepgram { api_key: String, model: String, language: String, endpoint: String },
     WhisperCli { binary: String, model_path: String, language: String, work_dir: std::path::PathBuf },
+    /// The bundled C++ helper (model kept loaded, shared by both channels).
+    WhisperNative { hub: std::sync::Arc<native::NativeHub> },
 }
 
 impl SttConfig {
@@ -43,6 +47,10 @@ pub async fn run(
     match cfg {
         SttConfig::Deepgram { api_key, model, language, endpoint } => {
             deepgram::run(&endpoint, &api_key, &model, &language, source, audio, events.clone(), cancel).await
+        }
+        SttConfig::WhisperNative { hub } => {
+            let engine = local::Engine::Native { hub, stream: source.as_str() };
+            local::run(engine, source, audio, events.clone(), cancel).await
         }
         SttConfig::WhisperCli { binary, model_path, language, work_dir } => {
             whisper_cli::run(&binary, &model_path, &language, &work_dir, source, audio, events.clone(), cancel)

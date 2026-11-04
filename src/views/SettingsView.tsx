@@ -55,6 +55,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
   const [s, setS] = useState<Settings | null>(null);
   const [secrets, setSecrets] = useState<Record<string, boolean>>({});
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
+  const [nativeAvailable, setNativeAvailable] = useState(false);
   const [models, setModels] = useState<string[] | null>(null);
   const [modelErr, setModelErr] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -64,6 +65,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
   useEffect(() => {
     api.getSettings().then(setS).catch((e) => onError(errorText(e)));
     api.listInputDevices().then(setDevices).catch(() => {});
+    api.speechEngines().then((e) => setNativeAvailable(e.native_available)).catch(() => {});
     api.appInfo().then(setInfo).catch(() => {});
     loadSecrets();
   }, []);
@@ -159,8 +161,11 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         <div className="field">
           <label>Provider</label>
           <select value={s.stt_provider} onChange={(e) => set("stt_provider", e.target.value as Settings["stt_provider"])}>
+            <option value="whisper_native" disabled={!nativeAvailable && s.stt_provider !== "whisper_native"}>
+              Built-in whisper.cpp engine (local, fastest){nativeAvailable ? "" : " — not in this build"}
+            </option>
+            <option value="whisper_cli">whisper.cpp command-line tool (local)</option>
             <option value="deepgram">Deepgram streaming (cloud)</option>
-            <option value="whisper_cli">whisper.cpp on this computer (local)</option>
           </select>
         </div>
         {s.stt_provider === "deepgram" ? (
@@ -184,14 +189,24 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           </>
         ) : (
           <>
-            <p className="hint">
-              Audio stays on this computer. Requires a whisper.cpp <code>whisper-cli</code> binary and a ggml model file you download yourself.
-              Text appears after short pauses rather than word by word.
-            </p>
-            <div className="field">
-              <label>whisper-cli path</label>
-              <input value={s.whisper_cli_path} onChange={(e) => set("whisper_cli_path", e.target.value)} />
-            </div>
+            {s.stt_provider === "whisper_native" ? (
+              <p className="hint">
+                Audio stays on this computer. MeetingLens includes its own whisper.cpp engine that keeps the model loaded, so text appears quickly and
+                nothing else needs installing. You only choose a ggml model file (for example <code>ggml-small.en.bin</code>, more accurate than
+                base). {!nativeAvailable && <b>This build does not include the engine; pick the command-line tool instead.</b>}
+              </p>
+            ) : (
+              <>
+                <p className="hint">
+                  Audio stays on this computer. Requires a whisper.cpp <code>whisper-cli</code> binary and a ggml model file you download yourself.
+                  Text appears after short pauses rather than word by word.
+                </p>
+                <div className="field">
+                  <label>whisper-cli path</label>
+                  <input value={s.whisper_cli_path} onChange={(e) => set("whisper_cli_path", e.target.value)} />
+                </div>
+              </>
+            )}
             <div className="field">
               <label>Model file (.bin)</label>
               <div className="row">
