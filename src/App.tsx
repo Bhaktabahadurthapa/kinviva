@@ -40,6 +40,10 @@ export default function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
+  const [version, setVersion] = useState("");
+  useEffect(() => {
+    api.appInfo().then((i) => setVersion(i.version)).catch(() => {});
+  }, []);
   const [historyKey, setHistoryKey] = useState(0);
   const status = live.status;
   const running = status?.state === "running";
@@ -123,7 +127,7 @@ export default function App() {
           <button className="rail-btn" onClick={() => api.toggleOverlay().catch((e) => setError(errorText(e)))}>
             Overlay
           </button>
-          <span className="rail-tag">local-first · v0.1</span>
+          <span className="rail-tag">local-first{version && ` · v${version}`}</span>
         </div>
       </nav>
       <main>
