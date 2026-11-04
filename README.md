@@ -127,7 +127,7 @@ To build it yourself instead, create a normal app you can drag into Applications
 ./scripts/build-mac-app.sh
 ```
 
-This creates `dist-mac/MeetingLens.app` and `dist-mac/MeetingLens_0.1.0_aarch64.dmg`.
+This creates `dist-mac/MeetingLens.app` and `dist-mac/MeetingLens_0.1.1_aarch64.dmg`.
 Open the DMG, drag **MeetingLens** onto **Applications**, then open it from
 Launchpad. On first start macOS asks for **Microphone** and **Screen & System
 Audio Recording** permission; allow both, then quit and reopen the app once.
