@@ -27,8 +27,12 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
   const lastReveal = useRef(0);
   const [shown, setShown] = useState<number[]>([]);
 
-  const ready = finals.filter((s) => s.source === "system" && isDone(side[s.id]?.meaning)).map((s) => s.id);
-  const writing = finals.some((s) => s.source === "system" && side[s.id]?.meaning?.state === "streaming");
+  // A line is worth showing once its key points or its answer is complete.
+  const hasAnswer = (n?: SideNote) => isDone(n?.answer) && !isNoAnswer(n!.answer!.text);
+  const ready = finals.filter((s) => s.source === "system" && (isDone(side[s.id]?.meaning) || hasAnswer(side[s.id]))).map((s) => s.id);
+  const writing = finals.some(
+    (s) => s.source === "system" && (side[s.id]?.meaning?.state === "streaming" || side[s.id]?.answer?.state === "streaming"),
+  );
 
   // Reveal ready notes one at a time, at a readable pace.
   useEffect(() => {
@@ -84,20 +88,22 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
       {visible.map((id) => {
         const seg = byId.get(id);
         const note = side[id];
-        if (!seg || !note?.meaning) return null;
+        if (!seg || !note || (!note.meaning && !hasAnswer(note))) return null;
         const answer = note.answer;
         return (
           <article key={id} className={`simple-item ${id === latest ? "is-latest" : "is-earlier"}`}>
             <div className="simple-said">
               <span className="when">{fmt(seg.start_ms)}</span> They said: “{seg.text}”
             </div>
-            <div className="simple-meaning">
-              <AiText text={note.meaning.text} />
-            </div>
+            {note.meaning && (
+              <div className="simple-meaning">
+                <AiText text={note.meaning.text} />
+              </div>
+            )}
             {answer && isDone(answer) && !isNoAnswer(answer.text) && (
-              <div className="simple-answer">
+              <div className={`simple-answer${note.meaning ? "" : " is-primary"}`}>
                 <div className="script-head">
-                  <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : "Your script — you could say"}</span>
+                  <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : (note.meaning ? "Your script — you could say" : "Answer — you could say")}</span>
                   <CopyButton text={answer.text} />
                 </div>
                 <AiText text={answer.text} />
@@ -107,7 +113,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
           </article>
         );
       })}
-      {running && writing && <div className="simple-writing">Writing it in simple words…</div>}
+      {running && writing && <div className="simple-writing">Writing the key points…</div>}
       <div ref={end} />
     </div>
   );

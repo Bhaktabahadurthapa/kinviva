@@ -914,3 +914,8 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .simple-answer .ai-rich li { font-size: var(--t-md); line-height: var(--lh-read); }
 .script-sources { margin: var(--s-3) 0 0; font-size: var(--t-sm); color: var(--c-text-2); }
 .script-sources-none { color: var(--c-text-3); }
+
+/* An answer with no explanation above it is the main thing on screen. */
+.simple-answer.is-primary { margin-top: var(--s-2); }
+.simple-answer.is-primary .ai-rich li { font-size: var(--t-lg); line-height: 1.5; margin-bottom: 6px; }
+.ai-label.is-key-points .ai-label-name { color: var(--c-signal); }

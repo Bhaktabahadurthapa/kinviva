@@ -45,7 +45,9 @@ pub fn plan(mode: Mode, text: &str, min_words: usize) -> Option<Plan> {
     if mode == Mode::Off || text.split_whitespace().count() < min_words {
         return None;
     }
-    Some(Plan { explain: true, answer: mode == Mode::ExplainAndAnswer && looks_like_question(text) })
+    // A question gets its answer, not a restatement of the question.
+    let answer = mode == Mode::ExplainAndAnswer && looks_like_question(text);
+    Some(Plan { explain: !answer, answer })
 }
 
 /// "Them" lines after `since` up to and including `until`, labelled for the prompt.
@@ -102,7 +104,10 @@ pub fn on_their_final(app: &AppHandle, segment_id: i64, text: &str) {
             let live = state.live.lock().unwrap();
             new_lines(&live.transcript.finals, since, segment_id)
         };
-        let mut actions = vec![Action::Explain];
+        let mut actions = Vec::new();
+        if plan.explain {
+            actions.push(Action::Explain);
+        }
         if answer {
             actions.push(Action::Suggest);
         }
@@ -138,7 +143,7 @@ mod tests {
         );
         assert_eq!(
             plan(Mode::ExplainAndAnswer, "Can you walk us through the export feature?", 4),
-            Some(Plan { explain: true, answer: true })
+            Some(Plan { explain: false, answer: true })
         );
         assert_eq!(
             plan(Mode::Explain, "Can you walk us through the export feature?", 4),

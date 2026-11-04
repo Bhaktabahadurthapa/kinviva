@@ -1,4 +1,4 @@
-const LABELS = ["Meaning", "Details", "Terms", "Answer", "Fill in", "Unclear", "Asking", "Points to cover"];
+const LABELS = ["Key points", "Meaning", "Details", "Terms", "Answer", "Fill in", "Unclear", "Asking", "Points to cover"];
 const LABEL_RE = new RegExp(`^\\**(${LABELS.join("|")})\\**\\s*:\\s*\\**\\s*(.*)$`, "i");
 
 /** The model's way of saying a question needs no answer from the user. */
@@ -21,7 +21,7 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
     if (label) {
       const name = LABELS.find((l) => l.toLowerCase() === label[1].toLowerCase()) ?? label[1];
       blocks.push({ kind: "label", label: name, text: label[2].replace(/\*+$/, "").trim() });
-    } else if (bullet) blocks.push({ kind: "li", text: bullet[1] });
+    } else if (bullet) blocks.push({ kind: "li", text: bullet[1].replace(/^(?:[-•*]\s+)+/, "") });
     else blocks.push({ kind: "p", text: line });
   }
   const out: JSX.Element[] = [];

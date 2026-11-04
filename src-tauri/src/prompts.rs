@@ -40,31 +40,33 @@ If something needed is missing, say so briefly.";
 
 fn instructions(action: Action) -> &'static str {
     match action {
-        Action::Explain => "Explain what the speaker just said (inside <latest>) so the user understands it clearly and correctly.\n\
+        Action::Explain => "Give the key points of what the speaker just said (inside <latest>).\n\
 Use exactly this layout:\n\
-Meaning: one or two clear sentences stating the speaker's main point in plain English.\n\
-Details:\n\
-- 2 to 4 lines. Each is one short, complete sentence with a specific fact, step, reason or example the speaker actually said.\n\
+Key points:\n\
+- 2 to 5 bullets, the most important first. Each is one short, specific fact, step, number, name or decision the speaker actually said.\n\
 Terms:\n\
 - Only for technical words the speaker used: the word, then a dash, then what it means in plain words. At most 3 lines. Leave out the Terms section if there are none.\n\
 Unclear: only if words were missing or garbled; say what is uncertain. Leave this line out otherwise.\n\
 Rules:\n\
-- Be accurate. State only what the speaker said or clearly meant. No added facts, opinions or advice.\n\
+- Do not paraphrase. Keep the speaker's exact names, numbers and terms; do not restate the whole sentence in vaguer words.\n\
+- Be accurate: only what the speaker said or clearly meant. No added facts, opinions or advice.\n\
 - Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.\n\
-- Everyday words and short sentences (under 20 words each).",
+- Everyday words, each bullet under 15 words.",
         Action::Suggest => "Write an answer the user could say to the question in <latest> (if there is no <latest>, the most recent question from \"Them\").\n\
 First decide whether it is a real question asked to the user. If it is rhetorical, the speaker answers it themselves, \
 or it is not directed at the user, output exactly: NO_ANSWER\n\
 Otherwise use exactly this layout:\n\
-Answer: one or two clear sentences that directly answer the question, first person, natural spoken English.\n\
-Details:\n\
-- 2 to 4 short, complete sentences with specific supporting facts, examples or steps from the transcript, the user's notes or the document excerpts.\n\
+Answer:\n\
+- 3 to 5 bullets that answer the question directly, the single most important point first. Each is concrete (a step, fact, reason or number), first person where natural, under 15 words.\n\
+- Do not repeat or reword the question, and do not add an introduction.\n\
 Fill in: only if a personal detail is missing, list the placeholders in square brackets, e.g. [your years of experience]. Leave this line out otherwise.\n\
 Rules:\n\
 - Do NOT invent the user's experience, opinions, numbers or facts; use a [placeholder] instead.\n\
-- If the question asks about the user's own work, experience, choices or plans and <my_notes> or <document_excerpts> \
+- If the question asks about the user's own past work, experience or choices and <my_notes> or <document_excerpts> \
 do not contain those facts, give a clear structure with [placeholders] for every specific detail \
 (e.g. \"I captured system audio using [method] and the microphone using [method].\") and list them under Fill in.\n\
+- A scenario, how, what or why question that does not ask about the user's past (for example \"your service is down, what is your first move?\") \
+is answered directly with the best practical steps or reasons, as an expert would. That is not inventing facts about the user.\n\
 - Never write \"from my notes\" or describe the user's work unless it appears in <my_notes> or <document_excerpts>.\n\
 - Write it as a script the user can read aloud: everyday words, short sentences (under 20 words each).\n\
 - When <document_excerpts> contain relevant facts, build the answer from them first and use their exact names and numbers.\n\
@@ -89,11 +91,18 @@ Asking: one sentence saying what they want to know.\n\
 Points to cover:\n\
 - 2 to 4 short tips telling the user what to mention, each starting with a verb (e.g. \"Say which method you used\", \"Give one example\"). Tips only.";
 
-/// True when a line from the other side is addressed to the user ("you", "your").
+/// True when the line asks about the user's own history, experience or opinion
+/// (facts only the user can supply). Scenario and how/what/why questions are not.
 pub fn about_user(text: &str) -> bool {
-    text.to_lowercase()
-        .split(|c: char| !c.is_alphanumeric() && c != '\'')
-        .any(|w| matches!(w, "you" | "your" | "yours" | "you've" | "you're" | "you'd" | "yourself"))
+    let t = format!(" {} ", text.to_lowercase().replace(['\u{2019}', '\''], ""));
+    [
+        " have you ", " did you ", " do you have ", " yourself", " about your ", " your experience", " your background",
+        " your role", " your project", " your work", " your team", " your career", " you worked", " you built",
+        " you used", " youve ", " why did you ", " walk me through your ", " whats your take", " what is your take",
+        " your opinion", " do you think", " would you recommend",
+    ]
+    .iter()
+    .any(|p| t.contains(p))
 }
 
 pub struct PromptInput<'a> {
@@ -177,7 +186,7 @@ mod tests {
         assert!(u.contains("<my_notes>\nMention the audio project"));
         assert!(u.contains("[cv.md #3]\nFive years of Rust."));
         assert!(u.contains("Do NOT invent"));
-        assert!(u.contains("Answer: one or two clear sentences"));
+        assert!(u.contains("the single most important point first"));
         assert!(u.contains("NO_ANSWER"));
         assert!(u.contains("read aloud"));
         assert!(u.contains("build the answer from them first"));
@@ -190,8 +199,8 @@ mod tests {
         let u = &m[1].content;
         assert!(u.contains("(no speech transcribed yet)"));
         assert!(u.contains("Unclear:"));
-        assert!(u.contains("Meaning:"));
-        assert!(u.contains("Details:"));
+        assert!(u.contains("Key points:"));
+        assert!(u.contains("Do not paraphrase"));
         assert!(!u.contains("<document_excerpts>"));
         assert!(u.contains("No notes or documents were provided"));
     }
@@ -200,10 +209,10 @@ mod tests {
     fn personal_question_without_notes_gets_coaching_not_an_answer() {
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "", passages: &[], question: None, focus: None });
         assert!(m[1].content.contains("Points to cover:"));
-        assert!(!m[1].content.contains("Answer: one or two clear sentences"));
+        assert!(!m[1].content.contains("the single most important point first"));
         // With notes about the user, a real answer is allowed.
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "I used ScreenCaptureKit", passages: &[], question: None, focus: None });
-        assert!(m[1].content.contains("Answer: one or two clear sentences"));
+        assert!(m[1].content.contains("the single most important point first"));
         // A question about the topic itself is answered normally.
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: So what is an API used for?", notes: "", passages: &[], question: None, focus: None });
         assert!(!m[1].content.contains("Points to cover:"));
@@ -211,9 +220,12 @@ mod tests {
 
     #[test]
     fn detects_questions_addressed_to_the_user() {
-        assert!(about_user("Can you walk us through it?"));
         assert!(about_user("What's your take?"));
-        assert!(about_user("Have you've tried it")); 
+        assert!(about_user("Have you tried it before?"));
+        assert!(about_user("Tell me about your experience with Kubernetes."));
+        // Scenario and how/what/why questions get a direct answer, not coaching.
+        assert!(!about_user("Your service is down after a deploy. What's your first move?"));
+        assert!(!about_user("Can you walk us through it?"));
         assert!(!about_user("So what happens in this case?"));
         assert!(!about_user("Young teams use it"));
     }
