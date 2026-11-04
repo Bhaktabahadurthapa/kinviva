@@ -1,5 +1,0 @@
-# macOS dev builds: sign with a stable local certificate so Keychain approval persists.
-[target.aarch64-apple-darwin]
-runner = "scripts/dev-sign-run.sh"
-[target.x86_64-apple-darwin]
-runner = "scripts/dev-sign-run.sh"
