@@ -112,7 +112,11 @@ DEMO, so you can try the AI actions.
 
 ## Install as a Mac app
 
-Build a normal app you can drag into Applications (Apple Silicon Mac, macOS 13+):
+**Just want the app?** Download the installer from the
+[v0.1.0 release](https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/tag/v0.1.0)
+or the [website](https://bhaktathapa.com.np/meetinglens-desktop/).
+
+To build it yourself instead, create a normal app you can drag into Applications (Apple Silicon Mac, macOS 13+):
 
 ```bash
 ./scripts/build-mac-app.sh
