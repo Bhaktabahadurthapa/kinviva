@@ -92,8 +92,12 @@ the real app window with real spoken audio and the new engine: audio → live
 transcript → explanation and coaching → saved meeting, twice; the packaged app
 finds, starts and cleans up its bundled engine.
 
-**Not tested:** Windows (the helper is not built there; Windows keeps using
-`whisper-cli`); Intel Macs (arm64 only); a click-through of the packaged `.app`
+**Windows:** the helper is built on the GitHub Windows runner (MSVC, static
+runtime, CPU only, AVX2 required) and bundled in the installer. CI runs the
+helper's protocol and cleanup tests against it (fake-transcript mode). Not tested:
+real speech on a real Windows machine.
+
+**Not tested:** Intel Macs (arm64 only); a click-through of the packaged `.app`
 itself (the UI test script only exists in development builds); memory use;
 models larger than small.en or multilingual models; the engine on a Mac that has
 never compiled the GPU shaders, beyond the 14.7 s measurement; notarization.

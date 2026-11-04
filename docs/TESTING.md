@@ -124,8 +124,9 @@ passes 58 Rust tests (the Mac has 59: one test is Unix-only) and the frontend
 tests, and builds the installer. The helper tests skip there because the helper
 is not built for Windows, so they prove nothing about it.
 
-**Not verified:** the helper on Windows (not built; `whisper-cli` remains the
-Windows engine); Intel Macs; a click-through of the packaged `.app` (the UI test script
+**Windows helper:** built and bundled by CI; its protocol, cancellation and
+parent-exit tests pass on the Windows runner in fake-transcript mode (58 Rust
+tests). **Not verified:** real transcription on a real Windows laptop; Intel Macs; a click-through of the packaged `.app` (the UI test script
 exists only in development builds); memory use; models above small.en and
 multilingual models; the ≈ 15 s first-ever model load on a fresh install path
 (measured, mitigated by background priming, not reproduced inside a first

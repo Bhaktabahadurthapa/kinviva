@@ -208,7 +208,7 @@ npm run tauri build
 | | macOS (Apple Silicon) | Windows |
 |---|---|---|
 | Build | ✅ verified on macOS 27 | ✅ builds and unit tests pass on a Windows build server |
-| Real-audio pipeline | ✅ whisper.cpp (bundled C++ engine and `whisper-cli`) + Ollama | ⚠️ not yet tried on a real Windows laptop; uses `whisper-cli` |
+| Real-audio pipeline | ✅ whisper.cpp (bundled C++ engine and `whisper-cli`) + Ollama | ⚠️ not yet tried on a real Windows laptop; bundled engine passes CI protocol tests (fake mode) |
 | Deepgram, OpenAI | ⚠️ implemented, awaiting live-key testing | ⚠️ same |
 
 Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
