@@ -286,6 +286,18 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           {models && <small className="ok">{models.length} models available — pick one from the list.</small>}
           {modelErr && <small className="bad">{modelErr}</small>}
         </div>
+        <div className="field narrow">
+          <label htmlFor="llm-reasoning">Thinking time (faster = less)</label>
+          <select id="llm-reasoning" value={s.llm_reasoning} onChange={(e) => set("llm_reasoning", e.target.value as Settings["llm_reasoning"])}>
+            <option value="auto">Auto (fast on Gemini)</option>
+            <option value="off">Provider default</option>
+            <option value="minimal">Minimal — fastest</option>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High — slowest, deepest</option>
+          </select>
+          <small>Only used by models that think before answering. If a model does not support it, MeetingLens retries without it.</small>
+        </div>
         <div className="grid2">
           <div className="field">
             <label htmlFor="llm-temp">Temperature</label>

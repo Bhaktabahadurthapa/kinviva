@@ -76,6 +76,48 @@ impl Transcript {
     }
 }
 
+
+/// Words too common to show that two lines are the same speech.
+const COMMON: &[&str] = &[
+    "that", "this", "with", "have", "your", "what", "when", "then", "they", "them", "from", "would", "could", "there",
+    "their", "about", "which", "will", "just", "like", "been", "were", "into", "also", "some", "than", "more", "here",
+    "right", "okay", "yeah", "well",
+];
+
+fn content_words(text: &str) -> Vec<String> {
+    text.split(|c: char| !c.is_alphanumeric())
+        .map(|w| w.to_lowercase())
+        .filter(|w| w.len() >= 4 && !COMMON.contains(&w.as_str()))
+        .collect()
+}
+
+impl Transcript {
+    /// True when `text` (from the microphone) is the other side's speech
+    /// coming out of the speakers and back into the mic: nearly all of its
+    /// content words appear in what the system audio carried at that time.
+    /// `window` is the span the mic line covers; `None` means "just now".
+    pub fn is_speaker_echo(&self, text: &str, window: Option<(i64, i64)>) -> bool {
+        let mine = content_words(text);
+        if mine.len() < 2 {
+            return false;
+        }
+        let mut theirs: Vec<String> = Vec::new();
+        let system: Vec<&Segment> = self.finals.iter().filter(|s| s.source == Source::System).collect();
+        match window {
+            Some((a, b)) => system
+                .iter()
+                .filter(|s| s.end_ms >= a - 6000 && s.start_ms <= b + 6000)
+                .for_each(|s| theirs.extend(content_words(&s.text))),
+            None => system.iter().rev().take(4).for_each(|s| theirs.extend(content_words(&s.text))),
+        }
+        if let Some(p) = self.partials.get(&Source::System) {
+            theirs.extend(content_words(p));
+        }
+        let matched = mine.iter().filter(|w| theirs.contains(w)).count();
+        matched * 10 >= mine.len() * 7
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -124,4 +166,20 @@ mod tests {
         t.push_final(seg(1, Source::System, &"x".repeat(500)));
         assert_eq!(t.recent_window(50).len(), 50);
     }
+    #[test]
+    fn speaker_echo_is_recognised_but_real_replies_are_kept() {
+        let mut t = Transcript::default();
+        let seg = |id, source, text: &str, a, b| Segment { id, source, text: text.into(), start_ms: a, end_ms: b };
+        t.push_final(seg(1, Source::System, "Your Kubernetes service is down after a deploy. What's your first move?", 33_000, 38_000));
+        // The speakers leaked into the mic.
+        assert!(t.is_speaker_echo("What's your first move?", Some((34_000, 36_000))));
+        assert!(t.is_speaker_echo("Your Kubernetes service is down after a deploy.", None));
+        // A genuine answer reuses few of their words.
+        assert!(!t.is_speaker_echo("I would check the deployment logs and roll back the release first.", Some((40_000, 46_000))));
+        // Too short to judge.
+        assert!(!t.is_speaker_echo("Mmm.", None));
+        // Echo of something said long before is not echo of this moment.
+        assert!(!t.is_speaker_echo("What's your first move?", Some((90_000, 92_000))));
+    }
+
 }

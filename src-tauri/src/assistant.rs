@@ -8,6 +8,7 @@ use crate::prompts::{self, Action, PromptInput};
 use crate::secrets;
 use crate::state::{AiSlot, AppState};
 use serde::Serialize;
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 use tokio_util::sync::CancellationToken;
 
@@ -30,6 +31,26 @@ fn publish(app: &AppHandle, state: &AppState, slot: &str, f: impl FnOnce(&mut Ai
     let _ = app.emit("ai-event", AiEvent { request_id: &rid, slot, data: &snapshot });
 }
 
+/// Automatic answers in flight per panel before the oldest is dropped.
+const MAX_AUTO_IN_FLIGHT: usize = 3;
+
+/// Like `publish`, but an automatic request keeps its own state (`local`) so
+/// concurrent requests do not overwrite each other in the shared panel slot.
+fn publish_to(app: &AppHandle, state: &AppState, slot: &str, local: &Option<Arc<Mutex<AiSlot>>>, f: impl FnOnce(&mut AiSlot)) {
+    match local {
+        None => publish(app, state, slot, f),
+        Some(m) => {
+            let snapshot = {
+                let mut g = m.lock().unwrap();
+                f(&mut g);
+                g.clone()
+            };
+            let rid = snapshot.request_id.clone().unwrap_or_default();
+            let _ = app.emit("ai-event", AiEvent { request_id: &rid, slot, data: &snapshot });
+        }
+    }
+}
+
 pub fn llm_config(state: &AppState) -> Result<LlmConfig, String> {
     let s = state.settings();
     let api_key = if s.llm_use_api_key {
@@ -37,7 +58,8 @@ pub fn llm_config(state: &AppState) -> Result<LlmConfig, String> {
     } else {
         None
     };
-    Ok(LlmConfig { base_url: s.llm_base_url, model: s.llm_model, api_key, temperature: s.llm_temperature })
+    let reasoning_effort = s.reasoning_effort();
+    Ok(LlmConfig { base_url: s.llm_base_url, model: s.llm_model, api_key, temperature: s.llm_temperature, reasoning_effort })
 }
 
 pub fn start(app: &AppHandle, state: &AppState, action: Action, question: Option<String>) -> Result<String, String> {
@@ -91,21 +113,37 @@ pub fn start_with(
         focus: focus.as_deref(),
     });
 
-    // One request per panel: a new one replaces the previous.
+    // A request the user asks for replaces the previous one in its panel.
+    // Automatic ones answer different sentences, so they run side by side
+    // (a few at most): cancelling each when the next sentence arrived meant
+    // that none ever finished while someone kept talking.
     let request_id = uuid::Uuid::new_v4().to_string();
     let cancel = CancellationToken::new();
+    let local: Option<Arc<Mutex<AiSlot>>> = auto_for.map(|_| Arc::new(Mutex::new(AiSlot::default())));
     {
         let mut tasks = state.ai_tasks.lock().unwrap();
-        if let Some(prev) = state.live.lock().unwrap().ai.get(slot).and_then(|s| s.request_id.clone()) {
-            if let Some(t) = tasks.remove(&prev) {
-                t.cancel();
+        if local.is_none() {
+            if let Some(prev) = state.live.lock().unwrap().ai.get(slot).and_then(|s| s.request_id.clone()) {
+                if let Some(t) = tasks.remove(&prev) {
+                    t.cancel();
+                }
+            }
+        } else {
+            let mut inflight = state.auto_inflight.lock().unwrap();
+            inflight.push((slot.to_string(), request_id.clone()));
+            let same: Vec<String> = inflight.iter().filter(|(s, _)| s == slot).map(|(_, r)| r.clone()).collect();
+            for old in same.iter().take(same.len().saturating_sub(MAX_AUTO_IN_FLIGHT)) {
+                if let Some(t) = tasks.remove(old) {
+                    t.cancel();
+                }
+                inflight.retain(|(_, r)| r != old);
             }
         }
         tasks.insert(request_id.clone(), cancel.clone());
     }
     let destination = url::Url::parse(&cfg.base_url).ok().and_then(|u| u.host_str().map(String::from));
     let rid = request_id.clone();
-    publish(app, state, slot, |s| {
+    publish_to(app, state, slot, &local, |s| {
         *s = AiSlot {
             request_id: Some(rid),
             action: Some(action.as_str().into()),
@@ -125,7 +163,7 @@ pub fn start_with(
     tauri::async_runtime::spawn(async move {
         let state = app2.state::<AppState>();
         let result = llm::stream_chat(&cfg, messages, cancel, |delta| {
-            publish(&app2, &state, slot, |s| {
+            publish_to(&app2, &state, slot, &local, |s| {
                 if s.request_id.as_deref() == Some(rid.as_str()) {
                     s.text.push_str(delta);
                 }
@@ -133,13 +171,20 @@ pub fn start_with(
         })
         .await;
         state.ai_tasks.lock().unwrap().remove(&rid);
+        state.auto_inflight.lock().unwrap().retain(|(_, r)| r != &rid);
         let current = |s: &AiSlot| s.request_id.as_deref() == Some(rid.as_str());
         let (status, text) = match &result {
             Ok(t) => ("done", t.clone()),
-            Err(LlmError::Cancelled) => ("cancelled", state.live.lock().unwrap().ai.get(slot).map(|s| s.text.clone()).unwrap_or_default()),
+            Err(LlmError::Cancelled) => (
+                "cancelled",
+                match &local {
+                    Some(m) => m.lock().unwrap().text.clone(),
+                    None => state.live.lock().unwrap().ai.get(slot).map(|s| s.text.clone()).unwrap_or_default(),
+                },
+            ),
             Err(LlmError::Failed(_)) => ("error", String::new()),
         };
-        publish(&app2, &state, slot, |s| {
+        publish_to(&app2, &state, slot, &local, |s| {
             if current(s) {
                 s.state = status.into();
                 if let Err(LlmError::Failed(m)) = &result {

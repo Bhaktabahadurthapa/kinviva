@@ -94,6 +94,7 @@ export interface Settings {
   llm_model: string;
   llm_use_api_key: boolean;
   llm_temperature: number;
+  llm_reasoning: "auto" | "off" | "minimal" | "low" | "medium" | "high";
   context_chars: number;
   use_documents: boolean;
   question_detection: boolean;

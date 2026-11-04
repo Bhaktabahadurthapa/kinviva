@@ -131,7 +131,7 @@ async fn main() {
     println!("[transcript] {} finals, {} partial updates", transcript.finals.len(), partials);
 
     // AI: explain + suggest streaming, then cancellation.
-    let cfg = LlmConfig { base_url: base, model: llm_model.clone(), api_key: None, temperature: 0.2 };
+    let cfg = LlmConfig { base_url: base, model: llm_model.clone(), api_key: None, temperature: 0.2, reasoning_effort: None };
     let window = transcript.recent_window(4000);
     let mut responses = Vec::new();
     for action in [Action::Explain, Action::Suggest] {

@@ -332,6 +332,43 @@ async fn forward_audio(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
+/// Stores and publishes one finished utterance, and lets auto-assist react to the other side's speech.
+fn commit_final(
+    app: &AppHandle,
+    db: &Db,
+    live: &Mutex<Live>,
+    questions: &Mutex<crate::question::QuestionDetector>,
+    meeting_id: &str,
+    detect_questions: bool,
+    source: Source,
+    text: String,
+    start_ms: i64,
+    end_ms: i64,
+) {
+    let id = match db.add_segment(meeting_id, source, &text, start_ms, end_ms) {
+        Ok(id) => id,
+        Err(e) => {
+            let _ = app.emit("app-error", e);
+            -1
+        }
+    };
+    let seg = crate::transcript::Segment { id, source, text: text.clone(), start_ms, end_ms };
+    live.lock().unwrap().transcript.push_final(seg.clone());
+    let _ = app.emit("transcript-final", &seg);
+    if detect_questions && source == Source::System && questions.lock().unwrap().check(&text, now_ms()) {
+        let _ = app.emit("question-detected", serde_json::json!({ "text": text, "segment_id": id }));
+    }
+    if source == Source::System {
+        crate::auto_assist::on_their_final(app, id, &text);
+    }
+}
+
+/// How long a microphone line waits before it is stored, so the system
+/// audio that produced it (speakers leaking into the mic) has time to arrive
+/// and the line can be recognised as an echo instead of something "Me" said.
+const ECHO_HOLD: Duration = Duration::from_millis(4000);
+
 async fn pump_events(
     app: AppHandle,
     db: Arc<Db>,
@@ -341,29 +378,44 @@ async fn pump_events(
     detect_questions: bool,
     mut rx: mpsc::UnboundedReceiver<SttEvent>,
 ) {
-    while let Some(ev) = rx.recv().await {
+    let mut held: std::collections::VecDeque<(std::time::Instant, String, i64, i64)> = Default::default();
+    let release = |held: &mut std::collections::VecDeque<(std::time::Instant, String, i64, i64)>, all: bool| {
+        while let Some((at, ..)) = held.front() {
+            if !all && at.elapsed() < ECHO_HOLD {
+                break;
+            }
+            let (_, text, start_ms, end_ms) = held.pop_front().unwrap();
+            let echo = live.lock().unwrap().transcript.is_speaker_echo(&text, Some((start_ms, end_ms)));
+            if !echo {
+                commit_final(&app, &db, &live, &questions, &meeting_id, detect_questions, Source::Mic, text, start_ms, end_ms);
+            }
+        }
+    };
+    loop {
+        let ev = tokio::select! {
+            ev = rx.recv() => ev,
+            _ = tokio::time::sleep(Duration::from_millis(500)), if !held.is_empty() => {
+                release(&mut held, false);
+                continue;
+            }
+        };
+        let Some(ev) = ev else { break };
         match ev {
             SttEvent::Partial { source, text } => {
+                if source == Source::Mic && live.lock().unwrap().transcript.is_speaker_echo(&text, None) {
+                    continue;
+                }
                 live.lock().unwrap().transcript.set_partial(source, &text);
                 let _ = app.emit("transcript-partial", serde_json::json!({ "source": source, "text": text }));
             }
+            SttEvent::Final { source: Source::Mic, text, start_ms, end_ms } => {
+                held.push_back((std::time::Instant::now(), text, start_ms, end_ms));
+                // The line is no longer "in progress"; clear its partial in the UI.
+                live.lock().unwrap().transcript.partials.remove(&Source::Mic);
+                let _ = app.emit("transcript-partial", serde_json::json!({ "source": Source::Mic, "text": "" }));
+            }
             SttEvent::Final { source, text, start_ms, end_ms } => {
-                let id = match db.add_segment(&meeting_id, source, &text, start_ms, end_ms) {
-                    Ok(id) => id,
-                    Err(e) => {
-                        let _ = app.emit("app-error", e);
-                        -1
-                    }
-                };
-                let seg = crate::transcript::Segment { id, source, text: text.clone(), start_ms, end_ms };
-                live.lock().unwrap().transcript.push_final(seg.clone());
-                let _ = app.emit("transcript-final", &seg);
-                if detect_questions && source == Source::System && questions.lock().unwrap().check(&text, now_ms()) {
-                    let _ = app.emit("question-detected", serde_json::json!({ "text": text, "segment_id": id }));
-                }
-                if source == Source::System {
-                    crate::auto_assist::on_their_final(&app, id, &text);
-                }
+                commit_final(&app, &db, &live, &questions, &meeting_id, detect_questions, source, text, start_ms, end_ms);
             }
             SttEvent::Error { source, message, fatal } => {
                 {
@@ -392,6 +444,7 @@ async fn pump_events(
             }
         }
     }
+    release(&mut held, true);
 }
 
 async fn pump_faults(app: AppHandle, live: Arc<Mutex<Live>>, mut rx: mpsc::UnboundedReceiver<CaptureFault>) {

@@ -15,7 +15,7 @@ use tauri::{AppHandle, Emitter, Manager};
 
 /// Quiet time after the last finished sentence before answering, so a
 /// speaker's whole thought gets one calm answer instead of several quick ones.
-pub const SETTLE: Duration = Duration::from_millis(2000);
+pub const SETTLE: Duration = Duration::from_millis(600);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {

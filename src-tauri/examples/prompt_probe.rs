@@ -15,7 +15,7 @@ use tokio_util::sync::CancellationToken;
 #[tokio::main]
 async fn main() {
     let a: Vec<String> = std::env::args().collect();
-    let cfg = LlmConfig { base_url: a[1].clone(), model: a[2].clone(), api_key: None, temperature: 0.2 };
+    let cfg = LlmConfig { base_url: a[1].clone(), model: a[2].clone(), api_key: None, temperature: 0.2, reasoning_effort: None };
     let text = std::fs::read_to_string(&a[3]).expect("transcript file");
     let n: usize = a[4].parse().unwrap_or(2);
     let lines: Vec<&str> = text.lines().filter(|l| !l.trim().is_empty()).collect();

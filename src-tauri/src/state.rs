@@ -109,6 +109,8 @@ pub struct AppState {
     pub live: Arc<Mutex<Live>>,
     pub session: tokio::sync::Mutex<Option<Session>>,
     pub ai_tasks: Mutex<HashMap<String, CancellationToken>>,
+    /// (panel, request id) of automatic requests still running, oldest first.
+    pub auto_inflight: Mutex<Vec<(String, String)>>,
     pub questions: Arc<Mutex<QuestionDetector>>,
     pub auto: crate::auto_assist::AutoAssist,
 }

@@ -7,7 +7,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     onboarded: true, capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
     stt_provider: "whisper_native", deepgram_model: "nova-3", deepgram_endpoint: "wss://api.deepgram.com/v1/listen",
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
-    llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, context_chars: 6000, use_documents: true,
+    llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true,
     question_detection: false, question_cooldown_secs: 20, auto_assist: "explain_reply", auto_min_words: 6,
     overlay_content_protection: false,
     shortcuts: { toggle_meeting: "CommandOrControl+Shift+M", toggle_overlay: "CommandOrControl+Shift+O", suggest_reply: "CommandOrControl+Shift+R", explain: "CommandOrControl+Shift+E" },

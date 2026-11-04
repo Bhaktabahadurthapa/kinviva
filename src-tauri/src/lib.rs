@@ -67,6 +67,7 @@ pub fn run() {
                 live: Arc::new(Mutex::new(state::Live::default())),
                 session: tokio::sync::Mutex::new(None),
                 ai_tasks: Mutex::new(Default::default()),
+                auto_inflight: Mutex::new(Vec::new()),
                 questions: Arc::new(Mutex::new(question::QuestionDetector::new(20))),
                 auto: Default::default(),
             };

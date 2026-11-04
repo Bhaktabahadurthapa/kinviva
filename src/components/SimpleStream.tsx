@@ -4,7 +4,7 @@ import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
 
 /** Minimum time between new explanations appearing, so each can be read. */
-const REVEAL_GAP_MS = 4500;
+const REVEAL_GAP_MS = 1500;
 /** If the speaker races ahead, skip older waiting notes instead of flooding. */
 const MAX_WAITING = 1;
 
