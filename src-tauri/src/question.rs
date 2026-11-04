@@ -10,6 +10,13 @@ const STARTERS: &[&str] = &[
     "walk me through", "explain", "describe", "any thoughts", "thoughts on",
 ];
 
+/// Question openers that count anywhere in a sentence, not only at its start.
+const INSIDE: &[&str] = &[
+    " how do you ", " how would you ", " how can you ", " how did you ", " what is your ", " what would you ", " what do you ",
+    " what are your ", " why do you ", " why would you ", " can you ", " could you ", " would you ", " do you ", " did you ",
+    " have you ", " tell me ", " walk me through ", " what happens if ", " what happens when ",
+];
+
 pub struct QuestionDetector {
     cooldown_ms: i64,
     last_fired_ms: Option<i64>,
@@ -39,7 +46,13 @@ pub fn looks_like_question(text: &str) -> bool {
     if t.ends_with('?') {
         return true;
     }
-    STARTERS.iter().any(|s| t.starts_with(s))
+    if STARTERS.iter().any(|s| t.starts_with(s)) {
+        return true;
+    }
+    // Speech recognition drops question marks, and people lead into questions
+    // ("okay, so the second one is how do you design ...").
+    let padded = format!(" {} ", t.replace([',', '.'], " "));
+    INSIDE.iter().any(|p| padded.contains(p))
 }
 
 impl QuestionDetector {
@@ -95,5 +108,13 @@ mod tests {
         // After cooldown, a near-duplicate is still suppressed.
         assert!(!d.check("What is the deadline for this project", 30_000));
         assert!(d.check("How big is the team today?", 31_000));
+    }
+
+    #[test]
+    fn questions_without_a_mark_or_a_leading_question_word_are_found() {
+        assert!(looks_like_question("Okay, so the second one would be how do you design a CI/CD pipeline that ships fast"));
+        assert!(looks_like_question("So imagine your service is down. What is your first move"));
+        assert!(!looks_like_question("We moved the tutorial behind the sign-up step"));
+        assert!(!looks_like_question("I know how you design it but that is fine"));
     }
 }
