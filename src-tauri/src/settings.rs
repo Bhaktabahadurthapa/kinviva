@@ -89,12 +89,20 @@ impl Default for Settings {
 }
 
 fn default_whisper_cli() -> String {
-    for p in ["/opt/homebrew/bin/whisper-cli", "/usr/local/bin/whisper-cli"] {
-        if std::path::Path::new(p).exists() {
-            return p.into();
-        }
+    #[cfg(windows)]
+    {
+        // whisper.cpp releases ship whisper-cli.exe; resolved via PATH unless set in Settings.
+        "whisper-cli.exe".into()
     }
-    "whisper-cli".into()
+    #[cfg(not(windows))]
+    {
+        for p in ["/opt/homebrew/bin/whisper-cli", "/usr/local/bin/whisper-cli"] {
+            if std::path::Path::new(p).exists() {
+                return p.into();
+            }
+        }
+        "whisper-cli".into()
+    }
 }
 
 impl Settings {

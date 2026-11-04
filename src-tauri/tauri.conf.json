@@ -46,11 +46,30 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
-    "copyright": "Copyright © 2026 Bhakta Thapa. All rights reserved.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "copyright": "Copyright \u00a9 2026 Bhakta Thapa. All rights reserved.",
     "license": "LicenseRef-Proprietary",
     "licenseFile": "../LICENSE",
-    "resources": { "../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md", "../LICENSE": "LICENSE.txt" },
-    "macOS": { "minimumSystemVersion": "13.0" }
+    "resources": {
+      "../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md",
+      "../LICENSE": "LICENSE.txt"
+    },
+    "macOS": {
+      "minimumSystemVersion": "13.0"
+    },
+    "publisher": "Bhakta Thapa",
+    "shortDescription": "Local-first meeting assistant",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      }
+    }
   }
 }

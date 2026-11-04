@@ -63,13 +63,12 @@ async fn transcribe(binary: &str, model: &str, language: &str, base: &Path, samp
     let wav_path = base.with_file_name(format!("{stem}-{}.wav", NEXT_CLIP.fetch_add(1, Ordering::Relaxed)));
     let wav = wav_path.as_path();
     write_wav(wav, samples)?;
-    let output = tokio::process::Command::new(binary)
-        .args(["-m", model, "-f"])
-        .arg(wav)
-        .args(["-l", language, "-nt", "-np"])
-        .kill_on_drop(true)
-        .output()
-        .await;
+    let mut cmd = tokio::process::Command::new(binary);
+    cmd.args(["-m", model, "-f"]).arg(wav).args(["-l", language, "-nt", "-np"]).kill_on_drop(true);
+    // Windows: run whisper-cli without flashing a console window per clip.
+    #[cfg(windows)]
+    cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+    let output = cmd.output().await;
     let _ = std::fs::remove_file(wav);
     let output = output.map_err(|e| format!("Could not run whisper-cli at \"{binary}\": {e}"))?;
     if !output.status.success() {

@@ -1,0 +1,75 @@
+# Builds the experimental Windows installer on GitHub's free Windows runners.
+#
+# Run it from the Actions tab ("Build Windows" -> Run workflow), or:
+#   gh workflow run windows.yml                         # build only
+#   gh workflow run windows.yml -f release_tag=v0.1.0   # build and attach to a release
+name: Build Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Attach the installer to this existing release (e.g. v0.1.0). Leave empty to only build."
+        required: false
+        default: ""
+
+permissions:
+  contents: write # only used to attach the installer to a release
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Frontend tests and type check
+        run: |
+          npm test
+          npx tsc --noEmit
+
+      - name: Rust unit tests
+        working-directory: src-tauri
+        run: cargo test --lib
+
+      - name: Build the installer
+        run: npm run tauri build -- --bundles nsis
+
+      - name: Name the installer and write its checksum
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          mkdir -p dist-win
+          SRC=$(ls src-tauri/target/release/bundle/nsis/*-setup.exe | head -1)
+          cp "$SRC" "dist-win/MeetingLens_${VERSION}_x64-setup.exe"
+          cp "$SRC" "dist-win/MeetingLens-Windows-Setup.exe"
+          (cd dist-win && sha256sum MeetingLens_${VERSION}_x64-setup.exe | tee SHA256SUMS.txt)
+          ls -l dist-win
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MeetingLens-Windows
+          path: dist-win/*
+          if-no-files-found: error
+
+      - name: Attach to the release
+        if: ${{ inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ inputs.release_tag }}" dist-win/MeetingLens_*_x64-setup.exe dist-win/MeetingLens-Windows-Setup.exe --clobber
