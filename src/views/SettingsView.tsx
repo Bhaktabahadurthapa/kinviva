@@ -64,6 +64,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
   const [nativeAvailable, setNativeAvailable] = useState(false);
   const [models, setModels] = useState<string[] | null>(null);
+  const [fetching, setFetching] = useState(false);
   const [modelErr, setModelErr] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [info, setInfo] = useState<{ data_dir: string; version: string; schema_version: number } | null>(null);
@@ -97,14 +98,19 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
     }
   };
 
+  const llmLocal = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(s.llm_base_url.trim());
+
   const fetchModels = async () => {
     setModels(null);
     setModelErr(null);
+    setFetching(true);
     try {
       // Some providers (Gemini) list ids as "models/<name>" but expect "<name>" in requests.
       setModels((await api.listModels(s.llm_base_url, s.llm_use_api_key)).map((m) => m.replace(/^models\//, "")));
     } catch (e) {
       setModelErr(errorText(e));
+    } finally {
+      setFetching(false);
     }
   };
 
@@ -243,18 +249,25 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         <p className="hint">Any OpenAI-compatible Chat Completions endpoint. Meeting text is sent to this provider when you press an action or when Auto-assist answers; use a local model to keep it on this computer.</p>
         <div className="row presets">
           {PRESETS.map((p) => (
-            <button key={p.url} className="btn btn-ghost btn-sm" onClick={() => setS({ ...s, llm_base_url: p.url, llm_use_api_key: p.key })}>
+            <button key={p.url} className="btn btn-ghost btn-sm" aria-pressed={s.llm_base_url === p.url} onClick={() => setS({ ...s, llm_base_url: p.url, llm_use_api_key: p.key })}>
               {p.label}
             </button>
           ))}
-          <button className="btn btn-ghost btn-sm" onClick={() => setS({ ...s, llm_base_url: "", llm_use_api_key: true })}>
+          <button className="btn btn-ghost btn-sm" aria-pressed={!PRESETS.some((p) => p.url === s.llm_base_url)} onClick={() => setS({ ...s, llm_base_url: "", llm_use_api_key: true })}>
             Other (type your own)
           </button>
         </div>
         <p className="hint">Any other service works too: paste its OpenAI-compatible base URL (the part before <code>/chat/completions</code>), your API key, and a model name from its docs.</p>
         <div className="field">
-          <label>Base URL</label>
-          <input value={s.llm_base_url} onChange={(e) => set("llm_base_url", e.target.value)} />
+          <label htmlFor="llm-base-url">Base URL</label>
+          <input id="llm-base-url" value={s.llm_base_url} placeholder="https://api.example.com/v1" spellCheck={false} autoComplete="off" onChange={(e) => set("llm_base_url", e.target.value)} />
+          <small className={s.llm_base_url.trim() ? (llmLocal ? "ok" : "") : "bad"}>
+            {!s.llm_base_url.trim()
+              ? "Enter the provider's base URL."
+              : llmLocal
+                ? "Runs on this computer — meeting text stays here."
+                : "Cloud provider — meeting text is sent to it. Use a paid/business plan if the content is private."}
+          </small>
         </div>
         <label className="check">
           <input type="checkbox" checked={s.llm_use_api_key} onChange={(e) => set("llm_use_api_key", e.target.checked)} />
@@ -262,12 +275,12 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         </label>
         {s.llm_use_api_key && <KeyField name="llm_api_key" label="AI provider API key" has={!!secrets.llm_api_key} onChange={loadSecrets} />}
         <div className="field">
-          <label>Model</label>
+          <label htmlFor="llm-model">Model</label>
           <div className="row">
-            <input list="models" value={s.llm_model} onChange={(e) => set("llm_model", e.target.value)} placeholder="Choose or type a model name" />
+            <input id="llm-model" list="models" spellCheck={false} autoComplete="off" value={s.llm_model} onChange={(e) => set("llm_model", e.target.value)} placeholder="Choose or type a model name" />
             <datalist id="models">{models?.map((m) => <option key={m} value={m} />)}</datalist>
-            <button className="btn btn-sm" onClick={fetchModels}>
-              Fetch models
+            <button className="btn btn-sm" onClick={fetchModels} disabled={fetching || !s.llm_base_url.trim()}>
+              {fetching ? "Fetching…" : "Fetch models"}
             </button>
           </div>
           {models && <small className="ok">{models.length} models available — pick one from the list.</small>}
@@ -275,12 +288,12 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         </div>
         <div className="grid2">
           <div className="field">
-            <label>Temperature</label>
-            <input type="number" step="0.1" min="0" max="2" value={s.llm_temperature} onChange={(e) => set("llm_temperature", Number(e.target.value))} />
+            <label htmlFor="llm-temp">Temperature</label>
+            <input id="llm-temp" type="number" step="0.1" min="0" max="2" value={s.llm_temperature} onChange={(e) => set("llm_temperature", Number(e.target.value))} />
           </div>
           <div className="field">
-            <label>Transcript context (characters)</label>
-            <input type="number" min="500" step="500" value={s.context_chars} onChange={(e) => set("context_chars", Number(e.target.value))} />
+            <label htmlFor="llm-ctx">Transcript context (characters)</label>
+            <input id="llm-ctx" type="number" min="500" step="500" value={s.context_chars} onChange={(e) => set("context_chars", Number(e.target.value))} />
           </div>
         </div>
         <label className="check">

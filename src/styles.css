@@ -624,7 +624,11 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .check { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; cursor: pointer; line-height: 1.45; }
 .check input { width: auto; margin-top: 3px; accent-color: var(--c-signal); }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
-.presets { margin-bottom: var(--s-3); }
+.presets { margin-bottom: var(--s-3); flex-wrap: wrap; }
+.presets .btn[aria-pressed="true"] { border-color: var(--c-signal); color: var(--c-signal); background: var(--c-signal-soft, transparent); }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+.btn { cursor: pointer; }
+.btn-sm { min-height: 28px; }
 .setup {
   border: 1px solid var(--c-signal);
   border-radius: var(--r-lg);
