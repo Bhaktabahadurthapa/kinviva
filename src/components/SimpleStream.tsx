@@ -70,10 +70,16 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
 
   return (
     <div className="simple-stream" ref={box} onScroll={onScroll} aria-live="polite">
-      {visible.length === 0 && (
-        <p className="empty">
-          {running ? "When they finish a thought, its meaning appears here in simple words." : "Start a meeting. Simple explanations appear here automatically."}
-        </p>
+      {visible.length === 0 && running && <p className="empty">When they finish a thought, its meaning appears here in simple words.</p>}
+      {visible.length === 0 && !running && (
+        <div className="how">
+          <p className="empty">Simple explanations appear here automatically.</p>
+          <ol className="how-steps">
+            <li><b>Start meeting</b><span>MeetingLens listens to the call and your microphone.</span></li>
+            <li><b>They speak</b><span>Each finished thought is explained in plain words.</span></li>
+            <li><b>You reply</b><span>A short answer you could say is drafted when a question is asked.</span></li>
+          </ol>
+        </div>
       )}
       {visible.map((id) => {
         const seg = byId.get(id);

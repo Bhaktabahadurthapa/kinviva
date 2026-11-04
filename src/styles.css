@@ -16,7 +16,7 @@
   --c-line-strong: #463e34;
   --c-text: #f2eadb;
   --c-text-2: #bcb09d;
-  --c-text-3: #7d7467;
+  --c-text-3: #9a9082; /* 5.3:1 on --c-surface (was 3.8:1) */
   --c-signal: #ff5f2e;
   --c-signal-hover: #ff7a50;
   --c-signal-ink: #1c0b04;
@@ -834,6 +834,11 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .simple-panel { border-color: color-mix(in srgb, var(--c-signal) 35%, var(--c-line)); }
 .simple-stream { flex: 1; overflow: auto; min-height: 0; padding: var(--s-4) var(--s-5) var(--s-6); display: flex; flex-direction: column; gap: var(--s-5); }
 .simple-stream .empty { font-size: var(--t-lg); }
+.how-steps { list-style: none; counter-reset: step; margin: var(--s-5) 0 0; padding: 0; display: grid; gap: var(--s-3); max-width: 62ch; }
+.how-steps li { counter-increment: step; display: grid; grid-template-columns: 28px 1fr; column-gap: var(--s-3); align-items: baseline; }
+.how-steps li::before { content: counter(step); grid-row: span 2; font-family: var(--f-mono); font-size: var(--t-xs); color: var(--c-signal); border: 1px solid var(--c-signal); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; }
+.how-steps b { font-weight: 600; color: var(--c-text); font-size: var(--t-base); }
+.how-steps span { color: var(--c-text-2); font-size: var(--t-sm); line-height: var(--lh-body); }
 .simple-item { animation: rise var(--m-slow) var(--ease-out); max-width: 78ch; }
 .simple-item + .simple-item { padding-top: var(--s-5); border-top: 1px dashed var(--c-line-strong); }
 .simple-said { font-size: var(--t-sm); color: var(--c-text-3); font-style: italic; margin-bottom: var(--s-2); line-height: 1.45; }
