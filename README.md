@@ -110,6 +110,27 @@ Then open **Setup** in the app:
 No audio handy? **History → + Demo** adds a sample meeting, clearly marked
 DEMO, so you can try the AI actions.
 
+## Install as a Mac app
+
+Build a normal app you can drag into Applications (Apple Silicon Mac, macOS 13+):
+
+```bash
+./scripts/build-mac-app.sh
+```
+
+This creates `dist-mac/MeetingLens.app` and `dist-mac/MeetingLens_0.1.0_aarch64.dmg`.
+Open the DMG, drag **MeetingLens** onto **Applications**, then open it from
+Launchpad. On first start macOS asks for **Microphone** and **Screen & System
+Audio Recording** permission; allow both, then quit and reopen the app once.
+
+- **Your own Mac:** works as is, because you built it yourself.
+- **Someone else's Mac:** the app is not yet notarized by Apple, so macOS
+  blocks the first open. They must right-click the app → **Open** → **Open**,
+  or go to System Settings → Privacy & Security → **Open Anyway**. A
+  warning-free download needs an Apple Developer ID ($99/year) to sign and
+  notarize it.
+- **Windows:** not built yet.
+
 <details>
 <summary><b>Tests, release build and hardware probes</b></summary>
 
