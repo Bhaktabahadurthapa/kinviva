@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MeetingLens — hear it, understand it, answer it</title>
+  <meta name="description" content="MeetingLens is a local-first Mac app that transcribes your meeting live, explains what others say in plain English, and drafts answers to questions. No telemetry.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MeetingLens — hear it, understand it, answer it">
+  <meta property="og:description" content="A local-first Mac meeting assistant: live transcript, plain-English explanations, grounded answers. Runs on your Mac with whisper.cpp and Ollama.">
+  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens-desktop/media/architecture-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#110f0d">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23110f0d'/%3E%3Ccircle cx='12' cy='12' r='6.8' fill='none' stroke='%23f2eadb' stroke-width='1.8'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%23ff5f2e'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <a class="brand" href="#top" aria-label="MeetingLens home">
+      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="#463e34" stroke-width="1.2"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="#f2eadb" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="#ff5f2e"/></svg>
+      <span>Meeting<em>Lens</em></span>
+    </a>
+    <nav aria-label="Primary">
+      <a href="#demo">Demo</a>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop">GitHub</a>
+      <a class="btn btn-small" href="#download">Download</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+      <p class="eyebrow">Local-first meeting assistant · for Mac</p>
+      <h1>Hear it.<br>Understand it.<br><em>Answer it.</em></h1>
+      <p class="lead">MeetingLens listens to your call, writes what others say in <strong>simple words</strong> as they say it, and drafts an answer when someone asks you a question. It runs on your Mac. Nothing leaves it unless you choose a cloud service.</p>
+      <div class="cta">
+        <a class="btn" href="#download">Download for Mac</a>
+        <a class="btn btn-ghost" href="#demo">Watch the 36-second demo</a>
+      </div>
+      <p class="fine">macOS 13+ · Apple Silicon · free early version · not yet notarized by Apple (<a href="#download">first-open steps</a>)</p>
+      </div>
+      <figure class="hero-shot">
+        <img src="media/app-live.jpg" width="1600" height="995" alt="The MeetingLens live screen during a call: ON AIR bar, live transcript, and the plain-English explanation with a suggested reply.">
+      </figure>
+    </section>
+
+    <section class="arch" aria-label="How MeetingLens is built">
+      <img src="media/architecture-hero.png" width="1600" height="670" alt="MeetingLens architecture: system audio and microphone flow through speech-to-text into a live transcript. The assistant combines recent lines with your documents, asks a local or cloud model, and shows answers in the window and overlay while meetings are saved on your device.">
+    </section>
+
+    <section class="demo" id="demo">
+      <div class="section-head">
+        <p class="eyebrow">01 · See it</p>
+        <h2>A real call, explained as it happens.</h2>
+        <p>Every screen in this video is a capture of the real app, with audio transcribed by whisper.cpp and answers from a local Ollama model.</p>
+      </div>
+      <video controls preload="metadata" poster="media/meetinglens-demo-poster.jpg" playsinline>
+        <source src="media/meetinglens-demo.mp4" type="video/mp4">
+        Your browser can't play this video. <a href="media/meetinglens-demo.mp4">Download the demo (MP4).</a>
+      </video>
+    </section>
+
+    <section class="features" id="features">
+      <div class="section-head">
+        <p class="eyebrow">02 · What it does</p>
+        <h2>Built for the moment someone says something you don't follow.</h2>
+      </div>
+      <div class="grid">
+        <article class="card wide">
+          <h3>Two channels, never mixed up</h3>
+          <p>Other participants (<b>Them</b>, from system audio) and you (<b>Me</b>, from the microphone) are captured separately, each with its own live level meter and clear error messages.</p>
+        </article>
+        <article class="card">
+          <h3>Simple words, automatically</h3>
+          <p>When someone finishes a thought, its meaning appears below the transcript in short, plain sentences, with hard terms explained.</p>
+        </article>
+        <article class="card">
+          <h3>Answers you can edit</h3>
+          <p>Questions get a draft answer from the transcript, your notes and your documents. It never invents your experience; where it can't know, it coaches you on what to mention.</p>
+        </article>
+        <article class="card wide">
+          <h3>Your documents as context</h3>
+          <p>Add TXT, Markdown or PDF files. MeetingLens finds the passages that match the conversation and shows exactly which ones it used.</p>
+        </article>
+        <article class="card">
+          <h3>Floating overlay</h3>
+          <p>A small always-on-top window beside your call, so you never switch away.</p>
+        </article>
+        <article class="card">
+          <h3>History and export</h3>
+          <p>Search past meetings, reopen them in the assistant, and export Markdown or text.</p>
+        </article>
+      </div>
+      <div class="shots">
+        <figure><img src="media/app-live.jpg" width="1600" height="995" alt="MeetingLens live screen: the on-air bar with two channel meters, the live transcript, and the simple-words panel with a suggested reply."><figcaption>Live: transcript, simple words and a suggested reply.</figcaption></figure>
+        <figure><img src="media/app-history.jpg" width="1600" height="995" alt="MeetingLens history screen: a saved meeting with its transcript and AI notes."><figcaption>History: every meeting saved on your Mac.</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="how" id="how">
+      <div class="section-head">
+        <p class="eyebrow">03 · How it works</p>
+        <h2>From sound to a clear answer in four steps.</h2>
+      </div>
+      <ol class="steps">
+        <li><span>01</span><div><h3>Capture</h3><p>System audio through Apple's ScreenCaptureKit and your mic through CoreAudio, converted to the format speech engines expect.</p></div></li>
+        <li><span>02</span><div><h3>Transcribe</h3><p>whisper.cpp on your Mac, or Deepgram streaming. Grey partial text becomes a final line after a pause.</p></div></li>
+        <li><span>03</span><div><h3>Explain</h3><p>The newest lines go to a language model: Ollama on your Mac, or any OpenAI-compatible service you choose.</p></div></li>
+        <li><span>04</span><div><h3>Save</h3><p>Everything is stored in a local SQLite database. API keys stay in the macOS Keychain.</p></div></li>
+      </ol>
+    </section>
+
+    <section class="privacy" id="privacy">
+      <div class="section-head">
+        <p class="eyebrow">04 · Privacy</p>
+        <h2>Your meeting stays yours.</h2>
+      </div>
+      <ul class="checks">
+        <li><b>On your Mac by default.</b> With whisper.cpp and Ollama, no audio or text leaves your computer.</li>
+        <li><b>Always visible.</b> Chips in the app name where audio and AI text go, and whether help is automatic or on request.</li>
+        <li><b>No telemetry, no account.</b> Recordings are off unless you turn them on.</li>
+        <li><b>Never speaks for you.</b> MeetingLens shows text to you only; nothing is typed or said into your call.</li>
+        <li><b>Mind consent.</b> Some places require everyone's consent to record or transcribe a conversation. Tell participants when you use it.</li>
+      </ul>
+    </section>
+
+    <section class="download" id="download">
+      <div class="section-head">
+        <p class="eyebrow">05 · Get it</p>
+        <h2>Download MeetingLens for Mac.</h2>
+        <p>Early version 0.1.0 for Apple Silicon Macs on macOS 13 or later. Free.</p>
+      </div>
+      <div class="dl-card">
+        <div>
+          <a class="btn btn-big" href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/download/v0.1.0/MeetingLens_0.1.0_aarch64.dmg">Download MeetingLens.dmg</a>
+          <p class="fine">Version 0.1.0 · 7.9 MB · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/releases/tag/v0.1.0">release notes and SHA-256 checksum</a></p>
+        </div>
+        <ol class="install">
+          <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
+          <li>Open it. macOS will say it can't verify the app, because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
+          <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to MeetingLens.</li>
+          <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
+          <li>For free local AI, install <a href="https://ollama.com">Ollama</a> and <a href="https://github.com/ggml-org/whisper.cpp">whisper.cpp</a>, then follow Setup in the app.</li>
+        </ol>
+      </div>
+      <p class="fine">Windows is not available yet. Prefer to build it yourself? See the <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop#install-as-a-mac-app">install guide</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p><b>MeetingLens</b> · Proprietary software · © 2026 Bhakta Thapa. All rights reserved. · Built by <b>BKT AI</b></p>
+    <p><a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop">Source on GitHub</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/blob/main/LICENSE">License</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens-desktop/blob/main/SECURITY.md">Security</a></p>
+  </footer>
+</body>
+</html>

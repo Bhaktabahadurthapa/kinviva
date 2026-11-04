@@ -16,7 +16,7 @@
 ![local-first](https://img.shields.io/badge/local--first-whisper.cpp%20%2B%20Ollama-ff5f2e?style=flat-square&labelColor=110f0d)
 ![license](https://img.shields.io/badge/license-proprietary-463e34?style=flat-square&labelColor=110f0d)
 
-**[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
+**[Website](https://bhaktathapa.com.np/meetinglens-desktop/)** · **[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
 
 </div>
 
@@ -125,9 +125,10 @@ Audio Recording** permission; allow both, then quit and reopen the app once.
 
 - **Your own Mac:** works as is, because you built it yourself.
 - **Someone else's Mac:** the app is not yet notarized by Apple, so macOS
-  blocks the first open. They must right-click the app → **Open** → **Open**,
-  or go to System Settings → Privacy & Security → **Open Anyway**. A
-  warning-free download needs an Apple Developer ID ($99/year) to sign and
+  blocks the first open. Open it once, click **Done**, then go to System
+  Settings → Privacy & Security, scroll down and click **Open Anyway**
+  (macOS 15 and later; on older versions right-click the app → **Open**).
+  A warning-free download needs an Apple Developer ID ($99/year) to sign and
   notarize it.
 - **Windows:** not built yet.
 
