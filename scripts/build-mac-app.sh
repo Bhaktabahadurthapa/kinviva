@@ -34,7 +34,18 @@ ENGINE="$APP/Contents/MacOS/meetinglens-whisperd"
 
 # Seal the whole bundle with a stable identifier. Without this the bundle
 # is only partly signed and macOS may forget microphone permissions.
-codesign --force --deep --sign - --identifier app.meetinglens.desktop "$APP"
+# Optional, for a warning-free download (needs a paid Apple Developer account):
+#   MEETINGLENS_SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)"
+#   MEETINGLENS_NOTARY_PROFILE=<name from: xcrun notarytool store-credentials>
+# Without them the app is ad-hoc signed (free; other Macs need "Open Anyway").
+# The Developer ID path has not been run: it needs credentials this repo does not have.
+if [ -n "${MEETINGLENS_SIGN_IDENTITY:-}" ]; then
+  codesign --force --options runtime --timestamp --sign "$MEETINGLENS_SIGN_IDENTITY" "$ENGINE"
+  codesign --force --options runtime --timestamp --deep --sign "$MEETINGLENS_SIGN_IDENTITY" \
+    --entitlements src-tauri/entitlements.plist --identifier app.meetinglens.desktop "$APP"
+else
+  codesign --force --deep --sign - --identifier app.meetinglens.desktop "$APP"
+fi
 codesign --verify --deep --strict "$APP"
 
 OUT="dist-mac"
@@ -49,6 +60,11 @@ DMG="$OUT/MeetingLens_${VERSION}_${ARCH}.dmg"
 hdiutil create -volname "MeetingLens" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null 2>&1
 rm -rf "$STAGE"
 hdiutil verify "$DMG" >/dev/null 2>&1
+if [ -n "${MEETINGLENS_SIGN_IDENTITY:-}" ] && [ -n "${MEETINGLENS_NOTARY_PROFILE:-}" ]; then
+  codesign --force --timestamp --sign "$MEETINGLENS_SIGN_IDENTITY" "$DMG"
+  xcrun notarytool submit "$DMG" --keychain-profile "$MEETINGLENS_NOTARY_PROFILE" --wait
+  xcrun stapler staple "$DMG"
+fi
 cp "$DMG" "$OUT/MeetingLens.dmg"
 
 echo "Built:"

@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./dev/mock";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { inTauri } from "./lib/api";
 import App from "./App";

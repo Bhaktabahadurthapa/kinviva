@@ -11,6 +11,23 @@ if(APPLE)
   set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING "")
 endif()
 
+if(MSVC)
+  # One self-contained .exe: static C runtime, UTF-8 sources.
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  add_compile_options(/utf-8)
+endif()
+if(NOT APPLE)
+  # A build made on one machine must run on others: do not tune for this CPU.
+  # x86-64 builds assume AVX2 + FMA (any mainstream laptop since about 2014).
+  set(GGML_NATIVE OFF CACHE BOOL "" FORCE)
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64|x64")
+    set(GGML_AVX ON CACHE BOOL "" FORCE)
+    set(GGML_AVX2 ON CACHE BOOL "" FORCE)
+    set(GGML_FMA ON CACHE BOOL "" FORCE)
+    set(GGML_F16C ON CACHE BOOL "" FORCE)
+  endif()
+endif()
+
 # Reuse whisper.cpp itself (pinned) rather than writing a speech engine.
 # Static libraries and an embedded Metal library give one self-contained
 # executable that ships inside the app; users install nothing.

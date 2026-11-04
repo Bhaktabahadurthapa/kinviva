@@ -9,13 +9,26 @@ cd "$(dirname "$0")"
 case "$(uname -s)-$(uname -m)" in
   Darwin-arm64)  TRIPLE=aarch64-apple-darwin ;;
   Darwin-x86_64) TRIPLE=x86_64-apple-darwin ;;
+  MINGW*-x86_64|MSYS*-x86_64) TRIPLE=x86_64-pc-windows-msvc ;;
   *) echo "unsupported host: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
 esac
 
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release >/dev/null
-cmake --build build --target meetinglens-whisperd -j
 mkdir -p dist
-cp build/meetinglens-whisperd "dist/meetinglens-whisperd-$TRIPLE"
-strip -x "dist/meetinglens-whisperd-$TRIPLE" 2>/dev/null || true
-ls -lh "dist/meetinglens-whisperd-$TRIPLE"
-"dist/meetinglens-whisperd-$TRIPLE" --version
+case "$TRIPLE" in
+  *windows*)
+    # Visual Studio generator (multi-config); the sidecar needs the .exe suffix.
+    cmake -S . -B build -A x64 >/dev/null
+    cmake --build build --config Release --target meetinglens-whisperd
+    OUT="dist/meetinglens-whisperd-$TRIPLE.exe"
+    cp build/Release/meetinglens-whisperd.exe "$OUT"
+    ;;
+  *)
+    cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release >/dev/null
+    cmake --build build --target meetinglens-whisperd -j
+    OUT="dist/meetinglens-whisperd-$TRIPLE"
+    cp build/meetinglens-whisperd "$OUT"
+    strip -x "$OUT" 2>/dev/null || true
+    ;;
+esac
+ls -lh "$OUT"
+"$OUT" --version

@@ -36,6 +36,9 @@ jobs:
         with:
           workspaces: src-tauri
 
+      - name: Build the speech engine (C++, static whisper.cpp)
+        run: ./native/whisperd/build.sh
+
       - name: Install JavaScript dependencies
         run: npm ci
 
@@ -44,12 +47,16 @@ jobs:
           npm test
           npx tsc --noEmit
 
+      # With the engine built, the tests that talk to the real helper
+      # (protocol, cancellation, parent-exit) run on Windows too.
       - name: Rust unit tests
         working-directory: src-tauri
+        env:
+          MEETINGLENS_WHISPERD: ${{ github.workspace }}/native/whisperd/dist/meetinglens-whisperd-x86_64-pc-windows-msvc.exe
         run: cargo test --lib
 
       - name: Build the installer
-        run: npm run tauri build -- --bundles nsis
+        run: npm run tauri build -- --bundles nsis --config src-tauri/tauri.sidecar.conf.json
 
       - name: Name the installer and write its checksum
         run: |

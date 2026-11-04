@@ -26,8 +26,13 @@
 #include <vector>
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define NOGDI
 #include <fcntl.h>
 #include <io.h>
+#include <windows.h>
+#include <tlhelp32.h>
 #else
 #include <unistd.h>
 #endif
@@ -225,7 +230,33 @@ Header read_header(std::string &line) {
     }
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+// Windows has no re-parenting, so wait on a handle to the parent process
+// (found through a process snapshot) and exit as soon as it ends.
+void start_parent_watchdog() {
+    const DWORD self = GetCurrentProcessId();
+    DWORD parent = 0;
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32 e;
+        e.dwSize = sizeof(e);
+        for (BOOL ok = Process32First(snap, &e); ok; ok = Process32Next(snap, &e)) {
+            if (e.th32ProcessID == self) {
+                parent = e.th32ParentProcessID;
+                break;
+            }
+        }
+        CloseHandle(snap);
+    }
+    if (parent == 0) return;
+    HANDLE h = OpenProcess(SYNCHRONIZE, FALSE, parent);
+    if (!h) return;
+    std::thread([h] {
+        WaitForSingleObject(h, INFINITE);
+        _exit(0);
+    }).detach();
+}
+#else
 // If the app dies while this process is busy (for instance loading a model for
 // seconds), stdin's EOF is not noticed until the main thread gets back to
 // reading. A watchdog notices the parent disappearing (we are re-parented)
@@ -256,9 +287,7 @@ int main(int argc, char **argv) {
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
     whisper_log_set(quiet_log, nullptr);
-#ifndef _WIN32
     start_parent_watchdog();
-#endif
 
     emit({{"event", "ready"},
           {"name", "meetinglens-whisperd"},
