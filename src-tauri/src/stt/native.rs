@@ -527,8 +527,16 @@ mod tests {
         };
     }
 
+    #[cfg(unix)]
     fn pid_alive(pid: u32) -> bool {
         std::process::Command::new("kill").args(["-0", &pid.to_string()]).stderr(Stdio::null()).status().map(|s| s.success()).unwrap_or(false)
+    }
+
+    #[cfg(windows)]
+    fn pid_alive(pid: u32) -> bool {
+        // tasklist prints the process row (containing the pid) only while it exists.
+        let out = std::process::Command::new("tasklist").args(["/FI", &format!("PID eq {pid}"), "/NH"]).output();
+        out.map(|o| String::from_utf8_lossy(&o.stdout).split_whitespace().any(|w| w == pid.to_string())).unwrap_or(false)
     }
 
     impl NativeHub {
