@@ -1727,3 +1727,33 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .theme-switch button:hover { color: var(--c-text); }
 .theme-switch button.on { background: var(--c-surface); color: var(--c-signal); box-shadow: 0 0 0 1px var(--c-line-strong), 0 1px 3px rgba(20, 20, 50, 0.12); }
 .theme-switch + .topbar-icon { margin-left: 0; }
+
+/* ==========================================================================
+   Sidebar: slightly dark by default (deep indigo), light text, glowing icon tiles
+   ========================================================================== */
+.app { --c-rail: #1d2140; --c-rail-text: #e8ebf8; --c-rail-text-dim: #aab2d1; }
+.app .rail, :root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #20254a 0%, #181c38 100%); border-right: 1px solid #12152b; color: var(--c-rail-text); }
+.app .rail-btn { color: #dfe3f5; }
+.app .rail-btn:hover { background: rgba(255, 255, 255, 0.07); color: #ffffff; }
+.app .rail-btn.active { background: rgba(140, 120, 255, 0.22); color: #ffffff; box-shadow: inset 3px 0 0 #a99bff; }
+.app .rail-heading, .app .rail-interests .rail-heading { color: #8f98c0; }
+.app .rail-interests, .app .rail-foot { border-top-color: rgba(255, 255, 255, 0.10); }
+.app .rail-foot { background: #1a1e3c; }
+.app .rail-tag { color: #8f98c0; }
+.rail-chip { background: rgba(169, 155, 255, 0.2); color: #d9d2ff; }
+.rail-chip-add { background: none; border: 1px solid rgba(255, 255, 255, 0.25); color: #c9cfe8; }
+.rail .nav-ico { box-shadow: none; }
+.rail .nav-ico.tone-purple { background: rgba(169, 155, 255, 0.20); color: #c7bdff; }
+.rail .nav-ico.tone-blue { background: rgba(96, 165, 250, 0.20); color: #9cc9ff; }
+.rail .nav-ico.tone-green { background: rgba(74, 200, 130, 0.20); color: #86e0ad; }
+.rail .nav-ico.tone-amber { background: rgba(251, 191, 36, 0.20); color: #ffd36b; }
+.rail .nav-ico.tone-rose { background: rgba(251, 113, 150, 0.20); color: #ff9db9; }
+.rail .nav-ico.tone-teal { background: rgba(45, 212, 191, 0.20); color: #7beadb; }
+.rail .nav-ico.tone-gray { background: rgba(255, 255, 255, 0.10); color: #c3c9e2; }
+.rail .nav-ico { filter: none; }
+.app.rail-collapsed .rail-btn.active { background: rgba(140, 120, 255, 0.28); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .app .rail { background: linear-gradient(180deg, #151933 0%, #0f1226 100%); } }
+:root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #151933 0%, #0f1226 100%); }
+:root[data-theme="dark"] .app .rail-foot { background: #11142a; }
+.topbar .rail-toggle { color: var(--c-text-2); }
+.topbar .rail-toggle:hover { background: var(--c-bg); color: var(--c-text); }
