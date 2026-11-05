@@ -258,7 +258,7 @@ export default function App() {
             <span className="rail-heading">{group}</span>
             {NAV.filter((n) => n.group === group && n.ready).map((n) => (
               <button key={n.id} title={n.label} className={`rail-btn ${tab === n.id ? "active" : ""}`} aria-current={tab === n.id ? "page" : undefined} onClick={() => setTab(n.id)}>
-                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={n.icon} /></svg>
+                <span className={`nav-ico tone-${n.tone}`}><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={n.icon} /></svg></span>
                 <span className="rail-label">{n.label}</span>
               </button>
             ))}
@@ -273,11 +273,11 @@ export default function App() {
         </div>
         <div className="rail-foot">
           <button title="Settings" className={`rail-btn rail-util ${tab === "settings" ? "active" : ""}`} onClick={() => setTab("settings")}>
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" /></svg>
+            <span className="nav-ico tone-gray"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" /></svg></span>
             <span className="rail-label">{settings?.onboarded === false ? "Setup" : "Settings"}</span>
           </button>
           <button title="Overlay (see-through answers window)" className="rail-btn rail-util" onClick={() => api.toggleOverlay().catch((e) => setError(errorText(e)))}>
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="5" width="14" height="11" rx="2" /><rect x="8" y="9" width="13" height="10" rx="2" /></svg>
+            <span className="nav-ico tone-gray"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="3" y="5" width="14" height="11" rx="2" /><rect x="8" y="9" width="13" height="10" rx="2" /></svg></span>
             <span className="rail-label">Overlay</span>
           </button>
           <span className="rail-tag rail-label">local-first{version && ` · v${version}`}</span>
