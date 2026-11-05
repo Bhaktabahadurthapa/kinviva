@@ -1529,3 +1529,17 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .wb-list li button { font-size: 14px; }
 .excalidraw .help-icon, .excalidraw .welcome-screen-decor { opacity: 1; }
 .excalidraw .welcome-screen-center__heading, .excalidraw .welcome-screen-decor-hint { color: var(--c-text-2); }
+
+/* Hide / show the menu */
+.app { transition: grid-template-columns 160ms var(--ease-out); }
+.rail-toggle { margin-left: auto; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; border: none; background: none; color: var(--c-rail-text-dim); cursor: pointer; }
+.rail-toggle:hover { background: rgba(20, 24, 50, 0.07); color: var(--c-text); }
+.app.rail-collapsed { grid-template-columns: 60px 1fr; }
+.app.rail-collapsed .brand-name, .app.rail-collapsed .rail-label, .app.rail-collapsed .rail-heading { display: none; }
+.app.rail-collapsed .rail { padding: 14px 8px 10px; align-items: center; }
+.app.rail-collapsed .brand { flex-direction: column; gap: 8px; padding: 0 0 12px; }
+.app.rail-collapsed .rail-toggle { margin-left: 0; }
+.app.rail-collapsed .rail-btn { justify-content: center; padding: 9px; width: 42px; }
+.app.rail-collapsed .rail-btn.active::before { left: -8px; }
+.app.rail-collapsed .rail-group { align-items: center; }
+.app.rail-collapsed .rail-foot { align-items: center; }
