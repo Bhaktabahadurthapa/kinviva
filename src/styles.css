@@ -828,7 +828,7 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(150px, 0.8fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(260px, 0.7fr) minmax(0, 2.3fr);
   gap: var(--s-4);
   padding: var(--s-4) var(--s-5);
 }
@@ -843,7 +843,7 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .how-steps li::before { content: counter(step); grid-row: span 2; font-family: var(--f-mono); font-size: var(--t-xs); color: var(--c-signal); border: 1px solid var(--c-signal); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; }
 .how-steps b { font-weight: 600; color: var(--c-text); font-size: var(--t-base); }
 .how-steps span { color: var(--c-text-2); font-size: var(--t-sm); line-height: var(--lh-body); }
-.simple-item { animation: rise var(--m-slow) var(--ease-out); max-width: 78ch; }
+.simple-item { animation: rise var(--m-slow) var(--ease-out); }
 .simple-item + .simple-item { padding-top: var(--s-5); border-top: 1px dashed var(--c-line-strong); }
 .simple-said { font-size: var(--t-sm); color: var(--c-text-3); font-style: italic; margin-bottom: var(--s-2); line-height: 1.45; }
 .simple-said .when { font-family: var(--f-mono); font-style: normal; font-size: var(--t-2xs); letter-spacing: 0.04em; margin-right: 6px; }
@@ -867,13 +867,13 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .simple-answer .ai-rich p { font-size: var(--t-md); line-height: 1.5; }
 
 /* ---- Calm reading: complete notes only, newest large, earlier ones recede ---- */
-.simple-item { max-width: 62ch; animation: calm-in 700ms var(--ease-out) both; }
+.simple-item { max-width: none; animation: calm-in 700ms var(--ease-out) both; }
 @keyframes calm-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.simple-item.is-earlier { opacity: 0.5; transition: opacity 600ms var(--ease-out); }
-.simple-item.is-earlier .simple-meaning .ai-rich p { font-size: var(--t-md); }
-.simple-item.is-earlier .simple-answer { display: none; }
-.simple-item.is-latest .simple-meaning .ai-rich p { font-size: var(--t-2xl); line-height: 1.45; }
-.simple-item.is-latest .simple-meaning .ai-rich li { font-size: var(--t-lg); line-height: 1.5; }
+.simple-item.is-earlier { opacity: 0.55; transition: opacity 600ms var(--ease-out); }
+.simple-item.is-latest { border-left: 3px solid var(--c-signal); padding-left: var(--s-4); }
+.simple-item.is-earlier { border-left: 3px solid transparent; padding-left: var(--s-4); }
+.simple-item .simple-meaning .ai-rich p { font-size: var(--t-xl); line-height: 1.45; }
+.simple-item .simple-meaning .ai-rich li { font-size: var(--t-lg); line-height: 1.5; }
 .simple-answer .ai-rich p, .simple-answer .ai-rich li { font-size: var(--t-lg); line-height: 1.55; }
 .simple-writing {
   font-family: var(--f-mono);
@@ -919,3 +919,7 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .simple-answer.is-primary { margin-top: var(--s-2); }
 .simple-answer.is-primary .ai-rich li { font-size: var(--t-lg); line-height: 1.5; margin-bottom: 6px; }
 .ai-label.is-key-points .ai-label-name { color: var(--c-signal); }
+
+@media (max-width: 900px) {
+  .live-stack { grid-template-columns: 1fr; grid-template-rows: minmax(120px, 0.6fr) minmax(0, 2fr); }
+}

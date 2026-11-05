@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { SideNote } from "../lib/liveReducer";
 import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
@@ -21,9 +21,8 @@ const isDone = (n?: SideNote["meaning"]) => n?.state === "done" && !!n.text.trim
  * between them; the newest is large and earlier ones fade back.
  */
 export function SimpleStream({ finals, side, running }: { finals: Segment[]; side: Record<number, SideNote>; running: boolean }) {
-  const end = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
-  const stick = useRef(true);
+  const prevHeight = useRef(0);
   const lastReveal = useRef(0);
   const [shown, setShown] = useState<number[]>([]);
 
@@ -61,19 +60,21 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
   const visible = shown.filter((id) => id >= 0);
   const latest = visible[visible.length - 1];
 
-  useEffect(() => {
-    if (stick.current) end.current?.scrollIntoView({ block: "end", behavior: "smooth" });
-  }, [visible.length, side]);
-
-  const onScroll = () => {
+  // Newest note sits at the top and nothing scrolls by itself. If you have
+  // scrolled down to re-read an older note, new ones are added above without
+  // moving what you are reading.
+  useLayoutEffect(() => {
     const el = box.current;
-    if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-  };
+    if (!el) return;
+    const grew = el.scrollHeight - prevHeight.current;
+    if (prevHeight.current && el.scrollTop > 24 && grew > 0) el.scrollTop += grew;
+    prevHeight.current = el.scrollHeight;
+  }, [visible.length]);
 
   const byId = new Map(finals.map((s) => [s.id, s]));
 
   return (
-    <div className="simple-stream" ref={box} onScroll={onScroll} aria-live="polite">
+    <div className="simple-stream" ref={box} aria-live="polite">
       {visible.length === 0 && running && <p className="empty">When they finish a thought, its meaning appears here in simple words.</p>}
       {visible.length === 0 && !running && (
         <div className="how">
@@ -85,7 +86,8 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
           </ol>
         </div>
       )}
-      {visible.map((id) => {
+      {running && writing && <div className="simple-writing">Writing the key points…</div>}
+      {[...visible].reverse().map((id) => {
         const seg = byId.get(id);
         const note = side[id];
         if (!seg || !note || (!note.meaning && !hasAnswer(note))) return null;
@@ -113,8 +115,6 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
           </article>
         );
       })}
-      {running && writing && <div className="simple-writing">Writing the key points…</div>}
-      <div ref={end} />
     </div>
   );
 }
