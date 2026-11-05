@@ -3,7 +3,7 @@ import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { initialInterview, interviewReducer, isBusy, latestQuestion, type Slot } from "../lib/interview";
 import { ActionBar } from "../components/ActionBar";
-import { AiText } from "../components/AiText";
+import { ManualAnswers } from "../components/ManualAnswers";
 import { Splitter } from "../components/Splitter";
 import { INTERVIEW_SPLIT_KEY, loadSplit, saveSplit } from "../lib/split";
 import { ScreenAssist } from "../components/ScreenAssist";
@@ -418,16 +418,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
           </div>
         )}
         <ScreenAssist />
-        {(["meaning", "reply"] as const).map((k) => {
-          const a = live.ai[k];
-          if (!a || a.state === "idle" || (!a.text && a.state !== "error")) return null;
-          return (
-            <div key={k} className="iv-card iv-ask-result">
-              <h3>{a.action === "ask" ? `You asked: ${a.question ?? ""}` : a.action === "recap" ? "Recap" : a.action === "suggest" ? "Suggested reply" : "Explanation"}</h3>
-              {a.state === "error" ? <p className="iv-wait">{a.error}</p> : <AiText text={a.text} streaming={a.state === "streaming"} />}
-            </div>
-          );
-        })}
+        <ManualAnswers live={live} />
         <Result slot={slot} stale={stale} onModelAnswer={mode === "practice" || feedbackShown ? () => { setMode("explain"); void run("explain"); } : undefined} />
         <div className="iv-ask-bar">
           <ActionBar live={live} onError={onError} />

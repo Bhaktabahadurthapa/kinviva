@@ -1,3 +1,4 @@
+import { ManualAnswers } from "./components/ManualAnswers";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
@@ -93,7 +94,10 @@ export default function Overlay() {
         {view === "transcript" ? (
           <TranscriptView transcript={live.transcript} compact emptyHint={running ? "Listening…" : "No meeting running."} />
         ) : auto !== "off" ? (
-          <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
+          <>
+            <ManualAnswers live={live} />
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
+          </>
         ) : (
           <>
             <div className="ov-latest">

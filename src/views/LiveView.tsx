@@ -3,6 +3,7 @@ import { AiPanel } from "../components/AiPanel";
 import { ActionBar } from "../components/ActionBar";
 import { SimpleStream } from "../components/SimpleStream";
 import { ScreenAssist } from "../components/ScreenAssist";
+import { ManualAnswers } from "../components/ManualAnswers";
 import { Splitter } from "../components/Splitter";
 import { TranscriptView } from "../components/TranscriptView";
 import { countMatches } from "../lib/search";
@@ -150,6 +151,7 @@ export function LiveView({
               <h2>In simple words</h2>
               <span className="auto-tag">automatic</span>
             </header>
+            <ManualAnswers live={live} />
             <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
           </section>
         )}
