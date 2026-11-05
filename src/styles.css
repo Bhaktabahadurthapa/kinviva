@@ -1487,3 +1487,45 @@ div.metric { cursor: default; }
 .learn-steps li { display: flex; gap: var(--s-2); align-items: center; }
 .learn-steps li > span { flex: 1; }
 .learn-steps select { width: auto; }
+
+/* ==========================================================================
+   Clarity pass: larger type, stronger contrast, nothing hidden
+   ========================================================================== */
+:root { --t-2xs: 12.5px; --t-xs: 13px; --t-sm: 14px; --t-base: 15px; --t-md: 16px; }
+body { line-height: 1.5; }
+.hint, .note, .meta { color: var(--c-text-2); font-size: var(--t-sm); }
+input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.72; }
+.app .btn { font-size: var(--t-sm); }
+.app .btn-sm { font-size: 13px; padding: 5px 11px; }
+/* Disabled controls stay readable (they were faint purple on white) */
+.app .btn:disabled, .app .btn-primary:disabled { opacity: 1; cursor: not-allowed; background: var(--c-sunken); color: var(--c-text-3); border-color: var(--c-line-strong); }
+.app .seg button { font-size: 13.5px; }
+.app h2, .app .label { font-size: 14px; }
+.app .rail-heading { font-size: 11.5px; color: var(--c-text-2); }
+.app .search-kind { font-size: 12px; }
+.disc-meta, .dash-list-main > span, .metric-label { font-size: 13px; }
+.tc-chip, .dash-tags em { font-size: 12.5px; }
+
+/* The sidebar always shows every destination and keeps Settings in reach, even in a short window */
+.app .rail { padding: 14px 10px 10px; }
+.app .brand { padding-bottom: 14px; }
+.app .rail-btn { padding: 6px 10px; font-size: 14px; gap: 9px; }
+.app .rail-group { margin-bottom: 8px; }
+.app .rail-foot { position: sticky; bottom: 0; background: var(--c-rail); padding-top: 8px; border-top: 1px solid var(--c-line); gap: 2px; }
+.app .rail-foot .rail-btn { padding: 6px 10px; }
+.app .rail-tag { font-size: 11.5px; }
+
+/* Whiteboard toolbar: name no longer collapses, export is one menu, AI action is obvious */
+.wb-bar { gap: 8px; padding: 10px 14px; }
+.wb-bar .notes-title { flex: 1 1 180px; min-width: 150px; max-width: 320px; }
+.wb-bar .hint { white-space: nowrap; }
+.wb-export { position: relative; }
+.wb-menu { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; min-width: 260px; display: flex; flex-direction: column; padding: 4px; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 8px; box-shadow: 0 12px 32px -14px rgba(20, 20, 50, 0.4); }
+.wb-menu button { text-align: left; padding: 8px 10px; background: none; border: none; border-radius: 6px; cursor: pointer; color: inherit; font-size: var(--t-sm); }
+.wb-menu button:hover, .wb-menu button:focus-visible { background: var(--c-signal-soft); }
+.wb-panel { width: 340px; }
+.wb-panel h3 { font-size: 14px; margin-top: var(--s-3); }
+.wb-panel .btn-primary { align-self: flex-start; }
+.wb-list li button { font-size: 14px; }
+.excalidraw .help-icon, .excalidraw .welcome-screen-decor { opacity: 1; }
+.excalidraw .welcome-screen-center__heading, .excalidraw .welcome-screen-decor-hint { color: var(--c-text-2); }

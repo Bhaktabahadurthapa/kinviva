@@ -37,7 +37,8 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
   const [cur, setCur] = useState<AppRecord | null>(null);
   const [initial, setInitial] = useState<object | null>(null);
   const [status, setStatus] = useState("");
-  const [panel, setPanel] = useState<"" | "ai" | "versions">("");
+  const [panel, setPanel] = useState<"" | "ai" | "versions">("ai");
+  const [exportOpen, setExportOpen] = useState(false);
   const apiRef = useRef<Api>(null);
   const inbox = useSyncExternalStore(subscribeInbox, peekInbox);
   const handled = useRef(0);
@@ -80,7 +81,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
     setInitial(scene);
     setCur({ ...rec, body: "" });
     setStatus("");
-    setPanel("");
+    setPanel("ai");
   };
   const create = async () => {
     const rec: AppRecord = { id: newId(), kind: "board", title: "Untitled board", body: JSON.stringify({ elements: [] }) };
@@ -137,7 +138,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
     const prefix = `ml${Date.now().toString(36)}`;
     const added = convertToExcalidrawElements(toSkeleton(spec, { x: bottomRight(els) + 120, y: 0 }, prefix) as never);
     a.updateScene({ elements: [...els, ...added], captureUpdate: CaptureUpdateAction.IMMEDIATELY });
-    a.scrollToContent(added, { fitToViewport: true, animate: true });
+    a.scrollToContent(added, { fitToViewport: true, viewportZoomFactor: 0.6, animate: true });
   };
 
   const applyOps = async (ops: BoardOp[]) => {
@@ -237,15 +238,20 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
             <div className="wb-bar">
               <input className="notes-title" value={cur.title} onChange={(e) => void rename(e.target.value)} aria-label="Board name" maxLength={200} />
               <span className="hint" role="status">{status}</span>
-              <button className="btn btn-sm" onClick={() => setPanel(panel === "ai" ? "" : "ai")} aria-pressed={panel === "ai"}>AI tools</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setPanel(panel === "ai" ? "" : "ai")} aria-pressed={panel === "ai"}>{panel === "ai" ? "Hide AI panel" : "Generate or edit with AI"}</button>
               <button className="btn btn-sm" onClick={() => void snapshot("Saved version").then(() => setStatus("Version saved"))}>Save version</button>
               <button className="btn btn-sm" onClick={() => setPanel(panel === "versions" ? "" : "versions")} aria-pressed={panel === "versions"}>Versions</button>
-              <span className="mm-sep" aria-hidden />
-              <button className="btn btn-sm btn-ghost" onClick={() => void exportAs("png")}>PNG</button>
-              <button className="btn btn-sm btn-ghost" onClick={() => void exportAs("svg")}>SVG</button>
-              <button className="btn btn-sm btn-ghost" onClick={() => void exportAs("excalidraw")} title="Editable board file">.excalidraw</button>
-              <button className="btn btn-sm btn-ghost" onClick={() => void exportAs("mermaid")} title="Copy the connected diagram as Mermaid">Mermaid</button>
-              <button className="btn btn-sm btn-ghost" onClick={() => void api.recordDelete(cur.id).then(() => { setCur(null); setInitial(null); void loadList(); onChanged(); })}>Delete</button>
+              <div className="wb-export">
+                <button className="btn btn-sm" aria-haspopup="menu" aria-expanded={exportOpen} onClick={() => setExportOpen((o) => !o)}>Export ▾</button>
+                {exportOpen && (
+                  <div className="wb-menu" role="menu" onMouseLeave={() => setExportOpen(false)}>
+                    {([["png", "PNG image"], ["svg", "SVG image"], ["excalidraw", "Editable board file (.excalidraw)"], ["mermaid", "Copy as Mermaid text"]] as const).map(([k, l]) => (
+                      <button key={k} role="menuitem" onClick={() => { setExportOpen(false); void exportAs(k); }}>{l}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button className="btn btn-sm btn-ghost" onClick={() => void api.recordDelete(cur.id).then(() => { setCur(null); setInitial(null); void loadList(); onChanged(); })}>Delete board</button>
             </div>
             <div className="wb-stage">
               <div className="wb-canvas">
@@ -356,7 +362,7 @@ function AiPanel({ seed, getNodes, onInsert, onApply, onError }: { seed: { id: n
   const desc = ops ? describeOps(ops, getNodes()) : null;
   return (
     <aside className="wb-panel">
-      <h3>Generate a diagram</h3>
+      <h3>Generate a diagram with AI</h3>
       <label className="tc-label" htmlFor="wb-src">From</label>
       <select id="wb-src" value={source} onChange={(e) => { setSource(e.target.value as typeof source); setPick(""); }}>
         <option value="conversation">The current conversation</option>
