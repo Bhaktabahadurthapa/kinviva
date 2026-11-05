@@ -5,7 +5,7 @@ import type { Course, SessionKind } from "../lib/types";
 
 const KINDS: SessionKind[] = ["class", "work", "general"];
 const HINT: Record<SessionKind, string> = {
-  class: "Answers combine the AI model with your saved course resources and cite file and page.",
+  class: "Answers combine MeetingLens with your saved course resources and cite file and page.",
   work: "Same as General for now. Work-specific help comes later.",
   general: "Uses your general library (Resources → General library).",
 };

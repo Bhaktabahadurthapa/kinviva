@@ -44,10 +44,10 @@ export function ScreenAssist({ compact }: { compact?: boolean }) {
   return (
     <div className={`screen-assist${compact ? " is-compact" : ""}`}>
       <div className="screen-head">
-        <button className="btn btn-sm" onClick={read} disabled={busy} title="Sends a screenshot of your main display to your AI provider, only when you press this (or use the shortcut)">
+        <button className="btn btn-sm" onClick={read} disabled={busy} title="Sends a screenshot of your main display to your connected answer engine, only when you press this (or use the shortcut)">
           {busy ? "Reading the screen…" : "Read my screen"}
         </button>
-        <span className="hint">Explains a coding question, command or error that is on your screen. The screenshot goes to your AI provider.</span>
+        <span className="hint">Explains a coding question, command or error that is on your screen. The screenshot is sent only to your connected answer engine.</span>
       </div>
       {ev && !hidden && ev.state !== "starting" && (
         <div className="screen-result" role="status">

@@ -95,7 +95,7 @@ type SectionKey = "appearance" | "audio" | "speech" | "ai" | "assist" | "shortcu
 const SECTIONS: [SectionKey, string][] = [
   ["audio", "Audio"],
   ["speech", "Speech recognition"],
-  ["ai", "AI provider"],
+  ["ai", "Answer engine"],
   ["assist", "Assist"],
   ["shortcuts", "Overlay & shortcuts"],
   ["appearance", "Appearance"],
@@ -182,7 +182,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           <ol>
             <li className={audioReady ? "done" : ""}>Choose audio sources</li>
             <li className={sttReady ? "done" : ""}>Set up speech recognition</li>
-            <li className={aiReady ? "done" : ""}>Set up the AI provider</li>
+            <li className={aiReady ? "done" : ""}>Connect an answer engine</li>
           </ol>
           <button className="btn btn-primary" disabled={!(audioReady && sttReady && aiReady)} onClick={() => persist({ ...s, onboarded: true })}>
             Finish setup
@@ -304,7 +304,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
 
       {sec === "ai" && (
       <section className="card">
-        <h2>AI provider</h2>
+        <h2>Answer engine</h2>
         <p className="hint">Any OpenAI-compatible Chat Completions endpoint. Meeting text is sent to this provider when you press an action or when Auto-assist answers; use a local model to keep it on this computer.</p>
         <div className="row presets">
           {PRESETS.map((p) => (
@@ -332,7 +332,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           <input type="checkbox" checked={s.llm_use_api_key} onChange={(e) => set("llm_use_api_key", e.target.checked)} />
           This provider needs an API key
         </label>
-        {s.llm_use_api_key && <KeyField name="llm_api_key" label="AI provider API key" has={!!secrets.llm_api_key} onChange={loadSecrets} />}
+        {s.llm_use_api_key && <KeyField name="llm_api_key" label="Answer engine API key" has={!!secrets.llm_api_key} onChange={loadSecrets} />}
         <div className="field">
           <label htmlFor="llm-model">Model</label>
           <div className="row">
@@ -378,7 +378,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         {s.web_search && (
           <>
             <p className="hint">
-              Sends only the question being answered (not the whole meeting) to Tavily, using your own key from tavily.com, and adds a few result snippets to the AI prompt. Results can be wrong, so check them.
+              Sends only the question being answered (not the whole meeting) to Tavily, using your own key from tavily.com, and adds a few result snippets to the request. Results can be wrong, so check them.
             </p>
             <KeyField name="web_search_key" label="Tavily API key" has={!!secrets.web_search_key} onChange={loadSecrets} />
           </>
@@ -398,7 +398,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           </select>
         </div>
         <p className="hint">
-          When on, each finished sentence from other participants is sent to your AI provider and explained in simple words beside the
+          When on, each finished sentence from other participants is sent to your connected answer engine and explained in simple words beside the
           transcript; questions also get a draft answer. Nothing is ever said or typed into the meeting. With a cloud provider this sends
           the conversation continuously.
         </p>
@@ -438,7 +438,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           Read my screen automatically when they ask me to explain something they show (off by default)
         </label>
         <p className="hint">
-          When on, hearing phrases like “explain what is on the screen” or “look at this code” sends a screenshot of your main display to your AI provider and shows the
+          When on, hearing phrases like “explain what is on the screen” or “look at this code” sends a screenshot of your main display to your connected answer engine and shows the
           explanation in the overlay. It never runs unless this is on, or you press Read my screen or its shortcut. Use a vision-capable model (for example Gemini Flash).
         </p>
         <label className="check">

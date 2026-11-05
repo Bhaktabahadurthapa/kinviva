@@ -97,7 +97,7 @@ export function ResourcesView({ courses, onCoursesChanged, onError }: { courses:
         <div>
           <h1>Courses</h1>
           <p className="lead">
-            Save each course once, then add its resources week by week. In a Class session, answers combine the AI model's knowledge with that course's files, and cite the file and page for the parts that come from them.
+            Save each course once, then add its resources week by week. In a Class session, answers combine MeetingLens's general knowledge with that course's files, and cite the file and page for the parts that come from them.
             Scanned PDFs without text cannot be read.
           </p>
         </div>

@@ -58,7 +58,7 @@ fn publish_to(app: &AppHandle, state: &AppState, slot: &str, local: &Option<Arc<
 pub fn llm_config(state: &AppState) -> Result<LlmConfig, String> {
     let s = state.settings();
     let api_key = if s.llm_use_api_key {
-        Some(secrets::get("llm_api_key")?.ok_or("Add your AI provider API key in Settings → AI.")?)
+        Some(secrets::get("llm_api_key")?.ok_or("Add your answer engine API key in Settings → Answer engine.")?)
     } else {
         None
     };
@@ -302,7 +302,7 @@ fn web_query_for(action: Action, transcript: &str, focus: Option<&str>, question
 }
 
 async fn web_results(query: &str, cancel: &CancellationToken) -> Result<Vec<websearch::WebSource>, String> {
-    let key = secrets::get("web_search_key")?.ok_or("Add your web search key in Settings → AI.")?;
+    let key = secrets::get("web_search_key")?.ok_or("Add your web search key in Settings → Answer engine.")?;
     websearch::search(websearch::DEFAULT_ENDPOINT, &key, query, cancel).await
 }
 

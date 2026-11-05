@@ -135,7 +135,7 @@ pub fn start(app: &AppHandle, state: &AppState) -> Result<String, String> {
             Ok(full) => emit(&app2, &rid, "done", &full, None),
             Err(LlmError::Cancelled) => emit(&app2, &rid, "cancelled", &text, None),
             Err(LlmError::Failed(e)) => {
-                let hint = if e.contains("400") { format!("{e} Your AI model may not accept images. Choose a vision model such as Gemini Flash in Settings → AI.") } else { e };
+                let hint = if e.contains("400") { format!("{e} Your answer engine may not accept images. Choose a model that can read images, such as Gemini Flash, in Settings → Answer engine.") } else { e };
                 emit(&app2, &rid, "error", "", Some(hint))
             }
         }

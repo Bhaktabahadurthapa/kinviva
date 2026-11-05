@@ -68,7 +68,7 @@ describe("interviewReducer", () => {
 
   it("start failure (for example a missing API key) is shown", () => {
     let s = interviewReducer(initialInterview, { type: "starting", mode: "explain", inputKey: "k" });
-    s = interviewReducer(s, { type: "startFailed", mode: "explain", error: "Add your AI provider API key in Settings → AI." });
+    s = interviewReducer(s, { type: "startFailed", mode: "explain", error: "Add your answer engine API key in Settings → Answer engine." });
     expect(s.slots.explain.status).toBe("error");
   });
 

@@ -204,7 +204,7 @@ async fn send_once(cfg: &LlmConfig, body: &serde_json::Value, cancel: &Cancellat
             if e.is_connect() {
                 LlmError::Failed(format!("Could not connect to {}. Is the provider reachable?", cfg.base_url))
             } else if e.is_timeout() {
-                LlmError::Failed("The AI provider timed out.".into())
+                LlmError::Failed("The answer engine took too long to respond. Please try again.".into())
             } else {
                 LlmError::Failed(format!("Request failed: {}", e.without_url()))
             }
@@ -226,7 +226,7 @@ pub async fn stream_chat(
     mut on_delta: impl FnMut(&str),
 ) -> Result<String, LlmError> {
     if cfg.model.trim().is_empty() {
-        return Err(LlmError::Failed("No AI model is configured. Choose one in Settings → AI.".into()));
+        return Err(LlmError::Failed("No answer engine is set up yet. Connect one in Settings → Answer engine.".into()));
     }
     let mut body = serde_json::json!({
         "model": cfg.model,
@@ -265,7 +265,7 @@ pub async fn stream_chat(
             n = tokio::time::timeout(idle, stream.next()) => n,
         };
         match next {
-            Err(_) => return Err(LlmError::Failed("The AI provider stopped responding.".into())),
+            Err(_) => return Err(LlmError::Failed("The answer engine stopped responding. Please try again.".into())),
             Ok(None) => break,
             Ok(Some(Err(e))) => return Err(LlmError::Failed(format!("Connection lost while streaming: {}", e.without_url()))),
             Ok(Some(Ok(bytes))) => {
@@ -280,7 +280,7 @@ pub async fn stream_chat(
         }
     }
     if full.trim().is_empty() {
-        return Err(LlmError::Failed("The AI provider returned an empty response.".into()));
+        return Err(LlmError::Failed("The answer engine returned an empty response. Please try again.".into()));
     }
     Ok(full)
 }
@@ -575,7 +575,7 @@ mod tests {
         let mut c = cfg("http://127.0.0.1:1/v1".into());
         c.model = " ".into();
         let err = stream_chat(&c, msgs(), CancellationToken::new(), |_| {}).await.unwrap_err();
-        assert!(matches!(err, LlmError::Failed(ref m) if m.contains("No AI model")));
+        assert!(matches!(err, LlmError::Failed(ref m) if m.contains("No answer engine")));
 
         let base = serve(SSE_HEAD, vec!["data: [DONE]\n\n"], 0).await;
         let err = stream_chat(&cfg(base), msgs(), CancellationToken::new(), |_| {}).await.unwrap_err();

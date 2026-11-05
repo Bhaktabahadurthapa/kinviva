@@ -61,7 +61,7 @@ export function SourcePill({
   );
 }
 
-/** Capture disclosures only. Where AI text goes is explained in Settings → AI provider. */
+/** Capture disclosures only. Where AI text goes is explained in Settings → Answer engine. */
 export function PrivacyPills({ status }: { status: MeetingStatus }) {
   const running = status.state === "running";
   return (

@@ -104,7 +104,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
     <div className="simple-stream" ref={box} aria-live="polite">
       {failure && (
         <div className="banner" role="alert">
-          <b>The AI could not answer.</b> {failure}
+          <b>MeetingLens could not generate an answer.</b> {failure}
         </div>
       )}
       {visible.length === 0 && running && !failure && <p className="empty">When they finish a thought, its meaning appears here in simple words.</p>}
@@ -153,8 +153,8 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
 
 /** Turns a provider error into what to do next. */
 function friendlyError(e: string): string {
-  if (/could not read key|credential store|add your ai provider/i.test(e)) return `${e} Open Settings → AI and save your API key again.`;
-  if (/401|403|api key|unauthor|permission/i.test(e)) return `${e} Check your API key in Settings → AI.`;
+  if (/could not read key|credential store|add your answer engine/i.test(e)) return `${e} Open Settings → Answer engine and save your API key again.`;
+  if (/401|403|api key|unauthor|permission/i.test(e)) return `${e} Check your API key in Settings → Answer engine.`;
   if (/429|quota|rate/i.test(e)) return `${e} The provider is limiting requests; wait a moment.`;
   return e;
 }

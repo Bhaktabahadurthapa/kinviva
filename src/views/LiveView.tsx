@@ -59,7 +59,7 @@ export function LiveView({
   const contextBanner =
     !running && status?.context_meeting_id ? (
       <div className={`banner ${status.context_is_demo ? "banner-demo" : "banner-info"}`}>
-        {status.context_is_demo ? "DEMO DATA — " : ""}Showing saved meeting “{status.title}”. AI actions use this transcript.
+        {status.context_is_demo ? "DEMO DATA — " : ""}Showing saved meeting “{status.title}”. MeetingLens actions use this transcript.
       </div>
     ) : null;
 
