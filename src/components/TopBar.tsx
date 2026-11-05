@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "../lib/api";
+import { loadAppearance, saveAppearance, type Theme } from "../lib/appearance";
 import type { Tab } from "../lib/nav";
 import type { SearchHit } from "../lib/platform";
 import type { Settings } from "../lib/types";
@@ -12,6 +13,30 @@ export const HIT_TAB: Record<string, Tab> = {
   session: "sessions", transcript: "sessions", note: "notes", whiteboard: "whiteboard", chart: "visuals", incident: "technical",
   diagram: "architecture", document: "documents", learning: "learning", discover: "discover",
 };
+
+const THEMES: [Theme, string, string][] = [
+  ["light", "Light", "M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4L7 17M17 7l1.4-1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"],
+  ["system", "Match my computer", "M3 5h18v12H3zM8 21h8M12 17v4"],
+  ["dark", "Dark", "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"],
+];
+
+/** One-click switch between light, dark and the computer's own setting. */
+function ThemeSwitch() {
+  const [theme, setTheme] = useState<Theme>(() => loadAppearance().theme);
+  const pick = (t: Theme) => {
+    setTheme(t);
+    saveAppearance({ ...loadAppearance(), theme: t });
+  };
+  return (
+    <div className="theme-switch" role="radiogroup" aria-label="Colour theme">
+      {THEMES.map(([t, label, d]) => (
+        <button key={t} role="radio" aria-checked={theme === t} aria-label={label} title={label} className={theme === t ? "on" : ""} onClick={() => pick(t)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={d} /></svg>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 /** Search across everything stored on this computer, plus the profile shortcut. */
 export function TopBar({ settings, logo, collapsed, onToggle, onOpenHit, onSettings }: { settings: Settings | null; logo: ReactNode; collapsed: boolean; onToggle: () => void; onOpenHit: (h: SearchHit) => void; onSettings: () => void }) {
@@ -89,6 +114,7 @@ export function TopBar({ settings, logo, collapsed, onToggle, onOpenHit, onSetti
           </div>
         )}
       </div>
+      <ThemeSwitch />
       <button className="topbar-icon" onClick={onSettings} title="Settings" aria-label="Settings">
         <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" /></svg>
       </button>

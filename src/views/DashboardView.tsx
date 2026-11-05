@@ -140,7 +140,7 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
             {metric("Boards", stats.whiteboards, stats.whiteboards_week, "whiteboard", "M3 5h18v12H3zM8 21h8M12 17v4", "amber")}
             <button className="d-metric" onClick={() => onNavigate("learning")}>
               <span className="d-ico tone-rose"><Icon d="M3 8l9-5 9 5-9 5zM7 10.5V16c0 1 2.2 3 5 3s5-2 5-3v-5.5" /></span>
-              <span className="d-metric-body"><span className="d-metric-value">{stats.learning_done}</span><span className="d-metric-label">Learning steps done</span><span className="d-week">{stats.learning_total ? `of ${stats.learning_total}` : "no goals yet"}</span></span>
+              <span className="d-metric-body"><span className="d-metric-value">{stats.learning_done}</span><span className="d-metric-label">Learning</span><span className="d-week">{stats.learning_total ? `of ${stats.learning_total} steps done` : "no goals yet"}</span></span>
             </button>
           </>
         )}
