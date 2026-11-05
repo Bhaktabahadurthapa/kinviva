@@ -70,6 +70,8 @@ pub struct Settings {
     pub auto_min_words: u32,
     // Overlay
     pub overlay_content_protection: bool,
+    /// Set once the one-time switch to "hidden from screen sharing by default" has been applied.
+    pub overlay_protection_migrated: bool,
     /// Show the floating answer overlay automatically while the main window is minimized or hidden.
     pub overlay_on_minimize: bool,
     /// Read the screen automatically when the other person asks you to explain something shown.
@@ -108,7 +110,8 @@ impl Default for Settings {
             question_cooldown_secs: 20,
             auto_assist: "explain_reply".into(),
             auto_min_words: 6,
-            overlay_content_protection: false,
+            overlay_content_protection: true,
+            overlay_protection_migrated: false,
             overlay_on_minimize: true,
             screen_auto: false,
             shortcuts: Shortcuts::default(),
@@ -155,6 +158,35 @@ impl Settings {
             .ok()
             .and_then(|u| u.host_str().map(|h| matches!(h, "localhost" | "127.0.0.1" | "::1" | "[::1]")))
             .unwrap_or(false)
+    }
+}
+
+/// One-time change for settings saved before the overlay was hidden from screen sharing by default.
+/// Returns true when it changed something (the caller saves). Someone who switches it off afterwards stays off.
+pub fn migrate_overlay_protection(s: &mut Settings) -> bool {
+    if s.overlay_protection_migrated {
+        return false;
+    }
+    s.overlay_content_protection = true;
+    s.overlay_protection_migrated = true;
+    true
+}
+
+#[cfg(test)]
+mod migration_tests {
+    use super::*;
+
+    #[test]
+    fn old_settings_are_switched_to_hidden_once_and_new_ones_start_hidden() {
+        let mut old: Settings = serde_json::from_str(r#"{"overlay_content_protection": false}"#).unwrap();
+        assert!(!old.overlay_protection_migrated);
+        old.overlay_content_protection = false; // as saved by an older version
+        assert!(migrate_overlay_protection(&mut old));
+        assert!(old.overlay_content_protection && old.overlay_protection_migrated);
+        old.overlay_content_protection = false; // the person turns it off on purpose
+        assert!(!migrate_overlay_protection(&mut old));
+        assert!(!old.overlay_content_protection);
+        assert!(Settings::default().overlay_content_protection);
     }
 }
 

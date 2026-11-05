@@ -1862,3 +1862,13 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .overlay .iv-card h3, .overlay .manual-answers h3 { background: var(--plate); border-radius: 8px; padding: 3px 10px; width: fit-content; color: #d9d2ff; font-size: 12.5px; font-weight: 750; }
 .overlay .btn-ghost, .overlay .btn-sm { background: rgba(9, 12, 26, 0.82); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; }
 .overlay .screen-result p, .overlay .screen-result li { background: var(--plate); border-radius: 8px; padding: 3px 10px; width: fit-content; color: #fff; }
+
+/* Overlay: hidden-from-sharing switch and interview answer */
+.overlay .ov-shield { display: inline-flex; align-items: center; gap: 6px; font: 650 12px var(--f-ui); padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.45); background: rgba(9, 12, 26, 0.85); color: #ffd98a; cursor: pointer; text-shadow: none; white-space: nowrap; }
+.overlay .ov-shield.on { color: #a8f0c4; border-color: rgba(168, 240, 196, 0.7); }
+.overlay .ov-iv { display: flex; flex-direction: column; gap: 6px; padding: 6px 4px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.25); }
+.overlay .ov-iv p, .overlay .ov-iv li { background: var(--plate); border-radius: 8px; padding: 3px 10px; width: fit-content; max-width: 100%; font-size: 17px; line-height: 1.5; font-weight: 520; color: #fff; margin: 0; }
+.overlay .ov-iv ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.overlay .ov-iv .ov-iv-title { font-size: 12.5px; font-weight: 750; letter-spacing: 0.05em; text-transform: uppercase; color: #d9d2ff; }
+.overlay .ov-iv .ov-iv-say { font-size: 19px; font-weight: 600; }
+.overlay .ov-iv .ov-iv-follow { font-size: 14px; color: #eef2ff; }

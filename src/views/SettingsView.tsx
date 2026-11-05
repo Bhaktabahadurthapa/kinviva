@@ -426,7 +426,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
             checked={s.overlay_content_protection}
             onChange={(e) => set("overlay_content_protection", e.target.checked)}
           />
-          Ask the OS to hide MeetingLens (main window and overlay) from screen sharing and recording
+          Hide MeetingLens (main window and overlay) from screen sharing and recording (on by default)
         </label>
         <p className="hint">
           Best effort only. It relies on the OS window-sharing flag; some capture tools, apps and OS versions ignore it, and it does not hide the Dock icon

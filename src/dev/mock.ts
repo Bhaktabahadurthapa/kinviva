@@ -9,7 +9,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
     llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true, web_search: false,
     question_detection: false, question_cooldown_secs: 20, auto_assist: "explain_reply", auto_min_words: 6,
-    overlay_content_protection: false, overlay_on_minimize: true, screen_auto: false,
+    overlay_content_protection: true, overlay_protection_migrated: true, overlay_on_minimize: true, screen_auto: false,
     shortcuts: { toggle_meeting: "CommandOrControl+Shift+M", toggle_overlay: "CommandOrControl+Shift+O", suggest_reply: "CommandOrControl+Shift+R", explain: "CommandOrControl+Shift+E", screen_help: "CommandOrControl+Shift+S" },
   };
   const viewLabel = new URLSearchParams(location.search).get("view") ?? "main";

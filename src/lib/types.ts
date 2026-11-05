@@ -133,6 +133,7 @@ export interface Settings {
   auto_assist: AutoMode;
   auto_min_words: number;
   overlay_content_protection: boolean;
+  overlay_protection_migrated?: boolean;
   overlay_on_minimize: boolean;
   screen_auto: boolean;
   shortcuts: Shortcuts;

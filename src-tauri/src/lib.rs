@@ -153,7 +153,10 @@ pub fn run() {
                 auto: Default::default(),
                 interview: Default::default(),
             };
-            let settings = state.settings();
+            let mut settings = state.settings();
+            if settings::migrate_overlay_protection(&mut settings) {
+                let _ = state.save_settings(&settings);
+            }
             app.manage(state);
             prime_speech_engine(&settings);
             if settings.overlay_content_protection {
