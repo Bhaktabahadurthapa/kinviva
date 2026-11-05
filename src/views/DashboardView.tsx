@@ -188,7 +188,7 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
 
       <aside className="d-right">
         <section className="d-card d-assistant">
-          <header><h2>✦ Assistant</h2></header>
+          <header><h2 className="d-h2-ico"><Icon d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" size={18} /> Assistant</h2></header>
           <div className="d-tabs" role="tablist" aria-label="Assistant mode">{MODES.map((m) => <button key={m} role="tab" aria-selected={mode === m} className={mode === m ? "active" : ""} onClick={() => setMode(m)}>{m}</button>)}</div>
           <form className="d-ask" onSubmit={(e) => { e.preventDefault(); void ask(); }}>
             <textarea value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder={mode === "Code" ? "Describe the code you need…" : "Ask about your documents, or anything technical…"} aria-label="Assistant request" maxLength={2000} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void ask(); } }} />
@@ -218,7 +218,7 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
 
       <section className="d-card d-discover">
         <header>
-          <h2>◎ Discover{settings?.interests?.length ? ` — ${settings.interests.slice(0, 3).join(", ")}${settings.interests.length >= 3 ? " & more" : ""}` : ""}</h2>
+          <h2 className="d-h2-ico"><Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z" size={18} /> Discover{settings?.interests?.length ? ` — ${settings.interests.slice(0, 3).join(", ")}${settings.interests.length >= 3 ? " & more" : ""}` : ""}</h2>
           <button className="d-link" onClick={() => onNavigate("discover")}>{settings?.interests?.length ? "Manage interests →" : "Choose interests →"}</button>
         </header>
         {!enabled ? (

@@ -4,7 +4,7 @@ export interface ChartPoint { label: string; value: number; quote: string; verif
 export interface ChartSeries { name: string; points: ChartPoint[]; color?: string }
 export interface ChartSpec { title: string; type: ChartType; unit: string; series: ChartSeries[]; illustrative: boolean }
 
-export const PALETTE = ["#5b3fd6", "#0b8f8c", "#d98a00", "#c2410c", "#2f7d4f", "#6b7280"];
+export const PALETTE = ["#5b3fd6", "#0f7f82", "#a35f00", "#c2416b", "#2b6cb0", "#2f855a"];
 
 export const emptyChart = (): ChartSpec => ({ title: "New chart", type: "bar", unit: "", illustrative: false, series: [{ name: "Series 1", points: [{ label: "A", value: 0, quote: "", verified: false, edited: true }] }] });
 
