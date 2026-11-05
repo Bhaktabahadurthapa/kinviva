@@ -1443,3 +1443,20 @@ div.metric { cursor: default; }
 .vis-table td { padding: 4px 8px; border-bottom: 1px solid var(--c-line); }
 .vis-table input { padding: 4px 8px; }
 @media (max-width: 900px) { .vis-grid { grid-template-columns: 1fr; } }
+
+/* Tools pages (Classroom, Presentation) and quiz */
+.tools-page { max-width: 860px; }
+.tools-page h1 { font-family: var(--f-ui); font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+.tool { display: flex; flex-direction: column; gap: var(--s-2); }
+.quiz { display: flex; flex-direction: column; gap: var(--s-3); padding-left: 20px; margin: var(--s-2) 0; }
+.quiz > li > div { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.quiz-choice { display: flex; gap: 8px; align-items: center; padding: 6px 10px; border: 1px solid var(--c-line); border-radius: 8px; cursor: pointer; }
+.quiz-choice input { width: auto; }
+.quiz-choice.right { border-color: var(--c-ok); background: color-mix(in srgb, var(--c-ok) 10%, transparent); }
+.quiz-choice.wrong { border-color: var(--c-bad); background: color-mix(in srgb, var(--c-bad) 10%, transparent); }
+.dialog-wide { width: min(640px, 100%); text-align: left; max-height: 86vh; overflow: auto; }
+.dialog-wide h2 { text-align: center; }
+.dec h3 { font-family: var(--f-ui); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 650; margin: var(--s-3) 0 var(--s-1); }
+.dec ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.iv-job { margin-bottom: var(--s-3); }
+.iv-job summary { cursor: pointer; font-weight: 600; font-size: var(--t-sm); padding: 6px 0; }

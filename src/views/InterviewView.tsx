@@ -7,6 +7,7 @@ import { ManualAnswers } from "../components/ManualAnswers";
 import { renderMarked, renderTerm } from "../lib/highlight";
 import { Splitter } from "../components/Splitter";
 import { INTERVIEW_SPLIT_KEY, loadSplit, saveSplit } from "../lib/split";
+import { ToolRun } from "../components/tools/ToolRun";
 import { ScreenAssist } from "../components/ScreenAssist";
 import { NotesDownload } from "../components/NotesDownload";
 import { chooseSavePath, type NotesFormat } from "../lib/download";
@@ -418,6 +419,10 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
             </ol>
           </div>
         )}
+        <details className="iv-job">
+          <summary>Analyse a job description</summary>
+          <ToolRun kind="job_analysis" title="Job description analysis" help="Skills they want, likely questions and what to prepare. Your own Documents (resume, projects) are compared when you have added them; nothing is assumed about you." button="Analyse" placeholder="Paste the job description" inputRequired onError={onError} onSaved={() => {}} rows={6} />
+        </details>
         <ScreenAssist />
         <ManualAnswers live={live} />
         <Result slot={slot} stale={stale} onModelAnswer={mode === "practice" || feedbackShown ? () => { setMode("explain"); void run("explain"); } : undefined} />

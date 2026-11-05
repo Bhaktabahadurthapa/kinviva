@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api, errorText } from "../lib/api";
+import { DecisionsDialog } from "./tools/DecisionsDialog";
 import type { AiAction, LiveStateLike } from "./actionTypes";
 
 export function useActions(onError: (msg: string) => void) {
@@ -14,8 +15,9 @@ export function useActions(onError: (msg: string) => void) {
   };
 }
 
-export function ActionBar({ live, onError, compact }: { live: LiveStateLike; onError: (m: string) => void; compact?: boolean }) {
+export function ActionBar({ live, onError, compact, onNoteSaved }: { live: LiveStateLike; onError: (m: string) => void; compact?: boolean; onNoteSaved?: () => void }) {
   const [q, setQ] = useState("");
+  const [dec, setDec] = useState(false);
   const run = useActions(onError);
   const busy = (slot: "meaning" | "reply") => live.ai[slot]?.state === "streaming";
   return (
@@ -42,6 +44,8 @@ export function ActionBar({ live, onError, compact }: { live: LiveStateLike; onE
         <button className="btn" onClick={() => run("recap")} disabled={busy("meaning")}>
           Recap
         </button>
+        {!compact && <button className="btn" onClick={() => setDec(true)} title="List what was decided and who owns which action">Decisions</button>}
+        {dec && <DecisionsDialog onClose={() => setDec(false)} onError={onError} onSaved={() => onNoteSaved?.()} />}
       </div>
     </div>
   );

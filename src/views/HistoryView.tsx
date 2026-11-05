@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DecisionsDialog } from "../components/tools/DecisionsDialog";
 import { TranscriptView } from "../components/TranscriptView";
 import { api, errorText } from "../lib/api";
 import { chooseSavePath, FORMAT_LABEL, safeName, type NotesFormat } from "../lib/download";
@@ -15,6 +16,7 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
   const [sel, setSel] = useState<MeetingDetail | null>(null);
   const [title, setTitle] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [dec, setDec] = useState(false);
 
   const load = () => api.listMeetings(search).then(setList).catch((e) => onError(errorText(e)));
   useEffect(() => {
@@ -96,6 +98,7 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
                 {(["md", "docx", "txt"] as NotesFormat[]).map((f) => (
                   <button key={f} className="btn btn-sm" onClick={() => doExport(f)}>{FORMAT_LABEL[f]}</button>
                 ))}
+                <button className="btn btn-sm" onClick={() => setDec(true)} title="Decisions and action items from this session">Decisions &amp; actions</button>
                 <button
                   className="btn btn-sm"
                   onClick={() => api.loadMeetingContext(sel.meeting.id).then(onOpenLive).catch((e) => onError(errorText(e)))}
@@ -150,6 +153,7 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
           </>
         )}
       </section>
+      {dec && sel && <DecisionsDialog meetingId={sel.meeting.id} onClose={() => setDec(false)} onError={onError} onSaved={() => {}} />}
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { NAV, SESSION_TABS, type Tab } from "./lib/nav";
+import { ClassroomView } from "./views/ClassroomView";
+import { PresentationView } from "./views/PresentationView";
 import { NotesView } from "./views/NotesView";
 import { KnowledgeView } from "./views/KnowledgeView";
 import { DashboardView } from "./views/DashboardView";
@@ -198,7 +200,7 @@ export default function App() {
         await api.startMeeting(title, chosen);
         setTitle("");
         // Starting from Interview stays in Interview; other screens go to Meeting.
-        if (tab !== "interview") setTab("meeting");
+        if (!SESSION_TABS.has(tab)) setTab("meeting");
       }
     } catch (e) {
       setError(errorText(e));
@@ -361,6 +363,8 @@ export default function App() {
               onSaved={() => setHistoryKey((k) => k + 1)}
             />
           )}
+          {tab === "classroom" && <ClassroomView live={live} running={!!running} onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onBoard={() => setTab("whiteboard")} />}
+          {tab === "presentation" && <PresentationView live={live} running={!!running} onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onBoard={() => setTab("whiteboard")} />}
           {tab === "notes" && <NotesView onError={setError} refreshKey={historyKey} onChanged={() => setHistoryKey((k) => k + 1)} />}
           {tab === "knowledge" && <KnowledgeView onError={setError} onOpenHit={openHit} />}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
