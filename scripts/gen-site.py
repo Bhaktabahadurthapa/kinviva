@@ -4,7 +4,7 @@ index.html is hand-written. Run: python3 scripts/gen-site.py"""
 import html, pathlib
 
 SITE = pathlib.Path(__file__).resolve().parent.parent / "site"
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 REL = "https://github.com/Bhaktabahadurthapa/meetinglens/releases"
 GH = "https://github.com/Bhaktabahadurthapa/meetinglens"
 

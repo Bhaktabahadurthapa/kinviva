@@ -43,6 +43,7 @@ model. The video is built with Remotion from [`demo-video/`](demo-video/).
 | 🎧 **Two channels** | Other participants ("Them", system audio) and you ("Me", microphone), each with status, a level meter and clear errors. Switch microphones mid-meeting. |
 | 📝 **Live transcript** | Partial text appears as people talk and settles into timecoded final lines. |
 | ⚡ **Hands-free reading view** | **Auto-assist** (on by default): the screen splits into *Live transcript* on one side and *Live insights* on the other. When someone else finishes a sentence, its meaning appears below in large, plain language, and questions get a draft answer — no clicks. Switch to *Explain only* or *Off* any time. |
+| 🗺 **Architecture diagrams** | The **Architecture** screen turns what people describe (AWS, Kubernetes, CI/CD, databases, incidents) into a diagram with zoom, pan, full screen, editable Mermaid source and SVG/PNG export. Every box is labelled *verified*, *mentioned* or *inferred*. See `docs/architecture/architecture-visualization.md`. |
 | 💬 **Explain** | The latest point in short, plain-English sentences that keep the speaker's meaning and flag what the transcript left unclear. |
 | ✍️ **Suggest reply** | A short, editable draft grounded in the transcript, your notes and your documents. It never invents your experience, and nothing is sent into the meeting. |
 | 🧭 **Recap and Ask** | Bullet recap of the meeting so far, or a direct question answered from what was said. |
@@ -127,7 +128,7 @@ To build it yourself instead, create a normal app you can drag into Applications
 ./scripts/build-mac-app.sh
 ```
 
-This creates `dist-mac/MeetingLens.app` and `dist-mac/MeetingLens_0.1.4_aarch64.dmg`.
+This creates `dist-mac/MeetingLens.app` and `dist-mac/MeetingLens_0.1.5_aarch64.dmg`.
 Open the DMG, drag **MeetingLens** onto **Applications**, then open it from
 Launchpad. On first start macOS asks for **Microphone** and **Screen & System
 Audio Recording** permission; allow both, then quit and reopen the app once.

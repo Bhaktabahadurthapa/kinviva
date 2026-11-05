@@ -362,6 +362,154 @@ MeetingLens is proprietary software (see LICENSE). It includes or depends on the
 | react-dom | 18.3.1 | MIT |
 | scheduler | 0.23.2 | MIT |
 
+## Mermaid (Architecture panel)
+
+MeetingLens loads the official `mermaid` npm package (MIT) on demand to draw architecture diagrams. It is used as published, with no source changes. Its licence notice:
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2014 - 2022 Knut Sveidqvist
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+Mermaid and its dependencies as installed (production dependency tree). Where a package offers a choice of licences, MeetingLens uses it under the permissive option: `elkjs` under EPL-2.0 and `dompurify` under Apache-2.0. `khroma` ships its MIT licence file without a `license` field.
+
+| Package | Version | License |
+|---|---|---|
+| @antfu/install-pkg | 2.1.0 | MIT |
+| @braintree/sanitize-url | 7.1.2 | MIT |
+| @chevrotain/cst-dts-gen | 13.2.0 | Apache-2.0 |
+| @chevrotain/gast | 13.2.0 | Apache-2.0 |
+| @chevrotain/regexp-to-ast | 13.2.0 | Apache-2.0 |
+| @chevrotain/types | 13.2.0 | Apache-2.0 |
+| @chevrotain/utils | 13.2.0 | Apache-2.0 |
+| @iconify/types | 2.0.0 | MIT |
+| @iconify/utils | 3.1.7 | MIT |
+| @mermaid-js/parser | 2.0.1 | MIT |
+| @types/d3 | 7.4.3 | MIT |
+| @types/d3-array | 3.2.2 | MIT |
+| @types/d3-axis | 3.0.6 | MIT |
+| @types/d3-brush | 3.0.6 | MIT |
+| @types/d3-chord | 3.0.6 | MIT |
+| @types/d3-color | 3.1.3 | MIT |
+| @types/d3-contour | 3.0.6 | MIT |
+| @types/d3-delaunay | 6.0.4 | MIT |
+| @types/d3-dispatch | 3.0.7 | MIT |
+| @types/d3-drag | 3.0.7 | MIT |
+| @types/d3-dsv | 3.0.7 | MIT |
+| @types/d3-ease | 3.0.2 | MIT |
+| @types/d3-fetch | 3.0.7 | MIT |
+| @types/d3-force | 3.0.10 | MIT |
+| @types/d3-format | 3.0.4 | MIT |
+| @types/d3-geo | 3.1.1 | MIT |
+| @types/d3-hierarchy | 3.1.7 | MIT |
+| @types/d3-interpolate | 3.0.4 | MIT |
+| @types/d3-path | 3.1.1 | MIT |
+| @types/d3-polygon | 3.0.2 | MIT |
+| @types/d3-quadtree | 3.0.6 | MIT |
+| @types/d3-random | 3.0.4 | MIT |
+| @types/d3-scale | 4.0.9 | MIT |
+| @types/d3-scale-chromatic | 3.1.0 | MIT |
+| @types/d3-selection | 3.0.12 | MIT |
+| @types/d3-shape | 3.2.0 | MIT |
+| @types/d3-time | 3.0.4 | MIT |
+| @types/d3-time-format | 4.0.3 | MIT |
+| @types/d3-timer | 3.0.2 | MIT |
+| @types/d3-transition | 3.0.9 | MIT |
+| @types/d3-zoom | 3.0.9 | MIT |
+| @types/geojson | 7946.0.16 | MIT |
+| @upsetjs/venn.js | 2.0.0 | MIT |
+| chevrotain | 13.2.0 | Apache-2.0 |
+| commander | 15.0.0 | MIT |
+| commander | 7.2.0 | MIT |
+| cose-base | 1.0.3 | MIT |
+| cose-base | 2.2.0 | MIT |
+| cytoscape | 3.34.4 | MIT |
+| cytoscape-cose-bilkent | 4.1.0 | MIT |
+| cytoscape-fcose | 2.2.0 | MIT |
+| d3 | 7.9.2 | ISC |
+| d3-array | 2.12.1 | BSD-3-Clause |
+| d3-array | 3.2.5 | ISC |
+| d3-axis | 3.0.1 | ISC |
+| d3-brush | 3.0.1 | ISC |
+| d3-chord | 3.0.2 | ISC |
+| d3-color | 3.1.1 | ISC |
+| d3-contour | 4.0.3 | ISC |
+| d3-delaunay | 6.0.6 | ISC |
+| d3-dispatch | 3.0.2 | ISC |
+| d3-drag | 3.0.1 | ISC |
+| d3-dsv | 3.0.2 | ISC |
+| d3-ease | 3.0.2 | BSD-3-Clause |
+| d3-fetch | 3.0.2 | ISC |
+| d3-force | 3.0.1 | ISC |
+| d3-format | 3.1.3 | ISC |
+| d3-geo | 3.1.2 | ISC |
+| d3-hierarchy | 3.1.3 | ISC |
+| d3-interpolate | 3.0.2 | ISC |
+| d3-path | 1.0.9 | BSD-3-Clause |
+| d3-path | 3.1.1 | ISC |
+| d3-polygon | 3.0.2 | ISC |
+| d3-quadtree | 3.0.2 | ISC |
+| d3-random | 3.0.2 | ISC |
+| d3-sankey | 0.12.3 | BSD-3-Clause |
+| d3-scale | 4.0.3 | ISC |
+| d3-scale-chromatic | 3.1.1 | ISC |
+| d3-selection | 3.0.1 | ISC |
+| d3-shape | 1.3.7 | BSD-3-Clause |
+| d3-shape | 3.2.1 | ISC |
+| d3-time | 3.1.1 | ISC |
+| d3-time-format | 4.1.1 | ISC |
+| d3-timer | 3.0.2 | ISC |
+| d3-transition | 3.0.2 | ISC |
+| d3-zoom | 3.0.1 | ISC |
+| dagre-d3-es | 7.0.14 | MIT |
+| dayjs | 1.11.23 | MIT |
+| delaunator | 5.1.0 | ISC |
+| dompurify | 3.4.17 | (MPL-2.0 OR Apache-2.0) |
+| elkjs | 0.12.1 | EPL-2.0 OR GPL-3.0-or-later |
+| es-toolkit | 1.53.1 | MIT |
+| hachure-fill | 0.5.2 | MIT |
+| iconv-lite | 0.6.3 | MIT |
+| import-meta-resolve | 4.2.0 | MIT |
+| internmap | 1.0.1 | ISC |
+| internmap | 2.0.3 | ISC |
+| katex | 0.18.10 | MIT |
+| khroma | 2.1.0 | MIT (see package LICENSE file) |
+| layout-base | 1.0.2 | MIT |
+| layout-base | 2.0.1 | MIT |
+| lodash-es | 4.18.1 | MIT |
+| marked | 16.4.2 | MIT |
+| mermaid | 12.3.0 | MIT |
+| package-manager-detector | 1.9.0 | MIT |
+| path-data-parser | 0.1.0 | MIT |
+| points-on-curve | 0.2.0 | MIT |
+| points-on-path | 0.2.1 | MIT |
+| robust-predicates | 3.0.3 | Unlicense |
+| roughjs | 4.6.6 | MIT |
+| rw | 1.3.3 | BSD-3-Clause |
+| safer-buffer | 2.1.2 | MIT |
+| stylis | 4.4.0 | MIT |
+| tinyexec | 1.3.1 | MIT |
+| ts-dedent | 2.3.0 | MIT |
+
 ## Bundled fonts
 
 | Font | Package | License |

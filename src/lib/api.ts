@@ -14,6 +14,7 @@ import type {
   SkillInfo,
   Snapshot,
 } from "./types";
+import type { ArchModel, DiagramRecord } from "./architecture";
 
 /** True when running inside the Tauri shell (not a plain browser preview). */
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -51,6 +52,11 @@ export const api = {
   aiRun: (action: AiAction, question?: string) =>
     invoke<string>("ai_run", { action, question: question ?? null }),
   interviewRun: (request: InterviewRequest) => invoke<string>("interview_run", { request }),
+  architectureGenerate: (requestId: string, hint?: string) => invoke<ArchModel>("architecture_generate", { requestId, hint: hint || null }),
+  architectureSave: (diagram: DiagramRecord) => invoke<void>("architecture_save", { diagram }),
+  architectureList: (meetingId?: string | null) => invoke<DiagramRecord[]>("architecture_list", { meetingId: meetingId ?? null }),
+  architectureDelete: (id: string) => invoke<void>("architecture_delete", { id }),
+  architectureWriteFile: (path: string, dataBase64: string) => invoke<void>("architecture_write_file", { path, dataBase64 }),
   interviewSkills: () => invoke<SkillInfo[]>("interview_skills"),
   aiCancel: (requestId: string) => invoke<boolean>("ai_cancel", { requestId }),
   listMeetings: (search?: string) => invoke<MeetingSummary[]>("list_meetings", { search: search || null }),

@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PrivacyPills, SourceErrors, SourcePill } from "./components/StatusBar";
 import { api, errorText, inTauri } from "./lib/api";
 import { useLive } from "./lib/useLive";
@@ -13,7 +13,9 @@ import { defaultSession, loadSession, saveSession, sessionProblem, type SessionC
 import type { Course } from "./lib/types";
 
 /** The two primary areas. Settings is a utility button, not a primary item. */
-type Tab = "meeting" | "interview" | "sessions" | "knowledge" | "settings";
+const ArchitecturePanel = lazy(() => import("./components/architecture/ArchitecturePanel").then((m) => ({ default: m.ArchitecturePanel })));
+
+type Tab = "meeting" | "interview" | "architecture" | "sessions" | "knowledge" | "settings";
 
 function Logo() {
   // The app icon mark: a lens with a voice waveform inside.
@@ -92,6 +94,10 @@ function LiveTitle({ id, initial, onError }: { id: string | null; initial: strin
 export default function App() {
   const { state: live, dispatch } = useLive();
   const [tab, setTab] = useState<Tab>("meeting");
+  const [archSeen, setArchSeen] = useState(false);
+  useEffect(() => {
+    if (tab === "architecture") setArchSeen(true);
+  }, [tab]);
   const meetingTab: MeetingTab = tab === "sessions" ? "history" : tab === "knowledge" ? "resources" : "live";
   const [session, setSessionState] = useState<SessionChoice>(loadSession);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -193,6 +199,7 @@ export default function App() {
           [
             ["meeting", "Meeting"],
             ["interview", "Interview"],
+            ["architecture", "Architecture"],
             ["sessions", "Sessions"],
             ["knowledge", "Knowledge"],
           ] as [Tab, string][]
@@ -311,6 +318,13 @@ export default function App() {
             />
           )}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
+          {archSeen && (
+            <div hidden={tab !== "architecture"} className="arch-host">
+              <Suspense fallback={<p className="hint arch-loading">Loading the diagram tools…</p>}>
+                <ArchitecturePanel live={live} onError={setError} />
+              </Suspense>
+            </div>
+          )}
           {tab === "settings" && <SettingsView onError={setError} onSaved={setSettings} />}
         </div>
       </main>

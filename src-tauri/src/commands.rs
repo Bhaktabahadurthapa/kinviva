@@ -190,6 +190,70 @@ pub fn ai_run(app: AppHandle, state: State<AppState>, action: Action, question: 
     assistant::start(&app, &state, action, question)
 }
 
+/// Builds an architecture model from the live transcript. The result is checked
+/// (see `architecture::validate`); the front end turns it into Mermaid.
+#[tauri::command]
+pub async fn architecture_generate(state: State<'_, AppState>, request_id: String, hint: Option<String>) -> R<crate::architecture::Model> {
+    let settings = state.settings();
+    let mut cfg = assistant::llm_config(&state)?;
+    cfg.json_mode = true;
+    let transcript = state.live.lock().unwrap().transcript.recent_window(settings.context_chars * 2);
+    if transcript.trim().is_empty() {
+        return Err("Nothing has been transcribed yet. Start a meeting or open a saved one first.".into());
+    }
+    let passages = if settings.use_documents {
+        let tail: String = transcript.chars().rev().take(900).collect::<Vec<_>>().into_iter().rev().collect();
+        state.db.search_passages(&crate::docs::fts_query(&tail, 12), 4).unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let documents = passages.iter().map(|p| p.text.as_str()).collect::<Vec<_>>().join("\n");
+    let messages = crate::architecture::build_messages(&transcript, &passages, hint.as_deref().unwrap_or(""));
+    let cancel = tokio_util::sync::CancellationToken::new();
+    state.ai_tasks.lock().unwrap().insert(request_id.clone(), cancel.clone());
+    let result = crate::llm::stream_chat(&cfg, messages, cancel, |_| {}).await;
+    state.ai_tasks.lock().unwrap().remove(&request_id);
+    match result {
+        Ok(text) => crate::architecture::validate(&text, &transcript, &documents),
+        Err(crate::llm::LlmError::Cancelled) => Err("Cancelled.".into()),
+        Err(crate::llm::LlmError::Failed(m)) => Err(m),
+    }
+}
+
+#[tauri::command]
+pub fn architecture_save(state: State<AppState>, diagram: crate::db::DiagramRecord) -> R<()> {
+    // Limits keep one saved diagram small; the front end already validated the source.
+    if diagram.source.len() > 20_000 || diagram.model.as_ref().is_some_and(|m| m.len() > 60_000) {
+        return Err("That diagram is too large to save.".into());
+    }
+    state.db.add_diagram(&diagram)
+}
+
+#[tauri::command]
+pub fn architecture_list(state: State<AppState>, meeting_id: Option<String>) -> R<Vec<crate::db::DiagramRecord>> {
+    state.db.list_diagrams(meeting_id.as_deref(), 100)
+}
+
+#[tauri::command]
+pub fn architecture_delete(state: State<AppState>, id: String) -> R<()> {
+    state.db.delete_diagram(&id)
+}
+
+/// Writes an exported diagram (SVG or PNG, base64) to a path the user chose in the save dialog.
+#[tauri::command]
+pub fn architecture_write_file(path: String, data_base64: String) -> R<()> {
+    use base64::Engine;
+    let lower = path.to_lowercase();
+    if !(lower.ends_with(".svg") || lower.ends_with(".png")) {
+        return Err("Diagrams can only be exported as .svg or .png.".into());
+    }
+    let bytes = base64::engine::general_purpose::STANDARD.decode(data_base64).map_err(|e| e.to_string())?;
+    if bytes.len() > 40 * 1024 * 1024 {
+        return Err("That image is too large.".into());
+    }
+    std::fs::write(&path, bytes).map_err(|e| format!("Could not save the file: {e}"))
+}
+
 #[tauri::command]
 pub fn interview_run(app: AppHandle, state: State<AppState>, request: crate::interview::Request) -> R<String> {
     crate::interview::start(&app, &state, request)

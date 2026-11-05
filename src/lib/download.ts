@@ -14,3 +14,8 @@ export function safeName(title: string, fallback: string): string {
 export async function chooseSavePath(stem: string, format: NotesFormat): Promise<string | null> {
   return save({ defaultPath: `${stem}.${format}`, filters: [{ name: FILTER[format], extensions: [format] }] });
 }
+
+/** Save dialog for a diagram image. */
+export async function chooseImagePath(stem: string, ext: "svg" | "png"): Promise<string | null> {
+  return save({ defaultPath: `${stem}.${ext}`, filters: [{ name: ext === "svg" ? "SVG image" : "PNG image", extensions: [ext] }] });
+}

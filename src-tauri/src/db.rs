@@ -101,7 +101,38 @@ const MIGRATIONS: &[&str] = &[
     );
     CREATE INDEX interview_entries_time ON interview_entries(created_at);
     "#,
+    // 5: saved architecture diagrams (Mermaid source plus the checked model they came from)
+    r#"
+    CREATE TABLE diagrams (
+        id TEXT PRIMARY KEY,
+        meeting_id TEXT REFERENCES meetings(id) ON DELETE SET NULL,
+        created_at INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        source TEXT NOT NULL,
+        model TEXT,
+        origin TEXT NOT NULL
+    );
+    CREATE INDEX diagrams_time ON diagrams(created_at);
+    CREATE INDEX diagrams_meeting ON diagrams(meeting_id);
+    "#,
 ];
+
+#[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]
+pub struct DiagramRecord {
+    pub id: String,
+    pub meeting_id: Option<String>,
+    pub created_at: i64,
+    pub title: String,
+    /// flowchart | sequence
+    pub kind: String,
+    /// The Mermaid source that was shown.
+    pub source: String,
+    /// The checked architecture model (JSON), when the diagram was generated.
+    pub model: Option<String>,
+    /// generated | edited
+    pub origin: String,
+}
 
 pub struct Db {
     conn: Mutex<Connection>,
@@ -418,6 +449,36 @@ impl Db {
         }
         let json = serde_json::to_string(sources).map_err(|e| e.to_string())?;
         self.conn.lock().unwrap().execute("UPDATE ai_messages SET sources = ?2 WHERE id = ?1", params![id, json]).map(|_| ()).map_err(e)
+    }
+
+    pub fn add_diagram(&self, d: &DiagramRecord) -> R<()> {
+        self.conn
+            .lock()
+            .unwrap()
+            .execute(
+                "INSERT INTO diagrams(id, meeting_id, created_at, title, kind, source, model, origin) VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                params![d.id, d.meeting_id, d.created_at, d.title, d.kind, d.source, d.model, d.origin],
+            )
+            .map(|_| ())
+            .map_err(e)
+    }
+
+    /// Newest first. With a meeting id, only that session's diagrams.
+    pub fn list_diagrams(&self, meeting_id: Option<&str>, limit: usize) -> R<Vec<DiagramRecord>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT id, meeting_id, created_at, title, kind, source, model, origin FROM diagrams WHERE (?1 IS NULL OR meeting_id = ?1) ORDER BY created_at DESC LIMIT ?2")
+            .map_err(e)?;
+        let rows = stmt
+            .query_map(params![meeting_id, limit as i64], |r| {
+                Ok(DiagramRecord { id: r.get(0)?, meeting_id: r.get(1)?, created_at: r.get(2)?, title: r.get(3)?, kind: r.get(4)?, source: r.get(5)?, model: r.get(6)?, origin: r.get(7)? })
+            })
+            .map_err(e)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(e)
+    }
+
+    pub fn delete_diagram(&self, id: &str) -> R<()> {
+        self.conn.lock().unwrap().execute("DELETE FROM diagrams WHERE id = ?1", [id]).map(|_| ()).map_err(e)
     }
 
     pub fn add_interview_entry(&self, x: &InterviewEntry) -> R<()> {
@@ -797,5 +858,18 @@ mod tests {
         let m = db.get_meeting("m").unwrap();
         assert_eq!(m.ai_messages[0].sources, vec![SourceRef { label: "a.pdf, p. 2".into(), url: None }]);
         assert_eq!(m.ai_messages[0].question.as_deref(), Some("asked"));
+    }
+
+    #[test]
+    fn diagrams_are_saved_listed_per_session_and_deleted() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = Db::open(&dir.path().join("t.sqlite")).unwrap();
+        let mk = |id: &str, m: Option<&str>, t: i64| DiagramRecord { id: id.into(), meeting_id: m.map(String::from), created_at: t, title: "T".into(), kind: "flowchart".into(), source: "flowchart TD\n a-->b".into(), model: Some("{}".into()), origin: "generated".into() };
+        db.add_diagram(&mk("a", None, 1)).unwrap();
+        db.add_diagram(&mk("b", None, 2)).unwrap();
+        assert_eq!(db.list_diagrams(None, 10).unwrap().iter().map(|d| d.id.as_str()).collect::<Vec<_>>(), vec!["b", "a"]);
+        assert!(db.list_diagrams(Some("nope"), 10).unwrap().is_empty());
+        db.delete_diagram("a").unwrap();
+        assert_eq!(db.list_diagrams(None, 10).unwrap().len(), 1);
     }
 }

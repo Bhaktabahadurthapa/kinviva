@@ -12,3 +12,9 @@
 - Pause / Resume transcription: provider gets 1.2 s of silence to close any open sentence, then audio is dropped (and not recorded) until resume. Capture stays open; the indicator shows Paused.
 - Tests: pause gate, search, split math, interview style prompt, invalid-credentials.
 - Impeccable skills installed into `.claude/` (project scope, no hooks).
+
+## Architecture visualisation (Mermaid)
+- New sidebar destination **Architecture**: conversation to checked architecture model to Mermaid diagram, with evidence labels, explanation, concerns, zoom/pan/fit/full screen, edit source, copy, SVG and PNG export, saved history. See `docs/architecture/architecture-visualization.md`.
+- Added `mermaid` 12.3.0 (lazy-loaded), dev-only `jsdom` for tests; notices updated.
+- DB migration 5 (`diagrams`). Existing data untouched.
+

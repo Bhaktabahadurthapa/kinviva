@@ -1,5 +1,6 @@
 //! MeetingLens desktop backend.
 
+pub mod architecture;
 pub mod assistant;
 pub mod auto_assist;
 pub mod audio;
@@ -181,6 +182,11 @@ pub fn run() {
             commands::ai_run,
             commands::ai_cancel,
             commands::interview_run,
+            commands::architecture_generate,
+            commands::architecture_save,
+            commands::architecture_list,
+            commands::architecture_delete,
+            commands::architecture_write_file,
             commands::interview_skills,
             commands::list_meetings,
             commands::get_meeting,

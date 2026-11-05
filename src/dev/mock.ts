@@ -28,6 +28,28 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     interview_run: "mock-request",
     interview_saved_count: 3,
     list_courses: [{ id: "os", name: "Operating Systems", code: "CS350", term: "Fall", created_at: 1, resources: 2 }],
+    architecture_list: [],
+    architecture_save: null,
+    architecture_write_file: null,
+    architecture_generate: {
+      title: "Web app on AWS", diagram: "flowchart", illustrative: false, confidence: "medium",
+      components: [
+        { id: "n1", label: "AWS load balancer", kind: "loadbalancer", evidence: "mentioned" },
+        { id: "n2", label: "Ingress controller", kind: "ingress", evidence: "mentioned" },
+        { id: "n3", label: "Kubernetes services", kind: "service", evidence: "mentioned" },
+        { id: "n4", label: "PostgreSQL", kind: "database", evidence: "verified" },
+        { id: "n5", label: "Redis cache", kind: "cache", evidence: "inferred" },
+      ],
+      relations: [
+        { from: "n1", to: "n2", label: "HTTPS", evidence: "mentioned" },
+        { from: "n2", to: "n3", label: "", evidence: "mentioned" },
+        { from: "n3", to: "n4", label: "SQL", evidence: "verified" },
+        { from: "n3", to: "n5", label: "", evidence: "inferred" },
+      ],
+      explanation: "Visitors reach the app through a load balancer. It passes them to the ingress controller, which sends each request to the right service inside Kubernetes. The services keep their data in PostgreSQL.",
+      concerns: [{ kind: "unknown", text: "Nobody said how the database is backed up." }, { kind: "failure_point", text: "One load balancer is a single point of failure." }],
+      references: ["uses an AWS load balancer"],
+    },
     list_meetings: [],
     get_meeting: { meeting: { id: "demo-1", title: "Meeting Nov 5, 09:21" }, segments: [{ id: 1 }] },
     list_documents: [
