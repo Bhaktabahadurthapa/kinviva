@@ -1,7 +1,7 @@
-import { save } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState } from "react";
 import { TranscriptView } from "../components/TranscriptView";
 import { api, errorText } from "../lib/api";
+import { chooseSavePath, FORMAT_LABEL, safeName, type NotesFormat } from "../lib/download";
 import type { MeetingDetail, MeetingSummary } from "../lib/types";
 
 const fmtDate = (ms: number) => new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -32,10 +32,9 @@ export function HistoryView({ onError, onOpenLive, refreshKey }: { onError: (m: 
     }
   };
 
-  const doExport = async (format: "md" | "txt") => {
+  const doExport = async (format: NotesFormat) => {
     if (!sel) return;
-    const safe = sel.meeting.title.replace(/[^\w\- ]+/g, "").trim() || "meeting";
-    const path = await save({ defaultPath: `${safe}.${format}`, filters: [{ name: format === "md" ? "Markdown" : "Text", extensions: [format] }] });
+    const path = await chooseSavePath(safeName(sel.meeting.title, "meeting"), format);
     if (!path) return;
     try {
       await api.exportMeeting(sel.meeting.id, format, path);
@@ -92,8 +91,10 @@ export function HistoryView({ onError, onOpenLive, refreshKey }: { onError: (m: 
                 aria-label="Meeting title"
               />
               <div className="row">
-                <button className="btn btn-sm" onClick={() => doExport("md")}>Export Markdown</button>
-                <button className="btn btn-sm" onClick={() => doExport("txt")}>Export text</button>
+                <span className="hint">Download notes:</span>
+                {(["md", "docx", "txt"] as NotesFormat[]).map((f) => (
+                  <button key={f} className="btn btn-sm" onClick={() => doExport(f)}>{FORMAT_LABEL[f]}</button>
+                ))}
                 <button
                   className="btn btn-sm"
                   onClick={() => api.loadMeetingContext(sel.meeting.id).then(onOpenLive).catch((e) => onError(errorText(e)))}

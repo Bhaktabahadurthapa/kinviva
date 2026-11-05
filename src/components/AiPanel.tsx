@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api, errorText } from "../lib/api";
 import type { AiSlot } from "../lib/types";
 import { AiText } from "./AiText";
-import { citationText, resolveCitations } from "../lib/citations";
+import { citationText, displayText } from "../lib/citations";
 
 const actionLabel: Record<string, string> = {
   explain: "Simple meaning",
@@ -68,7 +68,7 @@ export function AiPanel({
           <textarea className="reply-edit" value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Editable suggested reply" />
         ) : (
           <div className="ai-text">
-            {slot.text ? <AiText text={resolveCitations(slot.text, slot.sources)} streaming={streaming} /> : streaming ? <span className="thinking">Thinking </span> : null}
+            {slot.text ? <AiText text={displayText(slot)} streaming={streaming} /> : streaming ? <span className="thinking">Thinking </span> : null}
           </div>
         )}
         {slot?.state === "cancelled" && <p className="note">Cancelled. Partial text shown.</p>}

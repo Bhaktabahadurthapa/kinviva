@@ -1,4 +1,7 @@
-const LABELS = ["Key points", "Meaning", "Details", "Terms", "Answer", "Fill in", "Unclear", "Asking", "Points to cover"];
+const LABELS = ["Key points", "Expert addition", "Meaning", "Details", "Terms", "Answer", "Unclear", "Asking", "Points to cover"];
+/** Headings of a meeting answer, alone on a line. */
+const HEADINGS = ["YOU COULD SAY", "KEY TAKEAWAY", "SOURCES", "CLARIFICATION"];
+const HEADING_RE = new RegExp(`^\\**(${HEADINGS.join("|")})\\**\\s*:?\\s*\\**$`, "i");
 const LABEL_RE = new RegExp(`^\\**(${LABELS.join("|")})\\**\\s*:\\s*\\**\\s*(.*)$`, "i");
 
 /** The model's way of saying a question needs no answer from the user. */
@@ -16,6 +19,12 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
   for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (!line) continue;
+    const heading = line.match(HEADING_RE);
+    if (heading) {
+      const h = HEADINGS.find((n) => n.toLowerCase() === heading[1].toLowerCase()) ?? heading[1];
+      blocks.push({ kind: "label", label: h.charAt(0) + h.slice(1).toLowerCase(), text: "" });
+      continue;
+    }
     const label = line.match(LABEL_RE);
     const bullet = line.match(/^(?:[-•*]|\d+[.)])\s+(.*)$/);
     if (label) {

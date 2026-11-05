@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { SideNote } from "../lib/liveReducer";
 import type { AiSlot, Segment, Transcript } from "../lib/types";
 import { AiText } from "./AiText";
-import { resolveCitations } from "../lib/citations";
+import { displayText } from "../lib/citations";
 
 function fmt(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -27,7 +27,7 @@ function NotePart({ label, slot }: { label: string; slot: AiSlot }) {
       {slot.state === "error" ? (
         <p className="note-error">{slot.error}</p>
       ) : slot.text ? (
-        <AiText text={resolveCitations(slot.text, slot.sources)} streaming={streaming} />
+        <AiText text={displayText(slot)} streaming={streaming} />
       ) : (
         <span className="thinking">Thinking </span>
       )}

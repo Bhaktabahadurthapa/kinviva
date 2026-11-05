@@ -1004,3 +1004,16 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .overlay .simple-answer .ai-rich p, .overlay .simple-answer .ai-rich li { font-size: var(--t-lg); line-height: 1.5; color: #fff; font-weight: 500; }
 .overlay .simple-item .simple-meaning .ai-rich p, .overlay .simple-item .simple-meaning .ai-rich li { color: #fff; }
 .overlay .script-sources { color: #c0ccc8; }
+
+/* ---- Saved notes ---- */
+.saved-banner { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); flex-wrap: wrap; margin: var(--s-3) var(--s-5) 0; }
+.saved-actions, .notes-download { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.iv-notes { display: flex; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; align-items: center; margin-bottom: var(--s-3); padding: var(--s-3) var(--s-4); }
+.iv-notes p { margin: 2px 0 0; }
+.iv-notes-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+/* ---- Meeting answer headings: YOU COULD SAY / KEY TAKEAWAY / SOURCES ---- */
+.ai-label.is-you-could-say .ai-label-name, .ai-label.is-key-takeaway .ai-label-name { color: var(--c-signal); }
+.ai-label.is-sources { margin-top: var(--s-3); }
+.ai-label.is-sources + ul li, .ai-label.is-sources + p { font-size: var(--t-sm); color: var(--c-text-3); }
+.ai-label.is-clarification .ai-label-name { color: var(--c-warn); }

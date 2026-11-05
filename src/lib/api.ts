@@ -54,8 +54,12 @@ export const api = {
   getMeeting: (id: string) => invoke<MeetingDetail>("get_meeting", { id }),
   renameMeeting: (id: string, title: string) => invoke<void>("rename_meeting", { id, title }),
   deleteMeeting: (id: string) => invoke<void>("delete_meeting", { id }),
-  exportMeeting: (id: string, format: "md" | "txt", path: string) =>
+  exportMeeting: (id: string, format: "md" | "txt" | "docx", path: string) =>
     invoke<string>("export_meeting", { id, format, path }),
+  exportInterview: (format: "md" | "txt" | "docx", path: string, sinceMs?: number | null) =>
+    invoke<string>("export_interview", { format, path, sinceMs: sinceMs ?? null }),
+  interviewSavedCount: (sinceMs?: number | null) => invoke<number>("interview_saved_count", { sinceMs: sinceMs ?? null }),
+  clearInterviewEntries: (sinceMs?: number | null) => invoke<void>("clear_interview_entries", { sinceMs: sinceMs ?? null }),
   loadMeetingContext: (id: string) => invoke<void>("load_meeting_context", { id }),
   createDemoMeeting: () => invoke<string>("create_demo_meeting"),
   addDocument: (path: string, courseId?: string | null, week?: number | null) =>

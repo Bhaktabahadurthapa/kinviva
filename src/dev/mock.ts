@@ -26,6 +26,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
       { category: "coding", name: "coding-interview", description: "Coach coding answers in Python, Java or C++.", error: null },
     ],
     interview_run: "mock-request",
+    interview_saved_count: 3,
     list_courses: [{ id: "os", name: "Operating Systems", code: "CS350", term: "Fall", created_at: 1, resources: 2 }],
     list_meetings: [],
     list_documents: [

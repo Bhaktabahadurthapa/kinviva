@@ -85,6 +85,22 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE meetings ADD COLUMN week INTEGER;
     CREATE INDEX documents_course ON documents(course_id, week);
     "#,
+    // 4: references kept with each answer; saved interview practice for later review
+    r#"
+    ALTER TABLE ai_messages ADD COLUMN sources TEXT;
+    CREATE TABLE interview_entries (
+        id TEXT PRIMARY KEY,
+        created_at INTEGER NOT NULL,
+        category TEXT NOT NULL,
+        role TEXT,
+        mode TEXT NOT NULL,
+        language TEXT,
+        question TEXT NOT NULL,
+        answer TEXT,
+        result TEXT NOT NULL
+    );
+    CREATE INDEX interview_entries_time ON interview_entries(created_at);
+    "#,
 ];
 
 pub struct Db {
@@ -106,6 +122,28 @@ pub struct MeetingSummary {
     pub week: Option<i64>,
 }
 
+#[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]
+pub struct SourceRef {
+    /// "notes.pdf, p. 4" or a web page title.
+    pub label: String,
+    /// Web address for web sources; `None` for your own files.
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct InterviewEntry {
+    pub id: String,
+    pub created_at: i64,
+    pub category: String,
+    pub role: Option<String>,
+    pub mode: String,
+    pub language: Option<String>,
+    pub question: String,
+    pub answer: Option<String>,
+    /// The structured result as JSON, or plain text when the model did not follow the format.
+    pub result: String,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct AiMessage {
     pub id: String,
@@ -115,6 +153,7 @@ pub struct AiMessage {
     pub model: String,
     pub status: String,
     pub created_at: i64,
+    pub sources: Vec<SourceRef>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -349,7 +388,7 @@ impl Db {
             .map_err(e)?;
         let mut stmt = conn
             .prepare(
-                "SELECT id, action, question, response, model, status, created_at FROM ai_messages
+                "SELECT id, action, question, response, model, status, created_at, sources FROM ai_messages
                  WHERE meeting_id = ?1 ORDER BY created_at",
             )
             .map_err(e)?;
@@ -363,12 +402,52 @@ impl Db {
                     model: r.get(4)?,
                     status: r.get(5)?,
                     created_at: r.get(6)?,
+                    sources: r.get::<_, Option<String>>(7)?.and_then(|j| serde_json::from_str(&j).ok()).unwrap_or_default(),
                 })
             })
             .map_err(e)?
             .collect::<Result<Vec<_>, _>>()
             .map_err(e)?;
         Ok(MeetingDetail { meeting: summary, notes, segments, ai_messages })
+    }
+
+    /// Keeps the references (your files with page, web pages) used for an answer.
+    pub fn set_ai_message_sources(&self, id: &str, sources: &[SourceRef]) -> R<()> {
+        if sources.is_empty() {
+            return Ok(());
+        }
+        let json = serde_json::to_string(sources).map_err(|e| e.to_string())?;
+        self.conn.lock().unwrap().execute("UPDATE ai_messages SET sources = ?2 WHERE id = ?1", params![id, json]).map(|_| ()).map_err(e)
+    }
+
+    pub fn add_interview_entry(&self, x: &InterviewEntry) -> R<()> {
+        self.conn
+            .lock()
+            .unwrap()
+            .execute(
+                "INSERT INTO interview_entries(id, created_at, category, role, mode, language, question, answer, result) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                params![x.id, x.created_at, x.category, x.role, x.mode, x.language, x.question, x.answer, x.result],
+            )
+            .map(|_| ())
+            .map_err(e)
+    }
+
+    /// Saved interview practice, oldest first, optionally only entries at or after `since_ms`.
+    pub fn list_interview_entries(&self, since_ms: Option<i64>) -> R<Vec<InterviewEntry>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT id, created_at, category, role, mode, language, question, answer, result FROM interview_entries WHERE created_at >= ?1 ORDER BY created_at")
+            .map_err(e)?;
+        let rows = stmt
+            .query_map([since_ms.unwrap_or(0)], |r| {
+                Ok(InterviewEntry { id: r.get(0)?, created_at: r.get(1)?, category: r.get(2)?, role: r.get(3)?, mode: r.get(4)?, language: r.get(5)?, question: r.get(6)?, answer: r.get(7)?, result: r.get(8)? })
+            })
+            .map_err(e)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(e)
+    }
+
+    pub fn delete_interview_entries(&self, since_ms: Option<i64>) -> R<()> {
+        self.conn.lock().unwrap().execute("DELETE FROM interview_entries WHERE created_at >= ?1", [since_ms.unwrap_or(0)]).map(|_| ()).map_err(e)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -699,5 +778,24 @@ mod tests {
         let hits = db.search_passages("\"rust\"", 5).unwrap();
         assert_eq!((hits.len(), hits[0].page), (1, None));
         assert_eq!(db.list_documents().unwrap()[0].course_id, None);
+    }
+
+    #[test]
+    fn interview_entries_and_answer_references_are_saved() {
+        let db = Db::open_in_memory().unwrap();
+        let e = |id: &str, at: i64| InterviewEntry { id: id.into(), created_at: at, category: "coding".into(), role: None, mode: "explain".into(), language: None, question: "q".into(), answer: None, result: "r".into() };
+        db.add_interview_entry(&e("a", 100)).unwrap();
+        db.add_interview_entry(&e("b", 200)).unwrap();
+        assert_eq!(db.list_interview_entries(None).unwrap().len(), 2);
+        assert_eq!(db.list_interview_entries(Some(150)).unwrap().iter().map(|x| x.id.as_str()).collect::<Vec<_>>(), vec!["b"]);
+        db.delete_interview_entries(Some(150)).unwrap();
+        assert_eq!(db.list_interview_entries(None).unwrap().len(), 1);
+
+        db.create_meeting("m", "t", 1, false).unwrap();
+        db.add_ai_message("x", Some("m"), "suggest", Some("asked"), "Answer", "model", "done").unwrap();
+        db.set_ai_message_sources("x", &[SourceRef { label: "a.pdf, p. 2".into(), url: None }]).unwrap();
+        let m = db.get_meeting("m").unwrap();
+        assert_eq!(m.ai_messages[0].sources, vec![SourceRef { label: "a.pdf, p. 2".into(), url: None }]);
+        assert_eq!(m.ai_messages[0].question.as_deref(), Some("asked"));
     }
 }

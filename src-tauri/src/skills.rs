@@ -103,6 +103,41 @@ pub fn skill_for(category: Category) -> Result<&'static Skill, String> {
         .map_err(Clone::clone)
 }
 
+/// (keyword, weight) lists per category, checked against lower-cased text.
+const KEYWORDS: [(Category, &[(&str, u32)]); 4] = [
+    (
+        Category::SystemDesign,
+        &[("design a ", 3), ("design an ", 3), ("design the ", 3), ("architecture", 1), ("scalab", 1), ("throughput", 1), ("shard", 1), ("load balanc", 1), ("cache", 1), ("multi-tenant", 1), ("multitenant", 1), ("high availability", 1), ("microservice", 1), ("rate limit", 1), ("trade-off", 1), ("tradeoff", 1)],
+    ),
+    (
+        Category::CloudDevops,
+        &[("kubernetes", 1), ("k8s", 1), ("docker", 1), ("terraform", 1), ("ansible", 1), ("helm", 1), ("aws", 1), ("azure", 1), ("gcp", 1), ("ci/cd", 1), ("cicd", 1), ("pipeline", 1), ("devops", 1), ("incident", 1), ("outage", 1), ("observability", 1), ("prometheus", 1), ("grafana", 1), ("iam", 1), ("vpc", 1), ("container", 1), ("rollback", 1), ("deployment", 1)],
+    ),
+    (
+        Category::AiEngineering,
+        &[("llm", 1), ("rag", 1), ("embedding", 1), ("prompt", 1), ("hallucinat", 1), ("fine-tun", 1), ("language model", 1), ("vector", 1), ("ai agent", 1), ("guardrail", 1), ("inference", 1), ("token", 1), ("model evaluation", 2)],
+    ),
+    (
+        Category::Coding,
+        &[("algorithm", 1), ("complexity", 1), ("big o", 2), ("array", 1), ("linked list", 2), ("binary tree", 2), ("hash map", 2), ("recursion", 1), ("write a function", 2), ("leetcode", 2), ("python", 1), ("java ", 1), ("c++", 1), ("dynamic programming", 2)],
+    ),
+];
+
+/// Guesses which interview skill fits a question, so meeting answers can use the
+/// same expert guidance. Needs a clear signal (score of 2 or more), otherwise `None`.
+/// Ties go to the earlier category: system design, cloud, AI, coding.
+pub fn detect_category(text: &str) -> Option<Category> {
+    let t = format!(" {} ", text.to_lowercase());
+    let mut best: Option<(u32, Category)> = None;
+    for (cat, words) in KEYWORDS {
+        let score: u32 = words.iter().filter(|(w, _)| t.contains(w)).map(|(_, n)| n).sum();
+        if score >= 2 && best.is_none_or(|(b, _)| score > b) {
+            best = Some((score, cat));
+        }
+    }
+    best.map(|(_, c)| c)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -166,5 +201,16 @@ mod tests {
     fn windows_line_endings_are_accepted() {
         let crlf = format!("---\r\nname: demo-skill\r\ndescription: A demo.\r\n---\r\n{}", body());
         assert!(parse_skill("demo-skill", &crlf).is_ok());
+    }
+
+    #[test]
+    fn technical_questions_pick_the_matching_skill_and_small_talk_picks_none() {
+        let d = detect_category;
+        assert_eq!(d("Design a multi-tenant CI/CD platform for internal teams across AWS and Azure."), Some(Category::SystemDesign));
+        assert_eq!(d("Our Kubernetes pods keep crashing after the deployment, what do you check?"), Some(Category::CloudDevops));
+        assert_eq!(d("How would you reduce hallucinations in a RAG assistant with a vector database?"), Some(Category::AiEngineering));
+        assert_eq!(d("What is the time complexity of a hash map lookup, and the big O of this algorithm?"), Some(Category::Coding));
+        assert_eq!(d("Thanks everyone, see you next week"), None);
+        assert_eq!(d("We should deploy on Friday"), None, "one weak keyword is not enough");
     }
 }

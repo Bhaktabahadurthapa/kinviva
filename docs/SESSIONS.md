@@ -10,7 +10,7 @@ Above Live, a **Session** selector chooses what the next meeting is for. It is l
 
 | Session | What it does today |
 | --- | --- |
-| **Class** | Answers use only the chosen course's saved resources and cite file and page. |
+| **Class** | Answers combine the AI model's knowledge with the chosen course's saved resources, and cite file and page for the parts that come from your files. |
 | **Work** | Behaves like General for now. A separate Work workflow is not built yet. |
 | **General** | The original behaviour: answers may use the general library. |
 
@@ -20,7 +20,7 @@ Above Live, a **Session** selector chooses what the next meeting is for. It is l
 2. **Meeting → Live → Session = Class**: choose the course and, optionally, the week, then start the meeting as usual. Audio capture and transcription are unchanged.
 3. When the other side asks something or you ask for an answer, MeetingLens searches only that course's active resources. Files for the selected week rank first, then the rest by relevance.
 4. The model labels each excerpt S1, S2, ... and is told to cite them. The app replaces each marker with the real source, such as `week2.pdf, p. 4` (text files show `notes.md, part 2`). A marker that matches no retrieved excerpt is shown as `[unverified source]`, so an invented citation is never displayed as real.
-5. If nothing in the course matches, the answer says "Not found in your course resources" before any general-knowledge answer, and general knowledge is not cited.
+5. Answers combine the AI model's own expertise with your course resources, so they are complete even when your files are thin. Parts that use a resource carry a citation; parts from the model's knowledge carry none. If nothing in the course matches, the answer is written from the model's knowledge and says once that your resources did not cover it.
 
 Saved answers in History keep the real citations. Opening a saved class meeting as context restores its course and week.
 

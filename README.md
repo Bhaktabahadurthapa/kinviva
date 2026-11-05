@@ -215,6 +215,7 @@ Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 
 ## Docs
 
+- [How answers are written](docs/ANSWERS.md): format, sources and citation checking
 - [Meeting sessions](docs/SESSIONS.md): Class / Work / General, courses and citations
 - [Interview practice](docs/INTERVIEW.md): skills, modes, limitations
 - [Architecture](docs/ARCHITECTURE.md) · [Languages and why](docs/LANGUAGES.md)

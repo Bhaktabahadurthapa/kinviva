@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { SideNote } from "../lib/liveReducer";
 import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
-import { citationText, resolveCitations } from "../lib/citations";
+import { citationText, displayText, spokenPart } from "../lib/citations";
 
 /** Minimum time between new explanations appearing, so each can be read. */
 const REVEAL_GAP_MS = 300;
@@ -104,17 +104,17 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
             </div>
             {note.meaning && (
               <div className="simple-meaning">
-                <AiText text={resolveCitations(note.meaning.text, note.meaning.sources)} streaming={!isFinished(note.meaning)} />
+                <AiText text={displayText(note.meaning)} streaming={!isFinished(note.meaning)} />
               </div>
             )}
             {answer && hasAnswer(note) && (
               <div className={`simple-answer${note.meaning ? "" : " is-primary"}`}>
                 <div className="script-head">
                   <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : (note.meaning ? "Your script — you could say" : "Answer — you could say")}</span>
-                  <CopyButton text={answer.text} />
+                  <CopyButton text={spokenPart(answer.text)} />
                 </div>
-                <AiText text={resolveCitations(answer.text, answer.sources)} streaming={!isFinished(answer)} />
-                {isFinished(answer) && <SourceLine sources={answer.sources} web={answer.web} />}
+                <AiText text={displayText(answer)} streaming={!isFinished(answer)} />
+                {isFinished(answer) && answer.sources.length === 0 && (answer.web ?? []).length === 0 && !/SOURCES/i.test(displayText(answer)) && <SourceLine sources={answer.sources} web={answer.web} />}
               </div>
             )}
           </article>
@@ -131,7 +131,7 @@ function CopyButton({ text }: { text: string }) {
       className="btn btn-ghost btn-sm"
       onClick={async () => {
         try {
-          await navigator.clipboard.writeText(text.replace(/^\s*(Answer|Details|Fill in):\s*/gim, "").trim());
+          await navigator.clipboard.writeText(text.trim());
           setDone(true);
           setTimeout(() => setDone(false), 1500);
         } catch {

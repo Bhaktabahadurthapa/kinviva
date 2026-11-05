@@ -2,6 +2,8 @@ import { listen } from "@tauri-apps/api/event";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { initialInterview, interviewReducer, isBusy, latestQuestion, type Slot } from "../lib/interview";
+import { NotesDownload } from "../components/NotesDownload";
+import { chooseSavePath, type NotesFormat } from "../lib/download";
 import type { InterviewCategory, InterviewEvent, InterviewLanguage, InterviewMode, InterviewRole, SkillInfo } from "../lib/types";
 import type { LiveState } from "../lib/liveReducer";
 
@@ -110,7 +112,29 @@ function Result({ slot, stale, onModelAnswer }: { slot: Slot; stale: boolean; on
   );
 }
 
-export function InterviewView({ live, onError }: { live: LiveState; onError: (m: string) => void }) {
+export function InterviewView({ live, onError, since, onNewSession }: { live: LiveState; onError: (m: string) => void; since: number; onNewSession: () => void }) {
+  const [savedCount, setSavedCount] = useState(0);
+  const [allCount, setAllCount] = useState(0);
+  const [noteMsg, setNoteMsg] = useState<string | null>(null);
+  const refreshCounts = () => {
+    api.interviewSavedCount(since).then(setSavedCount).catch(() => {});
+    api.interviewSavedCount(null).then(setAllCount).catch(() => {});
+  };
+  useEffect(refreshCounts, [since]);
+  useEffect(() => {
+    const sub = listen("interview-saved", refreshCounts);
+    return () => void sub.then((un) => un());
+  }, [since]);
+  const download = async (f: NotesFormat, scope: "session" | "all") => {
+    const path = await chooseSavePath(scope === "session" ? "interview-practice-notes" : "interview-practice-all", f);
+    if (!path) return;
+    try {
+      await api.exportInterview(f, path, scope === "session" ? since : null);
+      setNoteMsg(`Saved to ${path}`);
+    } catch (e) {
+      onError(errorText(e));
+    }
+  };
   const [category, setCategory] = useState<InterviewCategory>("cloud_devops");
   const [language, setLanguage] = useState<InterviewLanguage>("python");
   const [mode, setMode] = useState<InterviewMode>("explain");
@@ -285,6 +309,22 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
       </section>
 
       <section className="iv-output" aria-live="polite">
+        <div className="iv-notes card">
+          <div>
+            <strong>Practice notes</strong>
+            <p className="hint">
+              {savedCount} answer{savedCount === 1 ? "" : "s"} saved this session ({allCount} in total). Download the questions, your answers, scripts and feedback to study later.
+            </p>
+            {noteMsg && <p className="hint">{noteMsg}</p>}
+          </div>
+          <div className="iv-notes-actions">
+            <span className="hint">This session:</span>
+            <NotesDownload disabled={savedCount === 0} onPick={(f) => download(f, "session")} />
+            <span className="hint">Everything:</span>
+            <NotesDownload disabled={allCount === 0} onPick={(f) => download(f, "all")} />
+            <button className="btn btn-ghost btn-sm" onClick={() => { onNewSession(); setNoteMsg(null); }} title="Start a fresh set of notes. Nothing is deleted.">New session</button>
+          </div>
+        </div>
         {slot.status === "idle" && (
           <div className="how">
             <p className="empty">{mode === "explain" ? "Get a spoken answer plus the reasoning behind it." : mode === "question" ? "Get a mock question for your role, answer it, then get feedback." : "Answer first. Then get feedback on correctness, missing points, structure and clarity."}</p>

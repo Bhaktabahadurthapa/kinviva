@@ -218,13 +218,31 @@ pub async fn delete_meeting(state: State<'_, AppState>, id: String) -> R<()> {
 #[tauri::command]
 pub fn export_meeting(state: State<AppState>, id: String, format: String, path: String) -> R<String> {
     let m = state.db.get_meeting(&id)?;
-    let body = match format.as_str() {
-        "md" => export::to_markdown(&m),
-        "txt" => export::to_text(&m),
-        other => return Err(format!("Unknown export format \"{other}\".")),
-    };
-    std::fs::write(&path, body).map_err(|e| format!("Could not write file: {e}"))?;
+    let bytes = export::render(&export::meeting_doc(&m), &format)?;
+    std::fs::write(&path, bytes).map_err(|e| format!("Could not write file: {e}"))?;
     Ok(path)
+}
+
+/// Saves interview practice notes. `since_ms` limits it to one practice session.
+#[tauri::command]
+pub fn export_interview(state: State<AppState>, format: String, path: String, since_ms: Option<i64>) -> R<String> {
+    let entries = state.db.list_interview_entries(since_ms)?;
+    if entries.is_empty() {
+        return Err("Nothing to save yet. Explain or practise an answer first.".into());
+    }
+    let bytes = export::render(&export::interview_doc(&entries), &format)?;
+    std::fs::write(&path, bytes).map_err(|e| format!("Could not write file: {e}"))?;
+    Ok(path)
+}
+
+#[tauri::command]
+pub fn interview_saved_count(state: State<AppState>, since_ms: Option<i64>) -> R<usize> {
+    Ok(state.db.list_interview_entries(since_ms)?.len())
+}
+
+#[tauri::command]
+pub fn clear_interview_entries(state: State<AppState>, since_ms: Option<i64>) -> R<()> {
+    state.db.delete_interview_entries(since_ms)
 }
 
 /// Load a saved meeting into the assistant (idle only) so AI actions can use it.

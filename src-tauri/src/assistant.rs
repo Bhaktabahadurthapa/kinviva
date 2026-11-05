@@ -110,7 +110,20 @@ pub fn start_with(
         Vec::new()
     };
     let web_query = web_query_for(action, &transcript, focus.as_deref(), question.as_deref());
-    let mut messages = prompts::build(&PromptInput {
+    // Technical questions get the matching bundled expert skill (Suggest and Ask only,
+    // so the quick explanations stay fast). Class sessions keep their own instructions.
+    let expert = if matches!(action, Action::Suggest | Action::Ask) && !session.is_class() {
+        let probe = question
+            .clone()
+            .filter(|q| !q.trim().is_empty())
+            .or_else(|| focus.clone())
+            .or_else(|| transcript.lines().rev().find(|l| l.starts_with("Them:")).map(String::from))
+            .unwrap_or_default();
+        crate::skills::detect_category(&probe).and_then(|c| crate::skills::skill_for(c).ok())
+    } else {
+        None
+    };
+    let mut messages = prompts::build_with_expert(&PromptInput {
         action,
         transcript: &transcript,
         notes: &notes,
@@ -118,7 +131,7 @@ pub fn start_with(
         question: question.as_deref(),
         focus: focus.as_deref(),
         session: &session,
-    });
+    }, expert.map(|s| s.body.as_str()));
 
     // A request the user asks for replaces the previous one in its panel.
     // Automatic ones answer different sentences, so they run side by side
@@ -168,16 +181,31 @@ pub fn start_with(
 
     let app2 = app.clone();
     let rid = request_id.clone();
-    let stored_passages = if session.is_class() { passages.clone() } else { Vec::new() };
+    // What this answer responds to, kept so saved scripts make sense later.
+    let asked = question
+        .clone()
+        .filter(|q| !q.trim().is_empty())
+        .or_else(|| focus.clone().map(|f| f.lines().map(|l| l.trim_start_matches("Them:").trim()).collect::<Vec<_>>().join(" ")))
+        .or_else(|| transcript.lines().rev().find(|l| l.starts_with("Them:")).map(|l| l.trim_start_matches("Them:").trim().to_string()));
+    let passage_count = passages.len();
+    let passage_list = passages.clone();
     let web_endpoint = settings.web_search.then_some(()).and(web_query);
     tauri::async_runtime::spawn(async move {
         let state = app2.state::<AppState>();
+        let mut web_refs: Vec<crate::db::SourceRef> = Vec::new();
         if let Some(query) = web_endpoint {
             // Search the web first (optional); a failure never blocks the answer.
             match web_results(&query, &cancel).await {
                 Ok(found) if !found.is_empty() => {
+                    web_refs = found
+                        .iter()
+                        .map(|w| {
+                            let host = url::Url::parse(&w.url).ok().and_then(|u| u.host_str().map(String::from)).unwrap_or_default();
+                            crate::db::SourceRef { label: format!("{} ({})", w.title, host), url: Some(w.url.clone()) }
+                        })
+                        .collect();
                     if let Some(m) = messages.last_mut() {
-                        m.content = format!("{}\n{}", websearch::prompt_block(&found), m.content);
+                        m.content = format!("{}\n{}", websearch::prompt_block(&found, passage_count), m.content);
                     }
                     publish_to(&app2, &state, slot, &local, |s| {
                         if s.request_id.as_deref() == Some(rid.as_str()) {
@@ -221,9 +249,28 @@ pub fn start_with(
             }
         });
         if status != "error" {
-            // Saved answers carry real file and page citations, not [S1] markers.
-            let saved = crate::session::resolve_citations(&text, &stored_passages);
-            let _ = state.db.add_ai_message(&rid, meeting_id.as_deref(), action.as_str(), question.as_deref(), &saved, &cfg.model, status);
+            // Only citations that match sources really given to the model are kept:
+            // answers get a SOURCES section built here, explanations get inline citations.
+            let labels = crate::session::source_labels(&passage_list, &web_refs);
+            let style = if matches!(action, Action::Suggest | Action::Ask) { crate::session::CiteStyle::Section { complete: true } } else { crate::session::CiteStyle::Inline };
+            let no_answer = crate::prompts::is_no_answer(&text);
+            let norm = if no_answer || action == Action::Recap { crate::session::Normalized { text: text.clone(), cited: Vec::new() } } else { crate::session::normalize_answer(&text, &labels, style) };
+            let _ = state.db.add_ai_message(&rid, meeting_id.as_deref(), action.as_str(), asked.as_deref(), &norm.text, &cfg.model, status);
+            // Keep as references only the sources the answer really cited.
+            if !no_answer {
+                let refs: Vec<crate::db::SourceRef> = norm
+                    .cited
+                    .iter()
+                    .filter_map(|&k| {
+                        if k < passage_list.len() {
+                            Some(crate::db::SourceRef { label: labels[k].clone(), url: None })
+                        } else {
+                            web_refs.get(k - passage_list.len()).cloned()
+                        }
+                    })
+                    .collect();
+                let _ = state.db.set_ai_message_sources(&rid, &refs);
+            }
         }
     });
     Ok(request_id)

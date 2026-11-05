@@ -7,6 +7,8 @@ import type { Settings } from "./lib/types";
 import { InterviewView } from "./views/InterviewView";
 import { MeetingView, type MeetingTab } from "./views/MeetingView";
 import { SettingsView } from "./views/SettingsView";
+import { NotesDownload } from "./components/NotesDownload";
+import { chooseSavePath, safeName, type NotesFormat } from "./lib/download";
 import { loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
 import type { Course } from "./lib/types";
 
@@ -58,6 +60,10 @@ export default function App() {
     api.appInfo().then((i) => setVersion(i.version)).catch(() => {});
   }, []);
   const [historyKey, setHistoryKey] = useState(0);
+  const [saved, setSaved] = useState<{ id: string; title: string } | null>(null);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
+  /** When this practice session began; "Download this session" in Interview covers entries since then. */
+  const [interviewSince, setInterviewSince] = useState<number>(() => Date.now());
   const status = live.status;
   const running = status?.state === "running";
   const busy = status?.state === "starting" || status?.state === "stopping";
@@ -71,7 +77,16 @@ export default function App() {
     });
     const subs = [
       listen<string>("app-error", (e) => setError(e.payload)),
-      listen("meeting-saved", () => setHistoryKey((k) => k + 1)),
+      listen<string>("meeting-saved", (e) => {
+        setHistoryKey((k) => k + 1);
+        // Offer the notes right away, but only for meetings that captured something.
+        api.getMeeting(e.payload).then((d) => {
+          if (d.segments.length > 0) {
+            setSaved({ id: d.meeting.id, title: d.meeting.title });
+            setSavedMsg(null);
+          }
+        }).catch(() => {});
+      }),
       listen<Settings>("settings-changed", (e) => setSettings(e.payload)),
       listen<string>("shortcut", (e) => {
         if (e.payload === "toggle_meeting") toggleRef.current();
@@ -194,6 +209,31 @@ export default function App() {
           </div>
         )}
         {status && <SourceErrors status={status} />}
+        {saved && (
+          <div className="banner banner-ok saved-banner" role="status">
+            <span>
+              <strong>Meeting saved:</strong> {saved.title}. {savedMsg ?? "Download your scripts, key points and references:"}
+            </span>
+            <span className="saved-actions">
+              {!savedMsg && (
+                <NotesDownload
+                  onPick={async (f: NotesFormat) => {
+                    const path = await chooseSavePath(safeName(saved.title, "meeting"), f);
+                    if (!path) return;
+                    try {
+                      await api.exportMeeting(saved.id, f, path);
+                      setSavedMsg(`Saved to ${path}`);
+                    } catch (e) {
+                      setError(errorText(e));
+                    }
+                  }}
+                />
+              )}
+              <button className="btn btn-ghost btn-sm" onClick={() => { setTab("meeting"); setMeetingTab("history"); }}>View in History</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => setSaved(null)}>Dismiss</button>
+            </span>
+          </div>
+        )}
         <div className="content">
           {tab === "meeting" && (
             <MeetingView
@@ -217,7 +257,7 @@ export default function App() {
               historyKey={historyKey}
             />
           )}
-          {tab === "interview" && <InterviewView live={live} onError={setError} />}
+          {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
           {tab === "settings" && <SettingsView onError={setError} onSaved={setSettings} />}
         </div>
       </main>
