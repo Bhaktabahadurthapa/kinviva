@@ -412,7 +412,7 @@ export default function App() {
           )}
           {tab === "visuals" && (
             <Suspense fallback={<p className="hint arch-loading">Loading…</p>}>
-              <VisualsView onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onOpenBoard={(id) => { setBoardOpen(id); setTab("whiteboard"); }} onOpenDiagram={() => go("architecture")} />
+              <VisualsView onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onOpenBoard={(id) => { setBoardOpen(id); setTab("whiteboard"); }} onOpenDiagram={() => go("architecture")} hasLive={live.transcript.finals.length > 0} onToBoard={() => setTab("whiteboard")} />
             </Suspense>
           )}
           {wbSeen && (

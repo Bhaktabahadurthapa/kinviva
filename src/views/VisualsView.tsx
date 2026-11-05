@@ -5,7 +5,9 @@ import type { DiagramRecord } from "../lib/architecture";
 import { editPoint, emptyChart, isIllustrative, PALETTE, parseChart, stats, toRows, type ChartSpec, type ChartType } from "../lib/charts";
 import { chooseImagePath } from "../lib/download";
 import { svgForExport, svgToPngBase64, toBase64 } from "../lib/mermaidRender";
+import { sendToBoard } from "../lib/boardInbox";
 import { newId, type AppRecord } from "../lib/platform";
+import type { MeetingSummary } from "../lib/types";
 
 const when = (ms?: number) => (ms ? new Date(ms).toLocaleDateString([], { dateStyle: "medium" }) : "");
 
@@ -34,7 +36,19 @@ function ChartView({ spec }: { spec: ChartSpec }) {
 }
 
 /** Diagrams, whiteboards and charts in one place. Charts only use numbers from your material or that you typed. */
-export default function VisualsView({ onError, onChanged, onOpenBoard, onOpenDiagram }: { onError: (m: string) => void; onChanged: () => void; onOpenBoard: (id: string) => void; onOpenDiagram: () => void }) {
+export default function VisualsView({ onError, onChanged, onOpenBoard, onOpenDiagram, hasLive, onToBoard }: { onError: (m: string) => void; onChanged: () => void; onOpenBoard: (id: string) => void; onOpenDiagram: () => void; hasLive: boolean; onToBoard: () => void }) {
+  const [sessions, setSessions] = useState<MeetingSummary[]>([]);
+  const [from, setFrom] = useState<string>(hasLive ? "live" : "");
+  const [vstyle, setVstyle] = useState("flowchart");
+  useEffect(() => {
+    api.listMeetings().then((l) => setSessions(l.filter((m) => m.segment_count > 0))).catch(() => {});
+  }, []);
+  const makeVisual = () => {
+    const saved = sessions.find((m) => m.id === from);
+    sendToBoard(extraNote, { meetingId: from === "live" ? null : from, style: vstyle, title: saved ? `${saved.title} diagram` : "Current conversation diagram", auto: true });
+    onToBoard();
+  };
+  const [extraNote, setExtraNote] = useState("");
   const [diagrams, setDiagrams] = useState<DiagramRecord[]>([]);
   const [boards, setBoards] = useState<AppRecord[]>([]);
   const [charts, setCharts] = useState<AppRecord[]>([]);
@@ -125,6 +139,23 @@ export default function VisualsView({ onError, onChanged, onOpenBoard, onOpenDia
           {boards.length === 0 ? <p className="hint">None yet. Create one in Whiteboard.</p> : <ul className="dash-list">{boards.slice(0, 6).map((b) => <li key={b.id}><div className="dash-list-main"><strong>{b.title}</strong><span>{when(b.updated_at)}</span></div><button className="btn btn-sm" onClick={() => onOpenBoard(b.id)}>Open</button></li>)}</ul>}
         </section>
       </div>
+
+      <section className="dash-card">
+        <header><h2>Draw a session on the whiteboard</h2></header>
+        <p className="hint">Turn a meeting, interview or lecture into an editable diagram. It opens on a new whiteboard, where you can move, rename and add to it.</p>
+        <div className="vis-make">
+          <select value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Session to draw">
+            <option value="">Choose a session…</option>
+            {hasLive && <option value="live">Current meeting or interview (live)</option>}
+            {sessions.map((m) => <option key={m.id} value={m.id}>{m.title} · {new Date(m.started_at).toLocaleDateString()}</option>)}
+          </select>
+          <select value={vstyle} onChange={(e) => setVstyle(e.target.value)} aria-label="Diagram style">
+            <option value="flowchart">Flowchart</option><option value="concept_map">Concept map</option><option value="decision_tree">Decision tree</option><option value="timeline">Timeline</option><option value="sequence">Sequence of steps</option>
+          </select>
+          <button className="btn btn-primary" onClick={makeVisual} disabled={!from}>Generate on whiteboard</button>
+        </div>
+        <input value={extraNote} onChange={(e) => setExtraNote(e.target.value)} placeholder="Optional: what to focus on, for example the deployment steps" aria-label="Focus" maxLength={300} />
+      </section>
 
       <section className="dash-card">
         <header><h2>Charts</h2></header>

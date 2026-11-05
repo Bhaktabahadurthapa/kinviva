@@ -48,7 +48,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
   }, [full]);
   const apiRef = useRef<Api>(null);
   const inbox = useSyncExternalStore(subscribeInbox, peekInbox);
-  const handled = useRef(0);
+  const [handledId, setHandledId] = useState(0);
   const timer = useRef<number>();
   const version = useRef(0);
   const dirty = useRef(false);
@@ -90,8 +90,8 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
     setStatus("");
     setPanel("ai");
   };
-  const create = async () => {
-    const rec: AppRecord = { id: newId(), kind: "board", title: "Untitled board", body: JSON.stringify({ elements: [] }) };
+  const create = async (title = "Untitled board") => {
+    const rec: AppRecord = { id: newId(), kind: "board", title, body: JSON.stringify({ elements: [] }) };
     try {
       await api.recordSave(rec);
       await loadList();
@@ -106,14 +106,14 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
 
   // "Draw on Whiteboard" from another screen: make sure a board is open and preview a diagram of that text.
   useEffect(() => {
-    if (!inbox || inbox.id === handled.current) return;
+    if (!inbox || inbox.id === handledId) return;
     if (!cur) {
-      if (boards.length >= 0) void create();
+      void create(inbox.title || "Untitled board");
       return;
     }
-    handled.current = inbox.id;
+    setHandledId(inbox.id);
     setPanel("ai");
-  }, [inbox, cur]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [inbox, cur, handledId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onChange = (els: readonly El[]) => {
     if (!cur) return;
@@ -137,8 +137,13 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
   };
 
   // ---- insert generated diagrams and apply edits (never replaces the whole board) -------------
+  /** The drawing surface may still be starting (for example right after "Generate on whiteboard"). */
+  const waitApi = async (): Promise<Api | null> => {
+    for (let i = 0; i < 40 && !apiRef.current; i++) await new Promise((r) => setTimeout(r, 100));
+    return apiRef.current;
+  };
   const insert = async (spec: DiagramSpec) => {
-    const a = apiRef.current;
+    const a = await waitApi();
     if (!a) return;
     await snapshot(`Before adding “${spec.title}”`);
     const els = a.getSceneElements();
@@ -265,7 +270,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
               <div className="wb-canvas">
                 <Excalidraw key={cur.id} initialData={initial as never} excalidrawAPI={(a: Api) => (apiRef.current = a)} onChange={onChange as never} />
               </div>
-              {panel === "ai" && <AiPanel seed={inbox && inbox.id === handled.current ? inbox : null} getNodes={() => boardNodes(apiRef.current?.getSceneElements() ?? [])} onInsert={insert} onApply={applyOps} onError={onError} />}
+              {panel === "ai" && <AiPanel seed={inbox && inbox.id === handledId ? inbox : null} getNodes={() => boardNodes(apiRef.current?.getSceneElements() ?? [])} onInsert={insert} onApply={applyOps} onError={onError} />}
               {panel === "versions" && <VersionsPanel boardId={cur.id} onRestore={restore} />}
             </div>
           </>
@@ -298,7 +303,7 @@ function VersionsPanel({ boardId, onRestore }: { boardId: string; onRestore: (r:
   );
 }
 
-function AiPanel({ seed, getNodes, onInsert, onApply, onError }: { seed: { id: number; text: string } | null; getNodes: () => BoardNode[]; onInsert: (s: DiagramSpec) => Promise<void>; onApply: (o: BoardOp[]) => Promise<void>; onError: (m: string) => void }) {
+function AiPanel({ seed, getNodes, onInsert, onApply, onError }: { seed: { id: number; text: string; meetingId?: string | null; style?: string; auto?: boolean } | null; getNodes: () => BoardNode[]; onInsert: (s: DiagramSpec) => Promise<void>; onApply: (o: BoardOp[]) => Promise<void>; onError: (m: string) => void }) {
   const [style, setStyle] = useState("flowchart");
   const [source, setSource] = useState<"conversation" | "note" | "prompt" | "diagram">("conversation");
   const [notes, setNotes] = useState<AppRecord[]>([]);
@@ -319,14 +324,20 @@ function AiPanel({ seed, getNodes, onInsert, onApply, onError }: { seed: { id: n
   useEffect(() => {
     if (seed && seeded.current !== seed.id) {
       seeded.current = seed.id;
-      setSource("prompt");
-      setStyle("concept_map");
+      const st = seed.style ?? (seed.meetingId !== undefined ? "flowchart" : "concept_map");
+      setSource(seed.meetingId !== undefined ? "conversation" : "prompt");
+      setStyle(st);
       setExtra(seed.text);
-      void generate({ source: "prompt", style: "concept_map", extra: seed.text });
+      void generate({ source: seed.meetingId !== undefined ? "conversation" : "prompt", style: st, extra: seed.text, meetingId: seed.meetingId ?? null }).then(async (made) => {
+        if (made && seed.auto) {
+          await onInsert(made);
+          setSpec(null);
+        }
+      });
     }
   }, [seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const generate = async (over?: { source: typeof source; style: string; extra: string }) => {
+  const generate = async (over?: { source: typeof source; style: string; extra: string; meetingId?: string | null }): Promise<DiagramSpec | null> => {
     const useSource = over?.source ?? source;
     const useStyle = over?.style ?? style;
     const useExtra = over?.extra ?? extra;
@@ -338,18 +349,25 @@ function AiPanel({ seed, getNodes, onInsert, onApply, onError }: { seed: { id: n
         const d = diagrams.find((x) => x.id === pick);
         const m = d?.model ? (JSON.parse(d.model) as ArchModel) : null;
         if (!m) throw new Error("Pick a saved architecture diagram that was generated by MeetingLens.");
-        return void setSpec(archToSpec(m));
+        const a = archToSpec(m);
+        setSpec(a);
+        return a;
       }
       const noteBody = useSource === "note" ? notes.find((n) => n.id === pick)?.body ?? "" : "";
       if (useSource === "note" && !noteBody) throw new Error("Pick a note first.");
       const input = `Style: ${useStyle}. ${useExtra}\n${noteBody}`.slice(0, 6000);
-      const raw = await api.studioGenerate(crypto.randomUUID(), "board_diagram", input, null);
-      if (guard.isCurrent(mine)) setSpec(JSON.parse(raw) as DiagramSpec);
+      const raw = await api.studioGenerate(crypto.randomUUID(), "board_diagram", input, over?.meetingId ?? null);
+      const made = JSON.parse(raw) as DiagramSpec;
+      if (guard.isCurrent(mine)) {
+        setSpec(made);
+        return made;
+      }
     } catch (e) {
       onError(errorText(e));
     } finally {
       if (guard.isCurrent(mine)) setBusy(false);
     }
+    return null;
   };
 
   const plan = async () => {
