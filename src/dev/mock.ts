@@ -46,11 +46,35 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
       transcript: { finals: [], partials: {} }, notes: "", ai: {},
     },
   };
+  // Event bus so scenes can push live events (used for website screenshots).
+  const callbacks = new Map<number, (e: unknown) => void>();
+  const listeners = new Map<string, number[]>();
+  let nextId = 1;
+  const emit = (event: string, payload: unknown) => (listeners.get(event) ?? []).forEach((id) => callbacks.get(id)?.({ event, id, payload }));
+  (window as unknown as Record<string, unknown>).__mlEmit = emit;
+  (window as unknown as Record<string, unknown>).__mlListeners = () => listeners.size;
   (window as unknown as Record<string, unknown>).__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: () => {} };
   (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {
     metadata: { currentWindow: { label: viewLabel }, currentWebview: { label: viewLabel, windowLabel: viewLabel } },
-    transformCallback: () => 0,
-    invoke: async (cmd: string) => (cmd.startsWith("plugin:event|listen") ? 1 : cmd in answers ? answers[cmd] : null),
+    transformCallback: (cb: (e: unknown) => void) => {
+      const id = nextId++;
+      callbacks.set(id, cb);
+      return id;
+    },
+    invoke: async (cmd: string, args?: { event?: string; handler?: number }) => {
+      if (cmd === "plugin:event|listen" && args?.event && args.handler) {
+        listeners.set(args.event, [...(listeners.get(args.event) ?? []), args.handler]);
+        return args.handler;
+      }
+      return cmd in answers ? answers[cmd] : null;
+    },
   };
+  const params = new URLSearchParams(location.search);
+  if (params.get("theme")) {
+    localStorage.setItem("ml.appearance", JSON.stringify({ theme: params.get("theme"), size: "normal", font: "system" }));
+  }
+  if (params.get("scene")) {
+    import("./scenes").then((m) => m.runScene(params.get("scene")!, emit));
+  }
 }
 export {};

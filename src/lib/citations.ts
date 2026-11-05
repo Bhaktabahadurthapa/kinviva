@@ -103,6 +103,6 @@ export function spokenPart(text: string): string {
   const start = lines.findIndex((l) => /^\**\s*you could say\s*:?\s*\**$/i.test(l.trim()));
   if (start < 0) return text.replace(/^\s*(Answer|Details):\s*/gim, "").trim();
   const rest = lines.slice(start + 1);
-  const end = rest.findIndex((l) => /^\**\s*(key takeaway|hard words|sources|clarification)\s*:?\s*\**$/i.test(l.trim()));
+  const end = rest.findIndex((l) => /^\**\s*(key takeaway|hard words|sources|clarification|what i see|explanation)\s*:?\s*\**$/i.test(l.trim()));
   return (end < 0 ? rest : rest.slice(0, end)).join("\n").trim();
 }

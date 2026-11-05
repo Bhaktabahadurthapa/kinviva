@@ -9,6 +9,15 @@ const REVEAL_GAP_MS = 300;
 /** If the speaker races ahead, skip older waiting notes instead of flooding. */
 const MAX_WAITING = 1;
 
+/**
+ * Notes still waiting to be revealed. An id counts as handled when it was shown
+ * (`id`) or skipped because newer notes arrived (`-id - 1`); missing the second case
+ * made the reveal effect loop forever whenever three or more notes arrived at once.
+ */
+export function pendingNotes(ready: number[], shown: number[]): number[] {
+  return ready.filter((id) => !shown.includes(id) && !shown.includes(-id - 1));
+}
+
 function fmt(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -40,7 +49,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
 
   // Reveal ready notes one at a time, at a readable pace.
   useEffect(() => {
-    let pending = ready.filter((id) => !shown.includes(id));
+    let pending = pendingNotes(ready, shown);
     if (!pending.length) return;
     if (pending.length > MAX_WAITING + 1) {
       // Keep the newest; older waiting notes stay in History instead.

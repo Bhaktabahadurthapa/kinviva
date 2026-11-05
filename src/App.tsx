@@ -241,6 +241,7 @@ export default function App() {
               </div>
             )}
           </div>
+          <div className="console-actions">
           {running && (
             <button
               className="btn btn-lg"
@@ -254,6 +255,7 @@ export default function App() {
           <button className={`btn btn-lg ${running ? "btn-danger" : "btn-primary"}`} onClick={toggleMeeting} disabled={busy}>
             {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Stopping…" : running ? "Stop" : tab === "interview" ? "Start interview" : "Start meeting"}
           </button>
+          </div>
         </header>
         {error && (
           <div className="banner banner-bad toast" role="alert">

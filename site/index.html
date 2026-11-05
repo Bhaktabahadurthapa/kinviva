@@ -4,176 +4,341 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MeetingLens — hear it, understand it, answer it</title>
-  <meta name="description" content="MeetingLens is a local-first Mac app that transcribes your meeting live, explains what others say in plain English, and drafts answers to questions. No telemetry.">
+  <meta name="description" content="MeetingLens listens to your meeting or interview, explains what is said in simple words, and writes answers you can say. Reads your screen too. Free for Mac and Windows. No account, no telemetry.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="MeetingLens — hear it, understand it, answer it">
-  <meta property="og:description" content="A local-first Mac meeting assistant: live transcript, plain-English explanations, grounded answers. Runs on your Mac with whisper.cpp and Ollama.">
-  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/architecture-hero.png">
+  <meta property="og:description" content="Live transcript, simple-word explanations, answers you can say, interview practice, and screen reading. Free for Mac and Windows.">
+  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/app-live.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#110f0d">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%22100 100 824 824%22 %3E %3Cdefs%3E %3ClinearGradient id=%22tile%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%2322386a%22/%3E %3Cstop offset=%221%22 stop-color=%22%230c1730%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22ring%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%23ffffff%22/%3E %3Cstop offset=%221%22 stop-color=%22%239db9ff%22/%3E %3C/linearGradient%3E %3ClinearGradient id=%22bar%22 x1=%220%22 y1=%220%22 x2=%220%22 y2=%221%22%3E %3Cstop offset=%220%22 stop-color=%22%239db9ff%22/%3E %3Cstop offset=%221%22 stop-color=%22%234d7cff%22/%3E %3C/linearGradient%3E %3CradialGradient id=%22glass%22 cx=%220.35%22 cy=%220.3%22 r=%220.8%22%3E %3Cstop offset=%220%22 stop-color=%22%23ffffff%22 stop-opacity=%220.16%22/%3E %3Cstop offset=%221%22 stop-color=%22%23ffffff%22 stop-opacity=%220%22/%3E %3C/radialGradient%3E %3CclipPath id=%22lens%22%3E%3Ccircle cx=%22512%22 cy=%22500%22 r=%22206%22/%3E%3C/clipPath%3E %3C/defs%3E %3C%21-- tile --%3E %3Crect x=%22100%22 y=%22100%22 width=%22824%22 height=%22824%22 rx=%22186%22 fill=%22url%28%23tile%29%22/%3E %3Crect x=%22100.5%22 y=%22100.5%22 width=%22823%22 height=%22823%22 rx=%22185.5%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.12%22/%3E %3C%21-- lens --%3E %3Ccircle cx=%22512%22 cy=%22500%22 r=%22206%22 fill=%22%230a1226%22 fill-opacity=%220.55%22/%3E %3Ccircle cx=%22512%22 cy=%22500%22 r=%22206%22 fill=%22url%28%23glass%29%22/%3E %3Ccircle cx=%22512%22 cy=%22500%22 r=%22206%22 fill=%22none%22 stroke=%22url%28%23ring%29%22 stroke-width=%2240%22/%3E %3C%21-- handle %28a lens%2C held%29 --%3E %3Cpath d=%22M668 656 L748 736%22 stroke=%22url%28%23ring%29%22 stroke-width=%2244%22 stroke-linecap=%22round%22/%3E %3C%21-- voice bars inside the lens --%3E %3Cg clip-path=%22url%28%23lens%29%22 fill=%22url%28%23bar%29%22%3E %3Crect x=%22396%22 y=%22466%22 width=%2232%22 height=%2268%22 rx=%2216%22/%3E %3Crect x=%22448%22 y=%22418%22 width=%2232%22 height=%22164%22 rx=%2216%22/%3E %3Crect x=%22496%22 y=%22372%22 width=%2232%22 height=%22256%22 rx=%2216%22/%3E %3Crect x=%22544%22 y=%22418%22 width=%2232%22 height=%22164%22 rx=%2216%22/%3E %3Crect x=%22596%22 y=%22466%22 width=%2232%22 height=%2268%22 rx=%2216%22/%3E %3C/g%3E %3C/svg%3E ">
+  <meta name="theme-color" content="#0b1530">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="nav">
-    <a class="brand" href="#top" aria-label="MeetingLens home">
-      <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="#463e34" stroke-width="1.2"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="#f2eadb" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="#ff5f2e"/></svg>
-      <span>Meeting<em>Lens</em></span>
-    </a>
-    <nav aria-label="Primary">
-      <a href="#demo">Demo</a>
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#privacy">Privacy</a>
-      <a href="https://github.com/Bhaktabahadurthapa/meetinglens">GitHub</a>
-      <a class="btn btn-small" href="#download">Download</a>
-    </nav>
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="MeetingLens home">
+        <img src="logo.svg" width="32" height="32" alt="">
+        <span>Meeting<em>Lens</em></span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#interview">Interview</a>
+        <a href="#video">Video</a>
+        <a href="#privacy">Privacy</a>
+        <a href="https://github.com/Bhaktabahadurthapa/meetinglens">GitHub</a>
+        <a class="btn btn-small" href="#download">Download</a>
+      </nav>
+    </div>
   </header>
 
   <main id="main">
+
+    <!-- ============ HERO ============ -->
     <section class="hero" id="top">
-      <div class="hero-copy">
-      <p class="eyebrow">Local-first meeting assistant · for Mac &amp; Windows</p>
-      <h1>Hear it.<br>Understand it.<br><em>Answer it.</em></h1>
-      <p class="lead">MeetingLens listens to your call, writes what others say in <strong>simple words</strong> as they say it, and drafts an answer when someone asks you a question. It runs on your Mac. Nothing leaves it unless you choose a cloud service.</p>
-      <div class="cta">
-        <a class="btn" id="dl-mac" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download for Mac</a>
-        <a class="btn btn-ghost" id="dl-win" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Windows <span class="tag-exp">experimental</span></a>
-        <a class="link-demo" href="#demo">▶ Watch the demo</a>
-      </div>
-      <p class="fine">Version 0.1.2 · free · Mac: 9.5 MB, macOS 13+, Apple Silicon · Windows: 5.8 MB, Windows 10/11 · <a href="#download">install steps</a></p>
-      <p class="fine platform-note" id="platform-note" hidden></p>
-      </div>
-      <figure class="hero-shot">
-        <img src="media/app-live.jpg" width="1600" height="995" alt="The MeetingLens live screen during a call: ON AIR bar, live transcript, and the plain-English explanation with a suggested reply.">
-      </figure>
-    </section>
-
-    <section class="arch" aria-label="How MeetingLens is built">
-      <img src="media/architecture-hero.png" width="1600" height="670" alt="MeetingLens architecture: system audio and microphone flow through speech-to-text into a live transcript. The assistant combines recent lines with your documents, asks a local or cloud model, and shows answers in the window and overlay while meetings are saved on your device.">
-    </section>
-
-    <section class="demo" id="demo">
-      <div class="section-head">
-        <p class="eyebrow">01 · See it</p>
-        <h2>A real call, explained as it happens.</h2>
-        <p>Every screen in this video is a capture of the real app, with audio transcribed by whisper.cpp and answers from a local Ollama model.</p>
-      </div>
-      <video controls preload="metadata" poster="media/meetinglens-demo-poster.jpg" playsinline>
-        <source src="media/meetinglens-demo.mp4" type="video/mp4">
-        Your browser can't play this video. <a href="media/meetinglens-demo.mp4">Download the demo (MP4).</a>
-      </video>
-    </section>
-
-    <section class="features" id="features">
-      <div class="section-head">
-        <p class="eyebrow">02 · What it does</p>
-        <h2>Built for the moment someone says something you don't follow.</h2>
-      </div>
-      <div class="grid">
-        <article class="card wide">
-          <h3>Two channels, never mixed up</h3>
-          <p>Other participants (<b>Them</b>, from system audio) and you (<b>Me</b>, from the microphone) are captured separately, each with its own live level meter and clear error messages.</p>
-        </article>
-        <article class="card">
-          <h3>Simple words, automatically</h3>
-          <p>When someone finishes a thought, its meaning appears below the transcript in short, plain sentences, with hard terms explained.</p>
-        </article>
-        <article class="card">
-          <h3>Answers you can edit</h3>
-          <p>Questions get a draft answer from the transcript, your notes and your documents. It never invents your experience; where it can't know, it coaches you on what to mention.</p>
-        </article>
-        <article class="card wide">
-          <h3>Your documents as context</h3>
-          <p>Add TXT, Markdown or PDF files. MeetingLens finds the passages that match the conversation and shows exactly which ones it used.</p>
-        </article>
-        <article class="card">
-          <h3>Floating overlay</h3>
-          <p>A small always-on-top window beside your call, so you never switch away.</p>
-        </article>
-        <article class="card">
-          <h3>History and export</h3>
-          <p>Search past meetings, reopen them in the assistant, and export Markdown or text.</p>
-        </article>
-      </div>
-      <div class="shots">
-        <figure><img src="media/app-live.jpg" width="1600" height="995" alt="MeetingLens live screen: the on-air bar with two channel meters, the live transcript, and the simple-words panel with a suggested reply."><figcaption>Live: transcript, simple words and a suggested reply.</figcaption></figure>
-        <figure><img src="media/app-history.jpg" width="1600" height="995" alt="MeetingLens history screen: a saved meeting with its transcript and AI notes."><figcaption>History: every meeting saved on your Mac.</figcaption></figure>
-      </div>
-    </section>
-
-    <section class="how" id="how">
-      <div class="section-head">
-        <p class="eyebrow">03 · How it works</p>
-        <h2>From sound to a clear answer in four steps.</h2>
-      </div>
-      <ol class="steps">
-        <li><span>01</span><div><h3>Capture</h3><p>System audio through Apple's ScreenCaptureKit and your mic through CoreAudio, converted to the format speech engines expect.</p></div></li>
-        <li><span>02</span><div><h3>Transcribe</h3><p>whisper.cpp on your Mac, or Deepgram streaming. Grey partial text becomes a final line after a pause.</p></div></li>
-        <li><span>03</span><div><h3>Explain</h3><p>The newest lines go to a language model: Ollama on your Mac, or any OpenAI-compatible service you choose.</p></div></li>
-        <li><span>04</span><div><h3>Save</h3><p>Everything is stored in a local SQLite database. API keys stay in the macOS Keychain.</p></div></li>
-      </ol>
-    </section>
-
-    <section class="privacy" id="privacy">
-      <div class="section-head">
-        <p class="eyebrow">04 · Privacy</p>
-        <h2>Your meeting stays yours.</h2>
-      </div>
-      <ul class="checks">
-        <li><b>On your Mac by default.</b> With whisper.cpp and Ollama, no audio or text leaves your computer.</li>
-        <li><b>Always visible.</b> Chips in the app name where audio and AI text go, and whether help is automatic or on request.</li>
-        <li><b>No telemetry, no account.</b> Recordings are off unless you turn them on.</li>
-        <li><b>Never speaks for you.</b> MeetingLens shows text to you only; nothing is typed or said into your call.</li>
-        <li><b>Mind consent.</b> Some places require everyone's consent to record or transcribe a conversation. Tell participants when you use it.</li>
-      </ul>
-    </section>
-
-    <section class="download" id="download">
-      <div class="section-head">
-        <p class="eyebrow">05 · Get it</p>
-        <h2>Download MeetingLens.</h2>
-        <p>Early version 0.1.2. Free for Mac and, as an experiment, Windows.</p>
-      </div>
-      <div class="dl-grid">
-        <div class="dl-card">
-          <div>
-            <h3>Mac</h3>
-            <a class="btn btn-big" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download MeetingLens.dmg</a>
-            <p class="fine">Version 0.1.2 · 9.5 MB · macOS 13+ · Apple Silicon (M1 or newer)</p>
-          </div>
-          <ol class="install" id="install-steps">
-            <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
-            <li>Open it. macOS will say it can't verify the app, because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
-            <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to MeetingLens.</li>
-            <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
-            <li>For free local AI, install <a href="https://ollama.com">Ollama</a> and <a href="https://github.com/ggml-org/whisper.cpp">whisper.cpp</a>, then follow Setup in the app.</li>
-          </ol>
+      <div class="wrap">
+        <p class="eyebrow">Meeting and interview assistant · Mac &amp; Windows</p>
+        <h1>Hear it. Understand it. <span>Answer it.</span></h1>
+        <p class="lead">MeetingLens listens to your call, explains what others say in <strong>simple words</strong> as they say it, and writes an answer you can say when someone asks you a question. It can even read the code or command someone shows on your screen.</p>
+        <div class="cta">
+          <a class="btn btn-big" id="dl-mac" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download for Mac</a>
+          <a class="btn btn-big btn-ghost" id="dl-win" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Download for Windows <span class="tag-exp">experimental</span></a>
+          <a class="btn btn-big btn-ghost" href="#video">▶ Watch the video</a>
         </div>
-        <div class="dl-card">
-          <div>
-            <h3>Windows <span class="tag-exp">experimental</span></h3>
-            <a class="btn btn-big" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Download for Windows</a>
-            <p class="fine">Version 0.1.2 · 5.8 MB · Windows 10/11, 64-bit. Built and unit-tested on a Windows server, not yet tried on a real laptop. Expect rough edges.</p>
-          </div>
-          <ol class="install" id="install-steps-win">
-            <li>Run the installer. Windows shows <b>"Windows protected your PC"</b> because it isn't signed yet: click <b>More info → Run anyway</b>. It installs for your user only; no administrator needed.</li>
-            <li>Open MeetingLens and allow <b>Microphone</b> access when Windows asks.</li>
-            <li>System audio is captured from your default output device, so play the call through your normal speakers or headphones.</li>
-            <li>For free local AI, install <a href="https://ollama.com/download">Ollama for Windows</a> and <a href="https://github.com/ggml-org/whisper.cpp/releases">whisper.cpp</a> (<code>whisper-cli.exe</code>) plus a model, then set the paths in <b>Settings → Speech</b>.</li>
-          </ol>
+        <p class="fine">Version 0.1.3 · free · Mac: 9.5 MB, macOS 13+, Apple Silicon · Windows: 6.1 MB, Windows 10/11 · <a href="#download">install steps</a></p>
+        <p class="fine platform-note" id="platform-note" hidden></p>
+        <ul class="trust">
+          <li>No account, no telemetry</li>
+          <li>Runs on your computer</li>
+          <li>Works with any call app</li>
+          <li>You choose the AI model</li>
+        </ul>
+        <figure class="shot-frame">
+          <img src="media/app-live.jpg" width="1800" height="1125" alt="The MeetingLens Meeting screen during a call: live transcript on the left, a written answer with key takeaway and hard words explained on the right.">
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section id="features">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">What it does</p>
+          <h2>Built for the moment someone says something you don't follow.</h2>
+          <p class="lead">Everything works while the call is still going, so you never have to switch away or ask someone to repeat themselves.</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h2M8 8v8M12 5v14M16 8v8M20 12h-2"/></svg></div>
+            <h3>Simple words, automatically</h3>
+            <p>When someone finishes a thought, its meaning appears in short, plain sentences a 10-year-old could follow.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9 11h6M9 14h4"/></svg></div>
+            <h3>Answers you can say</h3>
+            <p>Questions get a spoken-style answer with a key takeaway and sources. It never invents your own experience, and asks you for facts it cannot know.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h7"/><circle cx="18" cy="17" r="3"/><path d="M20.2 19.2L22 21"/></svg></div>
+            <h3>Hard words, made simple</h3>
+            <p>Every answer checks itself for difficult words and adds a short plain meaning for each one, so you can say them with confidence.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c.6-3.6 3.4-5.4 7-5.4s6.4 1.8 7 5.4"/></svg></div>
+            <h3>Interview mode <span class="new">New</span></h3>
+            <p>Press Start interview and each question the interviewer asks is answered for you, in the style you pick: Simple, Professional, Technical or STAR.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M9 9l-2 2 2 2M15 9l2 2-2 2"/></svg></div>
+            <h3>Read my screen <span class="new">New</span></h3>
+            <p>When someone shows a coding problem, a command or an error and asks you to explain it, one button or shortcut explains what is on screen.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke-dasharray="3 3"/><path d="M13 9h5M13 12h5M13 15h3"/></svg></div>
+            <h3>Clear floating overlay</h3>
+            <p>A small always-on-top window that can be fully see-through, so only the words show over your call. It opens by itself when you minimize the app.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></div>
+            <h3>Your documents and courses</h3>
+            <p>Add PDF, Word, text or Markdown files. Class sessions use one course and one week, and answers cite the file and page, checked by the app.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></div>
+            <h3>Notes you can download</h3>
+            <p>Every meeting and practice session is saved on your computer. Download the scripts, key points, references and transcript as Word, Markdown or text.</p>
+          </article>
+          <article class="card">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            <h3>Private by default</h3>
+            <p>Use local speech and local AI and nothing leaves your computer. Cloud services are your choice, and the app always says where audio and text go.</p>
+          </article>
         </div>
       </div>
-      <p class="fine">Release notes and SHA-256 checksums: <a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/tag/v0.1.2">v0.1.2 on GitHub</a>. Prefer to build it yourself? See the <a href="https://github.com/Bhaktabahadurthapa/meetinglens#install-as-a-mac-app">install guide</a>.</p>
+    </section>
+
+    <!-- ============ MEETING ============ -->
+    <section class="alt" id="meeting">
+      <div class="wrap show">
+        <div class="show-text">
+          <p class="eyebrow">Meeting</p>
+          <h2>Follow every point, and always know what to say.</h2>
+          <p>The other side and your own microphone are captured separately, so the transcript always shows who said what. The reading pane writes each meaning and answer where you can see it, and it stays put while you read.</p>
+          <ul class="ticks">
+            <li>Live transcript with search, timestamps and a pause button</li>
+            <li>Resizable panels and a title you can edit while recording</li>
+            <li>Class, Work and General sessions that keep resources apart</li>
+            <li>Light and dark themes, text size and font in Settings</li>
+          </ul>
+        </div>
+        <figure class="shot"><img src="media/app-live.jpg" loading="lazy" width="1800" height="1125" alt="Meeting screen with live transcript and an answer written in simple words."><figcaption>Meeting: transcript on the left, the answer you could say on the right.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ============ INTERVIEW ============ -->
+    <section id="interview">
+      <div class="wrap show flip">
+        <figure class="shot"><img src="media/app-interview.jpg" loading="lazy" width="1800" height="1125" alt="Interview screen: a question, answer style menu, and a spoken answer with the reasoning, trade-offs and hard words."><figcaption>Interview: say it, understand it, trade-offs, hard words and the likely follow-up.</figcaption></figure>
+        <div class="show-text">
+          <p class="eyebrow">Interview</p>
+          <h2>Practice, and answer, like an expert.</h2>
+          <p>Interview has its own screen. Start it, and the interviewer's questions are answered as they are asked, using coaching skills for cloud and DevOps, system design, AI engineering and coding.</p>
+          <ul class="ticks">
+            <li>Say it: a short spoken answer. Understand it: the reasoning behind it</li>
+            <li>Styles: Simple, Professional, Technical, and STAR for behavioral questions</li>
+            <li>STAR uses only your own notes. It never makes up a job, date or result</li>
+            <li>Mock practice: get a question, answer it, and get feedback</li>
+            <li>Download your practice notes to study later</li>
+          </ul>
+          <p class="fine" style="margin-top:18px">Use it for practice and preparation, and follow the rules of your interviewer or employer.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ READ MY SCREEN ============ -->
+    <section class="alt" id="screen">
+      <div class="wrap show">
+        <div class="show-text">
+          <p class="eyebrow">Read my screen</p>
+          <h2>"Can you explain what is on the screen?" Done.</h2>
+          <p>When someone shares a coding problem, a terminal command or an error, MeetingLens reads your screen and explains it: what it is, what it means, and what you could say.</p>
+          <ul class="ticks">
+            <li>One button, or the shortcut Cmd+Shift+S from any app</li>
+            <li>Optional automatic mode that starts when they say "look at this"</li>
+            <li>The screenshot goes to your AI provider only when you ask, and is deleted right after</li>
+            <li>Works with vision-capable models such as Gemini Flash</li>
+          </ul>
+        </div>
+        <figure class="shot"><img src="media/app-screen.jpg" loading="lazy" width="1800" height="1000" alt="Read my screen result explaining a Kubernetes rollback command: what I see, explanation, what you could say, and hard words."><figcaption>An explanation of a command shown on screen, in simple words.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ============ OVERLAY ============ -->
+    <section class="dark" id="overlay">
+      <div class="wrap show flip">
+        <figure class="shot"><img src="media/app-overlay.jpg" loading="lazy" width="1800" height="1025" alt="The floating overlay on top of a shared coding page, showing the written answer with a see-through background."><figcaption>The overlay over a shared screen. Drag the slider to make it fully clear.</figcaption></figure>
+        <div class="show-text">
+          <p class="eyebrow">Overlay</p>
+          <h2>Only the words, right where you are looking.</h2>
+          <p>Minimize MeetingLens and a floating window appears beside your call. Set it fully see-through and only the answer words show over whatever is behind them.</p>
+          <ul class="ticks">
+            <li>Transparency slider from fully clear to solid</li>
+            <li>Read my screen and Ask work inside the overlay</li>
+            <li>Can ask your system to keep it out of screen sharing (supported on most setups, not guaranteed)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KNOWLEDGE ============ -->
+    <section id="knowledge">
+      <div class="wrap show">
+        <div class="show-text">
+          <p class="eyebrow">Knowledge and sessions</p>
+          <h2>Your own material, used where it helps.</h2>
+          <p>Save each course once and add its files week by week. During a Class session, answers combine your own expert knowledge with those files, and show which file and page they came from.</p>
+          <ul class="ticks">
+            <li>PDF, Word (.docx), text and Markdown, searched on your computer</li>
+            <li>Citations are checked by the app, so a made-up page cannot appear</li>
+            <li>Optional web search adds fresh facts when you turn it on</li>
+            <li>Saved sessions are searchable and downloadable</li>
+          </ul>
+        </div>
+        <figure class="shot"><img src="media/app-knowledge.jpg" loading="lazy" width="1800" height="1125" alt="Knowledge screen with courses and weekly resources."><figcaption>Knowledge: courses, weeks and resources.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ============ THEMES ============ -->
+    <section class="alt" id="themes">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">Made to be read</p>
+          <h2>Light, dark, and easy on the eyes.</h2>
+          <p class="lead">Match your Mac or choose a theme, text size and font in Settings. Colors are checked for contrast in both themes.</p>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+          <figure class="shot"><img src="media/app-live-dark.jpg" loading="lazy" width="1800" height="1125" alt="MeetingLens in the dark theme."><figcaption>Dark theme</figcaption></figure>
+          <figure class="shot"><img src="media/app-settings.jpg" loading="lazy" width="1800" height="1125" alt="Settings: Appearance with theme, text size and font."><figcaption>Settings → Appearance</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIDEO ============ -->
+    <section class="dark" id="video">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">See it</p>
+          <h2>A quick look at the new MeetingLens.</h2>
+          <p class="lead">A short walkthrough of the Meeting, Interview, Read my screen and Overlay screens, plus the original recording of a real call.</p>
+        </div>
+        <div class="videos">
+          <div>
+            <div class="video-card">
+              <video controls preload="metadata" poster="media/meetinglens-walkthrough-poster.jpg" width="1600" height="1000">
+                <source src="media/meetinglens-walkthrough.mp4" type="video/mp4">
+                Your browser can't play this video. <a href="media/meetinglens-walkthrough.mp4">Download it</a>.
+              </video>
+            </div>
+            <p class="video-note">Walkthrough built from real captures of version 0.1.3. Silent.</p>
+          </div>
+          <div class="mini">
+            <h3>The original demo</h3>
+            <p>A real call, captured screen by screen, with audio transcribed by whisper.cpp and answers from a local model. It shows the earlier look of the app.</p>
+            <div class="video-card" style="margin-top:16px">
+              <video controls preload="none" poster="media/meetinglens-demo-poster.jpg" width="1280" height="720">
+                <source src="media/meetinglens-demo.mp4" type="video/mp4">
+                Your browser can't play this video. <a href="media/meetinglens-demo.mp4">Download it</a>.
+              </video>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section id="how">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">How it works</p>
+          <h2>From sound to a clear answer in four steps.</h2>
+        </div>
+        <ol class="steps">
+          <li><b>Capture</b><span>System audio and your microphone, kept separate, converted to what speech engines expect.</span></li>
+          <li><b>Transcribe</b><span>whisper.cpp on your computer, or Deepgram streaming if you choose the cloud.</span></li>
+          <li><b>Explain and answer</b><span>The newest lines go to the AI model you pick: a local one, or any OpenAI-compatible service such as Gemini.</span></li>
+          <li><b>Save</b><span>Everything is stored in a local database. API keys stay in your system keychain.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ PRIVACY ============ -->
+    <section class="dark" id="privacy">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">Privacy</p>
+          <h2>Your meeting stays yours.</h2>
+        </div>
+        <div class="privacy-grid">
+          <div><b>On your computer by default</b><p>With local speech and a local model, no audio or text leaves your computer.</p></div>
+          <div><b>Always visible</b><p>Indicators show where audio goes, and the app is clear when text or a screenshot is sent to your AI provider.</p></div>
+          <div><b>No telemetry, no account</b><p>Recordings are off unless you turn them on. Screenshots are deleted right after they are read.</p></div>
+          <div><b>Never speaks for you</b><p>MeetingLens only shows text to you. Nothing is typed or said into your call.</p></div>
+          <div><b>Mind consent</b><p>Some places require everyone's consent to record or transcribe. Tell participants when you use it.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DOWNLOAD ============ -->
+    <section id="download">
+      <div class="wrap">
+        <div class="sec-head">
+          <p class="eyebrow">Get it</p>
+          <h2>Download MeetingLens.</h2>
+          <p class="lead">Early version 0.1.3. Free for Mac and, as an experiment, Windows.</p>
+        </div>
+        <div class="dl-grid">
+          <div class="dl-card">
+            <div>
+              <h3>Mac</h3>
+              <a class="btn btn-big" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download MeetingLens.dmg</a>
+              <p class="fine" style="margin-top:12px">Version 0.1.3 · 9.5 MB · macOS 13+ · Apple Silicon (M1 or newer)</p>
+            </div>
+            <ol class="install" id="install-steps">
+              <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
+              <li>Open it. macOS will say it can't verify the app, because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
+              <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down, and click <b>Open Anyway</b> next to MeetingLens.</li>
+              <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
+              <li>Add an AI key (for example Gemini) in <b>Settings → AI provider</b>, or install <a href="https://ollama.com">Ollama</a> and <a href="https://github.com/ggml-org/whisper.cpp">whisper.cpp</a> for a fully local setup.</li>
+            </ol>
+          </div>
+          <div class="dl-card">
+            <div>
+              <h3>Windows <span class="tag-exp">experimental</span></h3>
+              <a class="btn btn-big" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Download for Windows</a>
+              <p class="fine" style="margin-top:12px">Version 0.1.3 · 6.1 MB · Windows 10/11, 64-bit. Built and unit-tested on a Windows server, not yet tried on a real laptop. Expect rough edges. Read my screen is Mac-only for now.</p>
+            </div>
+            <ol class="install" id="install-steps-win">
+              <li>Run the installer. Windows shows <b>"Windows protected your PC"</b> because it isn't signed yet: click <b>More info → Run anyway</b>. It installs for your user only.</li>
+              <li>Open MeetingLens and allow <b>Microphone</b> access when Windows asks.</li>
+              <li>System audio is captured from your default output device, so play the call through your normal speakers or headphones.</li>
+              <li>Add an AI key in <b>Settings → AI provider</b>, or set up <a href="https://ollama.com/download">Ollama for Windows</a> and <a href="https://github.com/ggml-org/whisper.cpp/releases">whisper.cpp</a> (<code>whisper-cli.exe</code>) and set the paths in <b>Settings → Speech recognition</b>.</li>
+            </ol>
+          </div>
+        </div>
+        <p class="fine dl-meta">Release notes and SHA-256 checksums: <a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/tag/v0.1.3">v0.1.3 on GitHub</a>. Prefer to build it yourself? See the <a href="https://github.com/Bhaktabahadurthapa/meetinglens#install-as-a-mac-app">install guide</a>.</p>
+      </div>
     </section>
   </main>
 
   <footer>
-    <p><b>MeetingLens</b> · Proprietary software · © 2026 Bhakta Thapa. All rights reserved. · Built by <b>BKT AI</b></p>
-    <p><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/LICENSE">License</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/SECURITY.md">Security</a></p>
+    <div class="wrap">
+      <p><b>MeetingLens</b> · Proprietary software · © 2026 Bhakta Thapa. All rights reserved. · Built by <b>BKT AI</b></p>
+      <p><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/LICENSE">License</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/SECURITY.md">Security</a></p>
+    </div>
   </footer>
+
   <div class="toast" id="started" role="status" aria-live="polite" hidden>
     <div>
       <b>Your download has started.</b>
@@ -198,7 +363,6 @@
       var isMac = /Mac/i.test(ua), isWin = /Win/i.test(ua);
       var note = document.getElementById("platform-note");
       if (isWin) {
-        // Make the Windows button the primary one for Windows visitors.
         document.getElementById("dl-win").classList.remove("btn-ghost");
         document.getElementById("dl-mac").classList.add("btn-ghost");
         note.textContent = "You're on Windows: the Windows version is experimental. Details below.";
