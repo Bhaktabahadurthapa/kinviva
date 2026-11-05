@@ -728,7 +728,7 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: color-mix(in srgb, var(--c-bg) 93%, transparent);
+  background: color-mix(in srgb, var(--c-bg) var(--ov-alpha, 85%), transparent);
   border: 1px solid var(--c-line-strong);
   border-radius: var(--r-lg);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -983,3 +983,24 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .library-title { margin-top: var(--s-6); }
 .week-row input[type="checkbox"] { width: auto; flex: none; }
 .week-row label { min-width: 0; overflow-wrap: anywhere; }
+
+/* ---- Overlay answers: large, readable, see-through ---- */
+.ov-alpha { width: 64px; padding: 0; height: 4px; accent-color: var(--c-signal); background: none; border: none; }
+.overlay .simple-stream { padding: var(--s-3) var(--s-4) var(--s-4); gap: var(--s-4); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65); }
+.overlay .simple-item.is-earlier { opacity: 0.6; }
+.overlay .simple-said { font-size: var(--t-xs); }
+.overlay .simple-answer { background: color-mix(in srgb, var(--c-bg) 55%, transparent); }
+.overlay .simple-item .simple-meaning .ai-rich p { font-size: var(--t-lg); }
+.overlay .simple-item .simple-meaning .ai-rich li, .overlay .simple-answer .ai-rich p, .overlay .simple-answer .ai-rich li { font-size: var(--t-md); }
+.overlay .how, .overlay .empty { font-size: var(--t-md); }
+
+/* Overlay: each answer sits on its own dark backing so it stays readable on any screen behind it. */
+.overlay .simple-item { background: rgba(9, 13, 15, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-left: 4px solid transparent; border-radius: var(--r-md); padding: var(--s-3) var(--s-4); }
+.overlay .simple-item.is-latest { border-left-color: var(--c-signal); background: rgba(9, 13, 15, 0.9); }
+.overlay .simple-item + .simple-item { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: var(--s-3); }
+.overlay .simple-item.is-earlier { opacity: 0.7; }
+.overlay .simple-said { color: #d4dedb; }
+.overlay .simple-answer { background: rgba(95, 216, 164, 0.14); border-color: var(--c-signal); }
+.overlay .simple-answer .ai-rich p, .overlay .simple-answer .ai-rich li { font-size: var(--t-lg); line-height: 1.5; color: #fff; font-weight: 500; }
+.overlay .simple-item .simple-meaning .ai-rich p, .overlay .simple-item .simple-meaning .ai-rich li { color: #fff; }
+.overlay .script-sources { color: #c0ccc8; }

@@ -15,7 +15,7 @@ function CourseCard({ course, docs, onChanged, onError }: { course: Course; docs
   const weeks = [...byWeek.keys()].sort((a, b) => (a ?? 999) - (b ?? 999));
 
   const add = async () => {
-    const picked = await open({ multiple: true, filters: [{ name: "Course resources", extensions: ["txt", "md", "markdown", "pdf"] }] });
+    const picked = await open({ multiple: true, filters: [{ name: "Course resources", extensions: ["txt", "md", "markdown", "pdf", "docx"] }] });
     if (!picked) return;
     const out: typeof msgs = [];
     for (const p of Array.isArray(picked) ? picked : [picked]) {
@@ -59,7 +59,7 @@ function CourseCard({ course, docs, onChanged, onError }: { course: Course; docs
       {msgs.map((r, i) => (
         <div key={i} className={`banner ${r.ok ? "banner-ok" : "banner-bad"}`}><strong>{r.name}:</strong> {r.msg}</div>
       ))}
-      {mine.length === 0 && <p className="empty">No resources yet. Pick a week and add slides, readings or notes (.pdf, .md, .txt).</p>}
+      {mine.length === 0 && <p className="empty">No resources yet. Pick a week and add slides, readings or notes (.pdf, .docx, .md, .txt).</p>}
       {weeks.map((w) => (
         <div key={String(w)} className="week-group">
           <h3>{w == null ? "Whole course" : `Week ${w}`}</h3>

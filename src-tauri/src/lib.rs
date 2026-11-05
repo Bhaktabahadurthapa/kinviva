@@ -51,6 +51,76 @@ fn prime_speech_engine(settings: &settings::Settings) {
     });
 }
 
+/// What the overlay should do given the main window and the user's earlier choice.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct OverlayWatch {
+    /// We opened the overlay because the main window went away.
+    auto_shown: bool,
+    /// The user closed the overlay during this absence; leave it closed until they come back.
+    dismissed: bool,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum OverlayStep {
+    Nothing,
+    Show,
+    Hide,
+}
+
+impl OverlayWatch {
+    /// `away`: main window minimized or hidden. `overlay_visible`: current overlay state.
+    pub fn step(&mut self, enabled: bool, away: bool, overlay_visible: bool) -> OverlayStep {
+        if !enabled {
+            // Setting turned off: take back an overlay we opened, never one the user opened.
+            let was = std::mem::take(&mut self.auto_shown);
+            self.dismissed = false;
+            return if was && overlay_visible { OverlayStep::Hide } else { OverlayStep::Nothing };
+        }
+        if away {
+            if self.auto_shown && !overlay_visible {
+                // The user closed it themselves.
+                self.auto_shown = false;
+                self.dismissed = true;
+            }
+            if !overlay_visible && !self.auto_shown && !self.dismissed {
+                self.auto_shown = true;
+                return OverlayStep::Show;
+            }
+            OverlayStep::Nothing
+        } else {
+            let was = std::mem::take(&mut self.auto_shown);
+            self.dismissed = false;
+            if was && overlay_visible { OverlayStep::Hide } else { OverlayStep::Nothing }
+        }
+    }
+}
+
+/// Shows the answer overlay while the main window is minimized or hidden, and
+/// hides it again when the window returns. An overlay the user opened by hand is left alone.
+fn watch_main_window(app: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        let mut watch = OverlayWatch::default();
+        loop {
+            tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+            let Some(main) = app.get_webview_window("main") else { continue };
+            let away = main.is_minimized().unwrap_or(false) || !main.is_visible().unwrap_or(true);
+            let enabled = app.state::<AppState>().settings().overlay_on_minimize;
+            let visible = app.get_webview_window("overlay").and_then(|w| w.is_visible().ok()).unwrap_or(false);
+            match watch.step(enabled, away, visible) {
+                OverlayStep::Show => {
+                    if !commands::set_overlay_visible(&app, true) {
+                        watch.auto_shown = false;
+                    }
+                }
+                OverlayStep::Hide => {
+                    commands::set_overlay_visible(&app, false);
+                }
+                OverlayStep::Nothing => {}
+            }
+        }
+    });
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -82,6 +152,7 @@ pub fn run() {
             if settings.overlay_content_protection {
                 commands::apply_content_protection(app.handle(), true);
             }
+            watch_main_window(app.handle().clone());
             for err in shortcuts::apply(app.handle(), &settings.shortcuts) {
                 eprintln!("shortcut: {err}");
             }
@@ -145,4 +216,44 @@ pub fn run() {
                 });
             }
         });
+}
+
+#[cfg(test)]
+mod overlay_watch_tests {
+    use super::*;
+
+    #[test]
+    fn opens_when_main_goes_away_and_closes_when_it_returns() {
+        let mut w = OverlayWatch::default();
+        assert_eq!(w.step(true, false, false), OverlayStep::Nothing);
+        assert_eq!(w.step(true, true, false), OverlayStep::Show);
+        assert_eq!(w.step(true, true, true), OverlayStep::Nothing, "stays open while away");
+        assert_eq!(w.step(true, false, true), OverlayStep::Hide);
+        assert_eq!(w.step(true, false, false), OverlayStep::Nothing);
+    }
+
+    #[test]
+    fn an_overlay_the_user_closed_stays_closed_until_they_return() {
+        let mut w = OverlayWatch::default();
+        assert_eq!(w.step(true, true, false), OverlayStep::Show);
+        assert_eq!(w.step(true, true, false), OverlayStep::Nothing, "user closed it");
+        assert_eq!(w.step(true, true, false), OverlayStep::Nothing);
+        assert_eq!(w.step(true, false, false), OverlayStep::Nothing);
+        assert_eq!(w.step(true, true, false), OverlayStep::Show, "next time away it opens again");
+    }
+
+    #[test]
+    fn a_manually_opened_overlay_is_never_closed_by_the_watcher() {
+        let mut w = OverlayWatch::default();
+        assert_eq!(w.step(true, true, true), OverlayStep::Nothing);
+        assert_eq!(w.step(true, false, true), OverlayStep::Nothing);
+    }
+
+    #[test]
+    fn turning_the_setting_off_does_nothing_but_takes_back_its_own_overlay() {
+        let mut w = OverlayWatch::default();
+        assert_eq!(w.step(false, true, false), OverlayStep::Nothing);
+        assert_eq!(w.step(true, true, false), OverlayStep::Show);
+        assert_eq!(w.step(false, true, true), OverlayStep::Hide);
+    }
 }

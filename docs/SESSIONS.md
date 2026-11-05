@@ -16,7 +16,7 @@ Above Live, a **Session** selector chooses what the next meeting is for. It is l
 
 ### Class sessions
 
-1. **Resources → Courses**: save a course (name, optional code). Add files to it for a chosen week (.pdf, .md, .txt), or to "no week" for whole-course files such as the syllabus.
+1. **Resources → Courses**: save a course (name, optional code). Add files to it for a chosen week (.pdf, .docx, .md, .txt), or to "no week" for whole-course files such as the syllabus.
 2. **Meeting → Live → Session = Class**: choose the course and, optionally, the week, then start the meeting as usual. Audio capture and transcription are unchanged.
 3. When the other side asks something or you ask for an answer, MeetingLens searches only that course's active resources. Files for the selected week rank first, then the rest by relevance.
 4. The model labels each excerpt S1, S2, ... and is told to cite them. The app replaces each marker with the real source, such as `week2.pdf, p. 4` (text files show `notes.md, part 2`). A marker that matches no retrieved excerpt is shown as `[unverified source]`, so an invented citation is never displayed as real.
@@ -50,6 +50,7 @@ Migration 3 adds `courses`, and `course_id`/`week` on documents, `page` on chunk
 ## Known limitations
 
 - Citations show where an excerpt came from. They do not prove the model used it correctly; check important facts against the source.
+- Word (.docx) files are read as text only (images, charts and text boxes are skipped; old .doc is not supported). Page numbers for Word come from page breaks saved in the file and are approximate; a file without breaks is cited by part.
 - PDF page numbers are the PDF's own page order, not printed page labels. Scanned PDFs without text cannot be read.
 - Search is keyword-based (SQLite FTS5), not semantic, so a question phrased very differently from the slides may miss them.
 - Work sessions have no behaviour of their own yet.

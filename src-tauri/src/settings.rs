@@ -61,6 +61,8 @@ pub struct Settings {
     pub auto_min_words: u32,
     // Overlay
     pub overlay_content_protection: bool,
+    /// Show the floating answer overlay automatically while the main window is minimized or hidden.
+    pub overlay_on_minimize: bool,
     pub shortcuts: Shortcuts,
 }
 
@@ -91,6 +93,7 @@ impl Default for Settings {
             auto_assist: "explain_reply".into(),
             auto_min_words: 6,
             overlay_content_protection: false,
+            overlay_on_minimize: true,
             shortcuts: Shortcuts::default(),
         }
     }

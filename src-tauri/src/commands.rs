@@ -320,6 +320,26 @@ pub fn apply_content_protection(app: &AppHandle, on: bool) {
     }
 }
 
+/// Shows or hides the overlay and tells the windows. Returns whether it changed.
+pub fn set_overlay_visible(app: &AppHandle, visible: bool) -> bool {
+    let Some(w) = app.get_webview_window("overlay") else { return false };
+    if w.is_visible().unwrap_or(false) == visible {
+        return false;
+    }
+    if visible {
+        let protect = app.state::<AppState>().settings().overlay_content_protection;
+        let _ = w.set_content_protected(protect);
+        if w.show().is_err() {
+            return false;
+        }
+        let _ = w.set_always_on_top(true);
+    } else if w.hide().is_err() {
+        return false;
+    }
+    let _ = app.emit("overlay-visibility", visible);
+    true
+}
+
 pub fn toggle_overlay_inner(app: &AppHandle) -> R<bool> {
     let w = app.get_webview_window("overlay").ok_or("Overlay window missing.")?;
     let visible = w.is_visible().unwrap_or(false);

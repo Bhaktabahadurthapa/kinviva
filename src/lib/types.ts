@@ -126,6 +126,7 @@ export interface Settings {
   auto_assist: AutoMode;
   auto_min_words: number;
   overlay_content_protection: boolean;
+  overlay_on_minimize: boolean;
   shortcuts: Shortcuts;
 }
 

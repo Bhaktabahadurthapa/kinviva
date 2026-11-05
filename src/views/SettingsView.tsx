@@ -370,6 +370,10 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           or the running process. Always test it first (for example with a screen-share test call) before relying on it. Follow the rules of the meeting, interview or
           exam you are in.
         </p>
+        <label className="check">
+          <input type="checkbox" checked={s.overlay_on_minimize} onChange={(e) => set("overlay_on_minimize", e.target.checked)} />
+          Show the floating answer overlay when I minimize MeetingLens
+        </label>
         <div className="grid2">
           {(
             [

@@ -9,9 +9,10 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
     llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true, web_search: false,
     question_detection: false, question_cooldown_secs: 20, auto_assist: "explain_reply", auto_min_words: 6,
-    overlay_content_protection: false,
+    overlay_content_protection: false, overlay_on_minimize: true,
     shortcuts: { toggle_meeting: "CommandOrControl+Shift+M", toggle_overlay: "CommandOrControl+Shift+O", suggest_reply: "CommandOrControl+Shift+R", explain: "CommandOrControl+Shift+E" },
   };
+  const viewLabel = new URLSearchParams(location.search).get("view") ?? "main";
   const answers: Record<string, unknown> = {
     get_settings: settings,
     save_settings: { shortcut_errors: [] },
@@ -46,7 +47,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
   };
   (window as unknown as Record<string, unknown>).__TAURI_EVENT_PLUGIN_INTERNALS__ = { unregisterListener: () => {} };
   (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {
-    metadata: { currentWindow: { label: "main" }, currentWebview: { label: "main", windowLabel: "main" } },
+    metadata: { currentWindow: { label: viewLabel }, currentWebview: { label: viewLabel, windowLabel: viewLabel } },
     transformCallback: () => 0,
     invoke: async (cmd: string) => (cmd.startsWith("plugin:event|listen") ? 1 : cmd in answers ? answers[cmd] : null),
   };
