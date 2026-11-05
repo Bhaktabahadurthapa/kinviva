@@ -4,7 +4,8 @@ import { NotesView } from "./views/NotesView";
 import { KnowledgeView } from "./views/KnowledgeView";
 import { DashboardView } from "./views/DashboardView";
 import { TopBar, HIT_TAB } from "./components/TopBar";
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { TechnicalView, type TechSub } from "./views/TechnicalView";
+import { useEffect, useRef, useState } from "react";
 import { PrivacyPills, SourceErrors, SourcePill } from "./components/StatusBar";
 import { api, errorText, inTauri } from "./lib/api";
 import { useLive } from "./lib/useLive";
@@ -18,8 +19,6 @@ import { defaultSession, loadSession, saveSession, sessionProblem, type SessionC
 import type { Course } from "./lib/types";
 
 /** The two primary areas. Settings is a utility button, not a primary item. */
-const ArchitecturePanel = lazy(() => import("./components/architecture/ArchitecturePanel").then((m) => ({ default: m.ArchitecturePanel })));
-
 
 function Logo() {
   // The app icon mark: a lens with a voice waveform inside.
@@ -98,15 +97,22 @@ function LiveTitle({ id, initial, onError }: { id: string | null; initial: strin
 export default function App() {
   const { state: live, dispatch } = useLive();
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [archSeen, setArchSeen] = useState(false);
+  const [techSeen, setTechSeen] = useState(false);
+  const [techSub, setTechSub] = useState<TechSub>("explain");
+  useEffect(() => {
+    if (tab === "technical") setTechSeen(true);
+  }, [tab]);
   const [searchSeed, setSearchSeed] = useState("");
+  const go = (t: Tab) => {
+    if (t === "architecture") {
+      setTechSub("architecture");
+      setTab("technical");
+    } else setTab(t);
+  };
   const openHit = (h: { kind: string; title: string }) => {
     setSearchSeed(h.kind === "session" || h.kind === "transcript" ? h.title : "");
-    setTab(HIT_TAB[h.kind] ?? "dashboard");
+    go(HIT_TAB[h.kind] ?? "dashboard");
   };
-  useEffect(() => {
-    if (tab === "architecture") setArchSeen(true);
-  }, [tab]);
   const meetingTab: MeetingTab = tab === "sessions" ? "history" : tab === "documents" ? "resources" : "live";
   const [session, setSessionState] = useState<SessionChoice>(loadSession);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -336,7 +342,7 @@ export default function App() {
               settings={settings}
               running={!!running}
               refreshKey={historyKey}
-              onNavigate={setTab}
+              onNavigate={go}
               onOpenSession={(id) => { void api.getMeeting(id).then((d) => setSearchSeed(d.meeting.title)).catch(() => {}); setTab("sessions"); }}
               onError={setError}
               onSaved={() => setHistoryKey((k) => k + 1)}
@@ -345,11 +351,9 @@ export default function App() {
           {tab === "notes" && <NotesView onError={setError} refreshKey={historyKey} onChanged={() => setHistoryKey((k) => k + 1)} />}
           {tab === "knowledge" && <KnowledgeView onError={setError} onOpenHit={openHit} />}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
-          {archSeen && (
-            <div hidden={tab !== "architecture"} className="arch-host">
-              <Suspense fallback={<p className="hint arch-loading">Loading the diagram tools…</p>}>
-                <ArchitecturePanel live={live} onError={setError} />
-              </Suspense>
+          {techSeen && (
+            <div hidden={tab !== "technical"} className="tc-host">
+              <TechnicalView live={live} onError={setError} sub={techSub} onSub={setTechSub} onChanged={() => setHistoryKey((k) => k + 1)} />
             </div>
           )}
           {tab === "settings" && <SettingsView onError={setError} onSaved={setSettings} />}
