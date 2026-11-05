@@ -7,7 +7,7 @@ import type { Settings } from "./lib/types";
 import { InterviewView } from "./views/InterviewView";
 import { MeetingView, type MeetingTab } from "./views/MeetingView";
 import { SettingsView } from "./views/SettingsView";
-import { NotesDownload } from "./components/NotesDownload";
+import { SavedDialog } from "./components/SavedDialog";
 import { chooseSavePath, safeName, type NotesFormat } from "./lib/download";
 import { defaultSession, loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
 import type { Course } from "./lib/types";
@@ -267,29 +267,25 @@ export default function App() {
         )}
         {status && <SourceErrors status={status} />}
         {saved && (
-          <div className="banner banner-ok saved-banner" role="status">
-            <span>
-              <strong>Meeting saved:</strong> {saved.title}. {savedMsg ?? "Download your scripts, key points and references:"}
-            </span>
-            <span className="saved-actions">
-              {!savedMsg && (
-                <NotesDownload
-                  onPick={async (f: NotesFormat) => {
-                    const path = await chooseSavePath(safeName(saved.title, "meeting"), f);
-                    if (!path) return;
-                    try {
-                      await api.exportMeeting(saved.id, f, path);
-                      setSavedMsg(`Saved to ${path}`);
-                    } catch (e) {
-                      setError(errorText(e));
-                    }
-                  }}
-                />
-              )}
-              <button className="btn btn-ghost btn-sm" onClick={() => setTab("sessions")}>View in Sessions</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => setSaved(null)}>Dismiss</button>
-            </span>
-          </div>
+          <SavedDialog
+            title={saved.title}
+            message={savedMsg}
+            onClose={() => setSaved(null)}
+            onOpenSessions={() => {
+              setSaved(null);
+              setTab("sessions");
+            }}
+            onPick={async (f: NotesFormat) => {
+              const path = await chooseSavePath(safeName(saved.title, "meeting"), f);
+              if (!path) return;
+              try {
+                await api.exportMeeting(saved.id, f, path);
+                setSavedMsg(`Saved to ${path}`);
+              } catch (e) {
+                setError(errorText(e));
+              }
+            }}
+          />
         )}
         <div className="content">
           {(tab === "meeting" || tab === "sessions" || tab === "knowledge") && (

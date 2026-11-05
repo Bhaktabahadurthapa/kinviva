@@ -29,6 +29,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     interview_saved_count: 3,
     list_courses: [{ id: "os", name: "Operating Systems", code: "CS350", term: "Fall", created_at: 1, resources: 2 }],
     list_meetings: [],
+    get_meeting: { meeting: { id: "demo-1", title: "Meeting Nov 5, 09:21" }, segments: [{ id: 1 }] },
     list_documents: [
       { id: "d1", name: "week2-scheduling.pdf", kind: "pdf", chars: 9000, chunks: 12, active: true, created_at: 1, course_id: "os", week: 2 },
       { id: "d2", name: "syllabus.md", kind: "md", chars: 1200, chunks: 2, active: true, created_at: 1, course_id: "os", week: null },
