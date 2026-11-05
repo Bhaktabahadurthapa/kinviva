@@ -1816,3 +1816,49 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .d-summary { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--c-text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .d-tag-inline { align-self: flex-start; font: 650 11.5px var(--f-ui); padding: 2px 9px; border-radius: 999px; background: var(--c-signal-soft); color: var(--c-signal); }
 .d-text-only { justify-content: flex-start; }
+
+/* ==========================================================================
+   Overlay readability: crisp white text on a dark plate behind each line, so it
+   stays clear on any background, even when the window itself is see-through.
+   ========================================================================== */
+.overlay {
+  --c-text: #ffffff; --c-text-2: #f1f4ff; --c-text-3: #dde3f7; --c-signal: #cfc6ff; --c-line: rgba(255, 255, 255, 0.28);
+  --plate: rgba(9, 12, 26, calc(0.70 + var(--ov-a) * 0.25));
+  color: #ffffff;
+}
+.overlay, .overlay * { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85); -webkit-font-smoothing: antialiased; }
+.overlay .btn, .overlay .ov-tabs, .overlay .ov-tabs button, .overlay input { text-shadow: none; }
+/* plates behind the words */
+.overlay .ai-rich p, .overlay .ai-rich li, .overlay .ai-text, .overlay .how > p, .overlay .how li, .overlay .empty, .overlay .line p,
+.overlay .simple-said, .overlay .hint, .overlay .ai-label-name, .overlay .note-label, .overlay .banner, .overlay .iv-wait, .overlay .thinking {
+  background: var(--plate); border-radius: 8px; padding: 3px 10px; width: fit-content; max-width: 100%; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+.overlay .ai-rich ul { padding-left: 14px; list-style: none; }
+.overlay .ai-rich li { margin-bottom: 6px; }
+.overlay .ov-title { background: var(--plate); border-radius: 999px; padding: 3px 12px; color: #ffffff; font-weight: 700; letter-spacing: 0.06em; }
+.overlay .ov-title.is-live { color: #ffb4b4; }
+.overlay .simple-item, .overlay .manual-answers .iv-card { background: transparent; border-color: rgba(255, 255, 255, 0.3); }
+.overlay .simple-answer { background: transparent; border-color: rgba(207, 198, 255, 0.7); }
+/* text itself: larger, a little heavier */
+.overlay .ai-rich p, .overlay .ai-rich li, .overlay .how li, .overlay .how > p, .overlay .empty, .overlay .line p { font-size: 17px; line-height: 1.5; font-weight: 520; color: #ffffff; }
+.overlay .simple-item .simple-meaning .ai-rich p, .overlay .simple-answer .ai-rich p { font-size: 18px; }
+.overlay .how li span, .overlay .how li b { color: #ffffff; }
+.overlay .how li span { color: #e9eefc; }
+.overlay .ai-label-name, .overlay .note-label { font-size: 12.5px; font-weight: 750; color: #d9d2ff; }
+.overlay .ai-label.is-hard-words .ai-label-name { color: #ffd98a; }
+.overlay .simple-said, .overlay .hint { color: #eef2ff; font-size: 14px; }
+.overlay .hl { background: rgba(190, 175, 255, 0.45); color: #ffffff; }
+.overlay .term { color: #ffffff; }
+/* controls */
+.overlay .actionbar { background: transparent; border-top: 0; }
+.overlay .actionbar .ask { background: rgba(9, 12, 26, 0.82); border-color: rgba(255, 255, 255, 0.4); }
+.overlay .actionbar .ask input { color: #ffffff; }
+.overlay input::placeholder { color: #e6eafb; opacity: 0.95; }
+.overlay .actionbar .actions .btn, .overlay .screen-assist .btn { background: rgba(9, 12, 26, 0.82); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; }
+.overlay .actionbar .actions .btn-primary { background: rgba(91, 63, 214, 0.92); border-color: #b9adff; color: #ffffff; }
+.overlay .ov-tabs { background: rgba(9, 12, 26, 0.85); }
+.overlay .ov-tabs button { color: #e6eafb; }
+.overlay .ov-tabs button.active, .overlay .ov-tabs button[aria-pressed="true"] { color: #ffffff; font-weight: 700; }
+.overlay .iv-card h3, .overlay .manual-answers h3 { background: var(--plate); border-radius: 8px; padding: 3px 10px; width: fit-content; color: #d9d2ff; font-size: 12.5px; font-weight: 750; }
+.overlay .btn-ghost, .overlay .btn-sm { background: rgba(9, 12, 26, 0.82); border-color: rgba(255, 255, 255, 0.4); color: #ffffff; }
+.overlay .screen-result p, .overlay .screen-result li { background: var(--plate); border-radius: 8px; padding: 3px 10px; width: fit-content; color: #fff; }
