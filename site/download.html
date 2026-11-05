@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download · MeetingLens</title>
+  <meta name="description" content="Download MeetingLens 0.1.3 for Mac or Windows. Free, no account. Install steps, requirements and checksums.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Download · MeetingLens">
+  <meta property="og:description" content="Download MeetingLens 0.1.3 for Mac or Windows. Free, no account. Install steps, requirements and checksums.">
+  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/app-live.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0b1530">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.className = "js";</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="MeetingLens home"><img src="logo.svg" width="32" height="32" alt=""><span>Meeting<em>Lens</em></span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
+      <nav id="site-nav" aria-label="Primary">
+        <a href="features.html">Features</a>
+        <a href="interview.html">Interview</a>
+        <a href="video.html">Video</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="https://github.com/Bhaktabahadurthapa/meetinglens">GitHub</a>
+        <a class="btn btn-small" href="download.html" aria-current="page">Download</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="page-hero">
+      <div class="wrap">
+        <p class="eyebrow">Download</p>
+        <h1>Get MeetingLens.</h1>
+        <p class="lead">Version 0.1.3. Free for Mac and, as an experiment, Windows. No account.</p>
+      </div>
+    </section>
+    <section>
+      <div class="wrap">
+        <div class="os-demo" data-tabs data-auto-os>
+          <div class="tablist row" role="tablist" aria-label="Operating system">
+            <button type="button" role="tab" id="os-mac" aria-controls="op-mac" aria-selected="true" tabindex="0"><b>Mac</b><small>macOS 13+, Apple Silicon</small></button>
+            <button type="button" role="tab" id="os-win" aria-controls="op-win" aria-selected="false" tabindex="-1"><b>Windows <span class="tag-exp">experimental</span></b><small>Windows 10/11, 64-bit</small></button>
+          </div>
+          <div class="dl-panel" role="tabpanel" id="op-mac" aria-labelledby="os-mac">
+            <div class="dl-main">
+              <a class="btn btn-big" data-download="mac" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg" download="MeetingLens.dmg">Download MeetingLens.dmg</a>
+              <p class="fine">Version 0.1.3 · 9.5 MB</p>
+            </div>
+            <ol class="install">
+              <li>Open the downloaded <b>.dmg</b> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
+              <li>Open it. macOS says it can't verify the app because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
+              <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b> next to MeetingLens.</li>
+              <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
+              <li>Add an AI key (for example Gemini) in <b>Settings → AI provider</b>, or set up <a href="https://ollama.com">Ollama</a> and <a href="https://github.com/ggml-org/whisper.cpp">whisper.cpp</a> for a fully local setup.</li>
+            </ol>
+          </div>
+          <div class="dl-panel" role="tabpanel" id="op-win" aria-labelledby="os-win" hidden>
+            <div class="dl-main">
+              <a class="btn btn-big" data-download="win" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe" download="MeetingLens-Windows-Setup.exe">Download for Windows</a>
+              <p class="fine">Version 0.1.3 · 6.1 MB · Built and unit-tested on a Windows server, not yet tried on a real laptop. Read my screen is Mac-only for now.</p>
+            </div>
+            <ol class="install">
+              <li>Run the installer. Windows shows <b>"Windows protected your PC"</b> because it isn't signed yet: click <b>More info → Run anyway</b>. It installs for your user only.</li>
+              <li>Open MeetingLens and allow <b>Microphone</b> access when Windows asks.</li>
+              <li>System audio is captured from your default output device, so play the call through your normal speakers or headphones.</li>
+              <li>Add an AI key in <b>Settings → AI provider</b>, or set up <a href="https://ollama.com/download">Ollama for Windows</a> and <a href="https://github.com/ggml-org/whisper.cpp/releases">whisper.cpp</a> and set the paths in <b>Settings → Speech recognition</b>.</li>
+            </ol>
+          </div>
+        </div>
+        <p class="notice" id="platform-note" hidden></p>
+      </div>
+    </section>
+    <section class="alt">
+      <div class="wrap">
+        <div class="sec-head"><p class="eyebrow">Before you install</p><h2>What you need.</h2></div>
+        <div class="grid">
+          <article class="card"><h3>An AI model</h3><p>A key for a cloud model such as Gemini, or a local model through Ollama. A vision-capable model is needed for Read my screen.</p></article>
+          <article class="card"><h3>Speech recognition</h3><p>The built-in whisper.cpp engine on Mac, or Deepgram if you prefer the cloud.</p></article>
+          <article class="card"><h3>Permissions</h3><p>Microphone and, on Mac, Screen &amp; System Audio Recording. MeetingLens never changes your system permissions for you.</p></article>
+        </div>
+        <div class="verify">
+          <h3>Verify your download</h3>
+          <p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p>
+          <pre><code>shasum -a 256 ~/Downloads/MeetingLens.dmg</code></pre>
+          <p class="fine"><a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/tag/v0.1.3">Release notes and checksums for v0.1.3</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases">All releases</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens#install-as-a-mac-app">Build it yourself</a></p>
+        </div>
+      </div>
+    </section>
+    <div class="toast" id="started" role="status" aria-live="polite" hidden>
+      <div><b>Your download has started.</b><p>Open it from your Downloads and follow the steps on this page.</p></div>
+      <button type="button" aria-label="Dismiss">×</button>
+    </div>
+  </main>
+  <footer>
+    <div class="wrap foot-grid">
+      <div>
+        <p class="foot-brand"><img src="logo.svg" width="28" height="28" alt=""> <b>MeetingLens</b></p>
+        <p>Hear it. Understand it. Answer it.</p>
+        <p>© 2026 Bhakta Thapa. All rights reserved. Built by <b>BKT AI</b></p>
+      </div>
+      <div>
+        <p><b>Explore</b></p>
+        <p><a href="features.html">Features</a> · <a href="interview.html">Interview</a> · <a href="video.html">Video</a> · <a href="privacy.html">Privacy</a> · <a href="download.html">Download</a></p>
+      </div>
+      <div>
+        <p><b>Project</b></p>
+        <p><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/LICENSE">License</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/SECURITY.md">Security</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases">Releases</a></p>
+      </div>
+    </div>
+  </footer>
+  <script src="site.js"></script>
+</body>
+</html>
