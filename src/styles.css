@@ -1788,3 +1788,12 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 :root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #2a2f5c 0%, #20244a 100%); border-right-color: #191c3a; }
 :root[data-theme="dark"] .app .rail-foot { background: #252a54; }
 .d-h2-ico { display: inline-flex; align-items: center; gap: 8px; color: var(--c-signal); } .d-h2-ico { color: var(--c-text); } .d-h2-ico svg { color: var(--c-signal); }
+
+/* Sidebar: slate grey (neutral, lets the purple accent stand out) */
+.app .rail { background: linear-gradient(180deg, #343c52 0%, #2a3144 100%); border-right: 1px solid #222838; }
+.app .rail-foot { background: #2f3649; }
+.app .rail-btn.active { background: rgba(255, 255, 255, 0.16); box-shadow: inset 3px 0 0 #b9adff; }
+.app .rail-heading, .app .rail-interests .rail-heading, .app .rail-tag { color: #b9c1d6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .app .rail { background: linear-gradient(180deg, #262c3d 0%, #1d2230 100%); border-right-color: #161a26; } :root:not([data-theme="light"]) .app .rail-foot { background: #212636; } }
+:root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #262c3d 0%, #1d2230 100%); border-right-color: #161a26; }
+:root[data-theme="dark"] .app .rail-foot { background: #212636; }
