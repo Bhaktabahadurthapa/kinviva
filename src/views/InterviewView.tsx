@@ -4,6 +4,7 @@ import { api, errorText } from "../lib/api";
 import { initialInterview, interviewReducer, isBusy, latestQuestion, type Slot } from "../lib/interview";
 import { ActionBar } from "../components/ActionBar";
 import { ManualAnswers } from "../components/ManualAnswers";
+import { renderMarked, renderTerm } from "../lib/highlight";
 import { Splitter } from "../components/Splitter";
 import { INTERVIEW_SPLIT_KEY, loadSplit, saveSplit } from "../lib/split";
 import { ScreenAssist } from "../components/ScreenAssist";
@@ -46,7 +47,7 @@ function Lines({ text }: { text: string }) {
   return (
     <>
       {text.split(/\n+/).filter(Boolean).map((l, i) => (
-        <p key={i}>{l}</p>
+        <p key={i}>{renderMarked(l)}</p>
       ))}
     </>
   );
@@ -95,15 +96,15 @@ function Result({ slot, stale, onModelAnswer }: { slot: Slot; stale: boolean; on
           </Section>
           {r.tradeoffs.length > 0 && (
             <Section title="Tradeoffs and assumptions">
-              <ul>{r.tradeoffs.map((t, i) => <li key={i}>{t}</li>)}</ul>
+              <ul>{r.tradeoffs.map((t, i) => <li key={i}>{renderTerm(t)}</li>)}</ul>
             </Section>
           )}
           {(r.hard_words?.length ?? 0) > 0 && (
             <Section title="Hard words, made simple">
-              <ul className="iv-words">{r.hard_words!.map((t, i) => <li key={i}>{t}</li>)}</ul>
+              <ul className="iv-words">{r.hard_words!.map((t, i) => <li key={i}>{renderTerm(t)}</li>)}</ul>
             </Section>
           )}
-          {r.follow_up && <Section title="Likely follow-up question"><p>{r.follow_up}</p></Section>}
+          {r.follow_up && <Section title="Likely follow-up question"><p>{renderMarked(r.follow_up)}</p></Section>}
         </>
       )}
       {r?.kind === "feedback" && (
@@ -114,13 +115,13 @@ function Result({ slot, stale, onModelAnswer }: { slot: Slot; stale: boolean; on
           <Section title="Correctness"><div className="iv-text"><Lines text={r.correctness} /></div></Section>
           {r.missing_points.length > 0 && (
             <Section title="Missing points" tone="warn">
-              <ul>{r.missing_points.map((t, i) => <li key={i}>{t}</li>)}</ul>
+              <ul>{r.missing_points.map((t, i) => <li key={i}>{renderMarked(t)}</li>)}</ul>
             </Section>
           )}
           {r.structure && <Section title="Structure"><p>{r.structure}</p></Section>}
           {r.clarity && <Section title="Clarity"><p>{r.clarity}</p></Section>}
           {r.improved_say_it && <Section title="A stronger way to say it" tone="say"><div className="iv-say"><Lines text={r.improved_say_it} /></div></Section>}
-          {r.follow_up && <Section title="Likely follow-up question"><p>{r.follow_up}</p></Section>}
+          {r.follow_up && <Section title="Likely follow-up question"><p>{renderMarked(r.follow_up)}</p></Section>}
           {onModelAnswer && <button className="btn btn-sm" onClick={onModelAnswer}>Show the model answer</button>}
         </>
       )}

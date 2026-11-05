@@ -22,7 +22,7 @@ const NOTES: Record<number, { meaning: string; answer?: string }> = {
   4: {
     meaning: "",
     answer:
-      "YOU COULD SAY\nI would give every team its own walled-off space, with its own build workers and secrets, so one team can never touch another. Then I would cap what each space can use and show each team its bill, which keeps cost under control. The tradeoff is more setup per team, but it is much safer.\n\nKEY TAKEAWAY\nSeparate spaces keep teams safe; limits and bills keep cost low.\n\nHARD WORDS\nmulti-tenant: many teams sharing one system\nCI/CD: tools that build and ship code automatically\nisolation: keeping things apart so they cannot affect each other\n\nSOURCES\n- General knowledge",
+      "YOU COULD SAY\nI would give every team its own **walled-off space**, with its own build workers and secrets, so one team can never touch another. Then I would cap what each space can use and **show each team its bill**, which keeps cost under control. The **tradeoff** is more setup per team, but it is much safer.\n\nKEY TAKEAWAY\nSeparate spaces keep teams safe; limits and bills keep cost low.\n\nHARD WORDS\nmulti-tenant: many teams sharing one system\nCI/CD: tools that build and ship code automatically\nisolation: keeping things apart so they cannot affect each other\n\nSOURCES\n- General knowledge",
   },
 };
 
@@ -62,7 +62,7 @@ async function interview(emit: Emit) {
     request_id: "mock-request", category: "cloud_devops", mode: "explain", skill: "cloud-devops-interview", state: "done", received_chars: 900, fallback_text: null, error: null,
     result: {
       kind: "answer",
-      say_it: "I would give each team its own walled-off space, with separate build workers and secrets, on both AWS and Azure. Then I would set limits and show each team its bill. The tradeoff is more setup, but it is safer and cheaper to run.",
+      say_it: "I would give each team its own **walled-off space**, with separate build workers and secrets, on both AWS and Azure. Then I would **set limits** and show each team its bill. The **tradeoff** is more setup, but it is safer and cheaper to run.",
       understand_it: "Clarify scale, compliance and who owns pipelines.\nIsolation: one namespace and one cloud account or subscription per team, with its own roles and secrets.\nSecurity: short-lived credentials, signed builds, and a policy check before every deploy.\nCost: quotas per team, auto-scaling build workers, and a monthly report by team.",
       code: null,
       tradeoffs: ["Tradeoff: more setup per team for much stronger isolation.", "Assumption: teams already use Git for their code."],

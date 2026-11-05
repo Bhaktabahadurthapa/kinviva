@@ -1,3 +1,4 @@
+import { renderMarked, renderTerm } from "../lib/highlight";
 const LABELS = ["Key points", "Expert addition", "Meaning", "Details", "Terms", "Hard words", "Answer", "Unclear", "Asking", "Points to cover"];
 /** Headings of a meeting answer, alone on a line. */
 const HEADINGS = ["WHAT I SEE", "EXPLANATION", "YOU COULD SAY", "KEY TAKEAWAY", "HARD WORDS", "SOURCES", "CLARIFICATION"];
@@ -35,12 +36,13 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
   }
   const out: JSX.Element[] = [];
   let list: string[] = [];
+  let section = "";
   const flush = () => {
     if (list.length) {
       out.push(
         <ul key={`ul${out.length}`}>
           {list.map((t, i) => (
-            <li key={i}>{t}</li>
+            <li key={i}>{/^(hard words|terms)$/i.test(section) ? renderTerm(t) : renderMarked(t)}</li>
           ))}
         </ul>,
       );
@@ -51,14 +53,15 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
     if (b.kind === "li") return void list.push(b.text);
     flush();
     if (b.kind === "label") {
+      section = b.label;
       const cls = `ai-label is-${b.label.toLowerCase().replace(/\s+/g, "-")}`;
       out.push(
         <div key={i} className={cls}>
           <span className="ai-label-name">{b.label}</span>
-          {b.text && <p>{b.text}</p>}
+          {b.text && <p>{/^(hard words|terms)$/i.test(b.label) ? renderTerm(b.text) : renderMarked(b.text)}</p>}
         </div>,
       );
-    } else out.push(<p key={i}>{b.text}</p>);
+    } else out.push(<p key={i}>{renderMarked(b.text)}</p>);
   });
   flush();
   return (

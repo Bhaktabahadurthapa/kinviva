@@ -1,3 +1,4 @@
+import { stripMarks } from "./highlight";
 import type { AiSlot, Passage } from "./types";
 
 /** "notes.pdf, p. 4" for PDFs, "notes.md, part 2" for text files. */
@@ -99,6 +100,9 @@ export function displayText(slot: Pick<AiSlot, "text" | "sources" | "web" | "act
 
 /** The part to read aloud (or copy): the YOU COULD SAY paragraph, else the whole text. */
 export function spokenPart(text: string): string {
+  return stripMarks(spokenRaw(text));
+}
+function spokenRaw(text: string): string {
   const lines = text.split("\n");
   const start = lines.findIndex((l) => /^\**\s*you could say\s*:?\s*\**$/i.test(l.trim()));
   if (start < 0) return text.replace(/^\s*(Answer|Details):\s*/gim, "").trim();
