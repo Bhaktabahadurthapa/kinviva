@@ -6,18 +6,19 @@ import { ActionBar } from "./components/ActionBar";
 import { AiPanel } from "./components/AiPanel";
 import { TranscriptView } from "./components/TranscriptView";
 import { api, errorText, inTauri } from "./lib/api";
+import { ScreenAssist } from "./components/ScreenAssist";
 import { useLive } from "./lib/useLive";
 
-const ALPHA_KEY = "ml.overlayAlpha";
+const ALPHA_KEY = "ml.overlayAlpha2";
 
 function loadAlpha(): number {
   try {
     const v = Number(localStorage.getItem(ALPHA_KEY));
-    if (v >= 25 && v <= 100) return v;
+    if (localStorage.getItem(ALPHA_KEY) !== null && v >= 0 && v <= 100) return v;
   } catch {
     /* storage unavailable */
   }
-  return 85;
+  return 0; // clear: only the words show over what is behind
 }
 
 /**
@@ -49,7 +50,7 @@ export default function Overlay() {
   const running = st?.state === "running";
 
   return (
-    <div className="overlay" style={{ ["--ov-alpha" as string]: `${alpha}%` }}>
+    <div className="overlay" style={{ ["--ov-a" as string]: alpha / 100 }}>
       <header className="ov-head" data-tauri-drag-region>
         <span className={`rec ${running ? "" : "rec-off"}`} data-tauri-drag-region />
         <span className={`ov-title ${running ? "is-live" : ""}`} data-tauri-drag-region>
@@ -59,12 +60,12 @@ export default function Overlay() {
         <input
           className="ov-alpha"
           type="range"
-          min={25}
+          min={0}
           max={100}
           step={5}
           value={alpha}
           aria-label="Overlay transparency"
-          title="Transparency: left is more see-through, right is solid"
+          title="Transparency: far left is fully clear (only the words show), right is solid"
           onChange={(e) => changeAlpha(Number(e.target.value))}
         />
         <div className="ov-tabs">
@@ -88,6 +89,7 @@ export default function Overlay() {
         </div>
       )}
       <div className="ov-body">
+        <ScreenAssist compact />
         {view === "transcript" ? (
           <TranscriptView transcript={live.transcript} compact emptyHint={running ? "Listening…" : "No meeting running."} />
         ) : auto !== "off" ? (

@@ -8,10 +8,28 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct ChatMessage {
     pub role: &'static str,
     pub content: String,
+    /// Images as `data:` URLs. Sent as OpenAI-style content parts; empty for plain text.
+    pub images: Vec<String>,
+}
+
+impl Serialize for ChatMessage {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let mut m = ser.serialize_map(Some(2))?;
+        m.serialize_entry("role", self.role)?;
+        if self.images.is_empty() {
+            m.serialize_entry("content", &self.content)?;
+        } else {
+            let mut parts = vec![serde_json::json!({ "type": "text", "text": self.content })];
+            parts.extend(self.images.iter().map(|u| serde_json::json!({ "type": "image_url", "image_url": { "url": u } })));
+            m.serialize_entry("content", &parts)?;
+        }
+        m.end()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -64,8 +82,11 @@ struct ErrorDetail {
 }
 
 fn describe_status(status: reqwest::StatusCode, body: &str) -> String {
-    let detail = serde_json::from_str::<ErrorBody>(body)
+    // Some providers (Gemini) wrap the error object in an array.
+    let detail = serde_json::from_str::<Vec<ErrorBody>>(body)
         .ok()
+        .and_then(|v| v.into_iter().next())
+        .or_else(|| serde_json::from_str::<ErrorBody>(body).ok())
         .and_then(|b| b.error)
         .and_then(|e| e.message)
         .unwrap_or_default();
@@ -145,7 +166,35 @@ impl SseParser {
     }
 }
 
+/// Waits before a retry (a rate-limit answer usually clears in seconds).
+fn retry_delay(resp: &reqwest::Response, attempt: u32) -> Duration {
+    let asked = resp.headers().get("retry-after").and_then(|v| v.to_str().ok()).and_then(|v| v.trim().parse::<f64>().ok());
+    Duration::from_secs_f64(asked.unwrap_or(1.5 * f64::from(attempt + 1)).clamp(0.2, RETRY_MAX_WAIT_SECS))
+}
+
+const RETRY_MAX_WAIT_SECS: f64 = 6.0;
+const RATE_RETRIES: u32 = 2;
+
+/// Sends the request; a rate limit (429) or overload (503) is retried a couple of
+/// times after a short wait before it is reported.
 async fn send_request(cfg: &LlmConfig, body: &serde_json::Value, cancel: &CancellationToken) -> Result<reqwest::Response, LlmError> {
+    let mut attempt = 0;
+    loop {
+        let resp = send_once(cfg, body, cancel).await?;
+        let retryable = matches!(resp.status().as_u16(), 429 | 503);
+        if !retryable || attempt >= RATE_RETRIES {
+            return Ok(resp);
+        }
+        let wait = retry_delay(&resp, attempt);
+        attempt += 1;
+        tokio::select! {
+            _ = cancel.cancelled() => return Err(LlmError::Cancelled),
+            _ = tokio::time::sleep(wait) => {}
+        }
+    }
+}
+
+async fn send_once(cfg: &LlmConfig, body: &serde_json::Value, cancel: &CancellationToken) -> Result<reqwest::Response, LlmError> {
     let mut req = client().post(endpoint(&cfg.base_url, "chat/completions")).json(body);
     if let Some(key) = &cfg.api_key {
         req = req.bearer_auth(key);
@@ -315,7 +364,7 @@ mod tests {
     }
 
     fn msgs() -> Vec<ChatMessage> {
-        vec![ChatMessage { role: "user", content: "hi".into() }]
+        vec![ChatMessage { role: "user", content: "hi".into(), images: Vec::new() }]
     }
 
     #[tokio::test]
@@ -334,6 +383,65 @@ mod tests {
         let out = stream_chat(&cfg(base), msgs(), CancellationToken::new(), |d| seen.push(d.to_string())).await;
         assert_eq!(out, Ok("Short answer.".into()));
         assert_eq!(seen, vec!["Short ", "answer."]);
+    }
+
+    /// A rate limit that clears is retried instead of failing the answer.
+    #[tokio::test]
+    async fn a_rate_limit_is_retried() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let hits = std::sync::Arc::new(std::sync::Mutex::new(0u32));
+        let hits2 = hits.clone();
+        tokio::spawn(async move {
+            loop {
+                let (mut sock, _) = listener.accept().await.unwrap();
+                let mut buf = vec![0u8; 16384];
+                let _ = sock.read(&mut buf).await;
+                let n = { let mut h = hits2.lock().unwrap(); *h += 1; *h };
+                if n == 1 {
+                    let _ = sock.write_all(b"HTTP/1.1 429 Too Many Requests\r\nretry-after: 0.2\r\ncontent-length: 2\r\nconnection: close\r\n\r\n{}").await;
+                } else {
+                    let body = "data: {\"choices\":[{\"delta\":{\"content\":\"ok\"}}]}\n\ndata: [DONE]\n\n";
+                    let resp = format!("HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}", body.len(), body);
+                    let _ = sock.write_all(resp.as_bytes()).await;
+                }
+            }
+        });
+        let out = stream_chat(&cfg(format!("http://{addr}/v1")), msgs(), CancellationToken::new(), |_| {}).await;
+        assert_eq!(out, Ok("ok".into()));
+        assert_eq!(*hits.lock().unwrap(), 2);
+    }
+
+    /// Invalid credentials: a readable message that never contains the key.
+    #[tokio::test]
+    async fn invalid_credentials_are_reported_without_leaking_the_key() {
+        let base = serve(
+            "HTTP/1.1 401 Unauthorized\r\ncontent-type: application/json\r\ntransfer-encoding: chunked\r\n\r\n",
+            vec!["{\"error\":{\"message\":\"API key not valid\"}}"],
+            0,
+        )
+        .await;
+        let err = stream_chat(&cfg(base), msgs(), CancellationToken::new(), |_| {}).await.unwrap_err();
+        let text = err.to_string();
+        assert!(text.contains("API key was rejected") && text.contains("401"), "{text}");
+        assert!(!text.contains("sk-secret-123"), "key leaked: {text}");
+    }
+
+    #[test]
+    fn images_are_sent_as_content_parts_and_plain_text_stays_a_string() {
+        let plain = serde_json::to_value(ChatMessage { role: "user", content: "hi".into(), images: Vec::new() }).unwrap();
+        assert_eq!(plain["content"], "hi");
+        let with = serde_json::to_value(ChatMessage { role: "user", content: "look".into(), images: vec!["data:image/jpeg;base64,AAA".into()] }).unwrap();
+        assert_eq!(with["content"][0]["type"], "text");
+        assert_eq!(with["content"][1]["type"], "image_url");
+        assert_eq!(with["content"][1]["image_url"]["url"], "data:image/jpeg;base64,AAA");
+    }
+
+    #[test]
+    fn gemini_style_array_errors_show_their_message() {
+        let body = r#"[{"error":{"code":429,"message":"You exceeded your current quota"}}]"#;
+        let m = describe_status(reqwest::StatusCode::TOO_MANY_REQUESTS, body);
+        assert!(m.contains("exceeded your current quota"), "{m}");
     }
 
     /// A server that rejects `reasoning_effort` (400) must still get an answer:
@@ -417,7 +525,7 @@ mod tests {
     #[tokio::test]
     async fn server_error_and_unreachable_provider() {
         let base = serve(
-            "HTTP/1.1 503 Service Unavailable\r\ntransfer-encoding: chunked\r\n\r\n",
+            "HTTP/1.1 500 Internal Server Error\r\ntransfer-encoding: chunked\r\n\r\n",
             vec!["overloaded"],
             0,
         )

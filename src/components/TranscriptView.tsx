@@ -3,18 +3,19 @@ import type { SideNote } from "../lib/liveReducer";
 import type { AiSlot, Segment, Transcript } from "../lib/types";
 import { AiText } from "./AiText";
 import { displayText } from "../lib/citations";
+import { filterSegments, splitHighlight } from "../lib/search";
 
 function fmt(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function Line({ seg }: { seg: Segment }) {
+function Line({ seg, query }: { seg: Segment; query?: string }) {
   return (
     <div className={`line line-${seg.source}`}>
       <span className="who">{seg.source === "mic" ? "Me" : "Them"}</span>
       <span className="when">{fmt(seg.start_ms)}</span>
-      <p>{seg.text}</p>
+      <p>{splitHighlight(seg.text, query ?? "").map((part, i) => (part.hit ? <mark key={i}>{part.text}</mark> : part.text))}</p>
     </div>
   );
 }
@@ -51,21 +52,25 @@ export function TranscriptView({
   compact,
   emptyHint,
   side,
+  query,
 }: {
   transcript: Transcript;
   compact?: boolean;
   emptyHint?: string;
   /** When given, show automatic notes side by side with each line. */
   side?: Record<number, SideNote>;
+  /** Show only lines containing this text. */
+  query?: string;
 }) {
   const end = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
-  const finals = compact ? transcript.finals.slice(-12) : transcript.finals;
+  const searching = !!query?.trim();
+  const finals = searching ? filterSegments(transcript.finals, query!) : compact ? transcript.finals.slice(-12) : transcript.finals;
   const parallel = !!side;
 
   useEffect(() => {
-    if (stick.current) end.current?.scrollIntoView({ block: "end" });
+    if (stick.current && !searching) end.current?.scrollIntoView({ block: "end" });
   }, [transcript, side]);
 
   const onScroll = () => {
@@ -73,7 +78,7 @@ export function TranscriptView({
     if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
   };
 
-  const partials = (["system", "mic"] as const).filter((s) => transcript.partials[s]);
+  const partials = searching ? [] : (["system", "mic"] as const).filter((s) => transcript.partials[s]);
   return (
     <div className={`transcript ${parallel ? "parallel" : ""}`} ref={box} onScroll={onScroll} aria-live="polite">
       {parallel && finals.length > 0 && (
@@ -82,15 +87,15 @@ export function TranscriptView({
           <span className="label">In simple words · automatic</span>
         </div>
       )}
-      {finals.length === 0 && partials.length === 0 && <div className="empty">{emptyHint ?? "Transcript will appear here."}</div>}
+      {finals.length === 0 && (searching || partials.length === 0) && <div className="empty">{searching ? "No line matches your search." : emptyHint ?? "Transcript will appear here."}</div>}
       {finals.map((s) =>
         parallel ? (
           <div key={`${s.id}-${s.start_ms}`} className="pair">
-            <Line seg={s} />
+            <Line seg={s} query={query} />
             {s.source === "system" ? <Side note={side[s.id]} /> : <div className="side-note empty-note" />}
           </div>
         ) : (
-          <Line key={`${s.id}-${s.start_ms}`} seg={s} />
+          <Line key={`${s.id}-${s.start_ms}`} seg={s} query={query} />
         ),
       )}
       {partials.map((s) => (

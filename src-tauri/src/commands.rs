@@ -140,6 +140,25 @@ pub async fn stop_meeting(app: AppHandle, state: State<'_, AppState>) -> R<Optio
 }
 
 #[tauri::command]
+pub async fn set_paused(app: AppHandle, state: State<'_, AppState>, paused: bool) -> R<()> {
+    meeting::set_paused(&app, &state, paused).await
+}
+
+/// The Interview screen takes over answering interviewer questions while it is open.
+#[tauri::command]
+pub fn set_interview_live(state: State<AppState>, active: bool) {
+    state.auto.interview_live.store(active, std::sync::atomic::Ordering::SeqCst);
+    let secs = crate::auto_assist::question_cooldown(&state.settings(), &state.auto);
+    state.questions.lock().unwrap().set_cooldown(secs);
+}
+
+/// Reads the screen and explains it (see `screen.rs`). Returns the request id.
+#[tauri::command]
+pub fn screen_read(app: AppHandle, state: State<AppState>) -> R<String> {
+    crate::screen::start(&app, &state)
+}
+
+#[tauri::command]
 pub async fn switch_mic(app: AppHandle, state: State<'_, AppState>, device: Option<String>) -> R<()> {
     let mut s = state.settings();
     s.mic_device = device.clone();

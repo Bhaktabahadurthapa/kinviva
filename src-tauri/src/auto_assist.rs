@@ -15,7 +15,19 @@ use tauri::{AppHandle, Emitter, Manager};
 
 /// Quiet time after the last finished sentence before answering, so a
 /// speaker's whole thought gets one calm answer instead of several quick ones.
-pub const SETTLE: Duration = Duration::from_millis(600);
+pub const SETTLE: Duration = Duration::from_millis(300);
+
+/// Seconds between two detected questions. An interviewer's questions can follow each
+/// other quickly, so the Interview screen uses a short pause.
+pub fn question_cooldown(settings: &crate::settings::Settings, auto: &AutoAssist) -> u32 {
+    if auto.interview_live.load(Ordering::SeqCst) {
+        INTERVIEW_COOLDOWN_SECS.min(settings.question_cooldown_secs)
+    } else {
+        settings.question_cooldown_secs
+    }
+}
+
+const INTERVIEW_COOLDOWN_SECS: u32 = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
@@ -66,6 +78,8 @@ pub struct AutoAssist {
     /// Last "Them" segment already explained; later lines are the new focus.
     last_explained: AtomicI64,
     answer_pending: AtomicBool,
+    /// The Interview screen answers interviewer questions itself; meeting auto-assist stays quiet.
+    pub interview_live: AtomicBool,
     last_error: Mutex<Option<String>>,
 }
 
@@ -80,7 +94,11 @@ impl AutoAssist {
 
 /// Called for every final segment from the other participants.
 pub fn on_their_final(app: &AppHandle, segment_id: i64, text: &str) {
+    crate::screen::maybe_auto(app, text);
     let state = app.state::<AppState>();
+    if state.auto.interview_live.load(Ordering::SeqCst) {
+        return;
+    }
     let settings = state.settings();
     let Some(plan) = plan(Mode::parse(&settings.auto_assist), text, settings.auto_min_words as usize) else {
         return;
@@ -128,6 +146,17 @@ pub fn on_their_final(app: &AppHandle, segment_id: i64, text: &str) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn interview_screen_uses_a_short_question_pause() {
+        let mut s = crate::settings::Settings { question_cooldown_secs: 20, ..Default::default() };
+        let a = AutoAssist::default();
+        assert_eq!(question_cooldown(&s, &a), 20);
+        a.interview_live.store(true, Ordering::SeqCst);
+        assert_eq!(question_cooldown(&s, &a), 3);
+        s.question_cooldown_secs = 1;
+        assert_eq!(question_cooldown(&s, &a), 1);
+    }
 
     #[test]
     fn off_or_short_utterances_do_nothing() {

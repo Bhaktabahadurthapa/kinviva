@@ -5,3 +5,6 @@ src-tauri/gen
 .DS_Store
 demo-video/out
 dist-mac
+
+# Local tooling installs (Impeccable skills and engine)
+.claude/

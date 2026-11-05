@@ -32,8 +32,11 @@ fn publish(app: &AppHandle, state: &AppState, slot: &str, f: impl FnOnce(&mut Ai
     let _ = app.emit("ai-event", AiEvent { request_id: &rid, slot, data: &snapshot });
 }
 
+/// Transcript characters sent with an automatic answer (clicks use the setting).
+const AUTO_CONTEXT_CHARS: usize = 2500;
+
 /// Automatic answers in flight per panel before the oldest is dropped.
-const MAX_AUTO_IN_FLIGHT: usize = 3;
+const MAX_AUTO_IN_FLIGHT: usize = 2;
 
 /// Like `publish`, but an automatic request keeps its own state (`local`) so
 /// concurrent requests do not overwrite each other in the shared panel slot.
@@ -85,7 +88,15 @@ pub fn start_with(
     let slot = action.slot();
     let (transcript, notes, meeting_id, session) = {
         let live = state.live.lock().unwrap();
-        let window = if action == Action::Recap { settings.context_chars * 2 } else { settings.context_chars };
+        // Automatic answers send less transcript: the new sentence matters most, and
+        // a shorter prompt starts answering sooner.
+        let window = if action == Action::Recap {
+            settings.context_chars * 2
+        } else if auto_for.is_some() {
+            settings.context_chars.min(AUTO_CONTEXT_CHARS)
+        } else {
+            settings.context_chars
+        };
         (
             live.transcript.recent_window(window),
             live.notes.clone(),

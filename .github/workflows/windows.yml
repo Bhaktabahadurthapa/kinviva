@@ -2,14 +2,14 @@
 #
 # Run it from the Actions tab ("Build Windows" -> Run workflow), or:
 #   gh workflow run windows.yml                         # build only
-#   gh workflow run windows.yml -f release_tag=v0.1.1   # build and attach to a release
+#   gh workflow run windows.yml -f release_tag=v0.1.2   # build and attach to a release
 name: Build Windows
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Attach the installer to this existing release (e.g. v0.1.1). Leave empty to only build."
+        description: "Attach the installer to this existing release (e.g. v0.1.2). Leave empty to only build."
         required: false
         default: ""
 

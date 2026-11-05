@@ -1,10 +1,11 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { initialInterview, interviewReducer, isBusy, latestQuestion, type Slot } from "../lib/interview";
+import { ScreenAssist } from "../components/ScreenAssist";
 import { NotesDownload } from "../components/NotesDownload";
 import { chooseSavePath, type NotesFormat } from "../lib/download";
-import type { InterviewCategory, InterviewEvent, InterviewLanguage, InterviewMode, InterviewRole, SkillInfo } from "../lib/types";
+import type { InterviewCategory, InterviewEvent, InterviewLanguage, InterviewMode, InterviewRole, InterviewStyle, SkillInfo } from "../lib/types";
 import type { LiveState } from "../lib/liveReducer";
 
 const CATEGORIES: [InterviewCategory, string][] = [
@@ -18,6 +19,12 @@ const ROLES: [InterviewRole, string, InterviewCategory][] = [
   ["backend_engineer", "Backend engineer", "system_design"],
   ["ai_engineer", "AI engineer", "ai_engineering"],
   ["software_engineer", "Software engineer", "coding"],
+];
+const STYLES: [InterviewStyle, string, string][] = [
+  ["simple", "Simple", "Short, clear, everyday words"],
+  ["professional", "Professional", "Natural and confident"],
+  ["technical", "Technical", "More engineering depth"],
+  ["star", "STAR", "Situation, Task, Action, Result for behavioral questions; uses only your own notes"],
 ];
 const LANGUAGES: [InterviewLanguage, string][] = [
   ["python", "Python"],
@@ -87,6 +94,11 @@ function Result({ slot, stale, onModelAnswer }: { slot: Slot; stale: boolean; on
               <ul>{r.tradeoffs.map((t, i) => <li key={i}>{t}</li>)}</ul>
             </Section>
           )}
+          {(r.hard_words?.length ?? 0) > 0 && (
+            <Section title="Hard words, made simple">
+              <ul className="iv-words">{r.hard_words!.map((t, i) => <li key={i}>{t}</li>)}</ul>
+            </Section>
+          )}
           {r.follow_up && <Section title="Likely follow-up question"><p>{r.follow_up}</p></Section>}
         </>
       )}
@@ -139,6 +151,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
   const [language, setLanguage] = useState<InterviewLanguage>("python");
   const [mode, setMode] = useState<InterviewMode>("explain");
   const [role, setRole] = useState<InterviewRole>("cloud_devops_engineer");
+  const [style, setStyle] = useState<InterviewStyle>("simple");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [state, dispatch] = useReducer(interviewReducer, initialInterview);
@@ -153,7 +166,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
   const busy = Object.values(state.slots).some(isBusy);
   // A generated question does not depend on the question box, so it is never "stale" for that reason.
   const inputKey = (m: InterviewMode) =>
-    JSON.stringify([category, role, m, category === "coding" ? language : null, m === "question" ? "" : question.trim(), m === "practice" ? answer.trim() : ""]);
+    JSON.stringify([category, role, m === "explain" ? style : null, m, category === "coding" ? language : null, m === "question" ? "" : question.trim(), m === "practice" ? answer.trim() : ""]);
   // In mock practice the feedback replaces the generated question once you submit your answer.
   const feedbackShown = mode === "question" && state.slots.practice.status !== "idle" && state.slots.practice.inputKey === inputKey("practice");
   const slot = feedbackShown ? state.slots.practice : state.slots[mode];
@@ -184,23 +197,63 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
     set(v);
   };
 
-  const run = async (m: InterviewMode) => {
-    if (busy && state.slots[m].status !== "idle") return; // one call at a time; a repeat click is ignored
-    dispatch({ type: "starting", mode: m, inputKey: inputKey(m) });
+  const run = async (m: InterviewMode, asked?: string) => {
+    if (asked === undefined && busy && state.slots[m].status !== "idle") return; // one call at a time; a repeat click is ignored
+    const q = asked ?? question;
+    dispatch({
+      type: "starting",
+      mode: m,
+      inputKey: JSON.stringify([category, role, m === "explain" ? style : null, m, category === "coding" ? language : null, q.trim(), ""]),
+    });
     try {
       const id = await api.interviewRun({
         category,
         mode: m,
-        question,
+        question: q,
         answer: m === "practice" ? answer : null,
         language: category === "coding" ? language : null,
         role,
+        style: m === "explain" ? style : null,
       });
       dispatch({ type: "started", mode: m, requestId: id });
     } catch (e) {
       dispatch({ type: "startFailed", mode: m, error: errorText(e) });
     }
   };
+
+  // Live interview: when the interviewer asks a question, answer it here automatically.
+  const running = live.status?.state === "running";
+  const [autoLive, setAutoLive] = useState(() => {
+    try {
+      return localStorage.getItem("ml.ivAuto") !== "off";
+    } catch {
+      return true;
+    }
+  });
+  const toggleAuto = (v: boolean) => {
+    setAutoLive(v);
+    try {
+      localStorage.setItem("ml.ivAuto", v ? "on" : "off");
+    } catch {
+      /* not essential */
+    }
+  };
+  useEffect(() => {
+    // While this screen answers questions, the Meeting screen's auto-assist stays quiet.
+    api.setInterviewLive(autoLive).catch(() => {});
+    return () => void api.setInterviewLive(false).catch(() => {});
+  }, [autoLive]);
+  const lastAsked = useRef<number>(0);
+  const autoRef = useRef({ run, cancelRunning });
+  autoRef.current = { run, cancelRunning };
+  useEffect(() => {
+    const q = live.question;
+    if (!autoLive || !running || !q || q.at === lastAsked.current || mode !== "explain") return;
+    lastAsked.current = q.at;
+    autoRef.current.cancelRunning();
+    setQuestion(q.text);
+    void autoRef.current.run("explain", q.text);
+  }, [live.question?.at, autoLive, running, mode]);
 
   const fromMeeting = useMemo(() => latestQuestion(live.question?.text, live.transcript.finals), [live.question, live.transcript.finals]);
 
@@ -222,6 +275,13 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
           </div>
         </header>
         <div className="iv-body">
+          <label className="check iv-auto">
+            <input type="checkbox" checked={autoLive} onChange={(e) => toggleAuto(e.target.checked)} />
+            Answer the interviewer's questions automatically while the interview is running
+          </label>
+          <p className="hint">
+            {running ? (autoLive ? "Listening. When the interviewer asks a question, your answer appears on the right." : "Listening, but automatic answers are off. Paste a question and press Explain answer.") : "Press Start interview at the top. The interviewer's questions are answered here, not in the Meeting screen."}
+          </p>
           <div className="iv-row">
             <label>
               <span>Role</span>
@@ -243,6 +303,14 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
                 {CATEGORIES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </label>
+            {mode === "explain" && (
+              <label>
+                <span>Answer style</span>
+                <select value={style} title={STYLES.find((x) => x[0] === style)?.[2]} onChange={(e) => change(setStyle)(e.target.value as InterviewStyle)}>
+                  {STYLES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </label>
+            )}
             {category === "coding" && (
               <label>
                 <span>Answer language</span>
@@ -327,7 +395,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
         </div>
         {slot.status === "idle" && (
           <div className="how">
-            <p className="empty">{mode === "explain" ? "Get a spoken answer plus the reasoning behind it." : mode === "question" ? "Get a mock question for your role, answer it, then get feedback." : "Answer first. Then get feedback on correctness, missing points, structure and clarity."}</p>
+            <p className="empty">{mode === "explain" && running && autoLive ? "Listening for the interviewer. When a question is asked, the answer is written here automatically." : mode === "explain" ? "Get a spoken answer plus the reasoning behind it." : mode === "question" ? "Get a mock question for your role, answer it, then get feedback." : "Answer first. Then get feedback on correctness, missing points, structure and clarity."}</p>
             <ol className="how-steps">
               <li><b>Pick a category</b><span>Each one uses its own coaching skill.</span></li>
               <li><b>{mode === "explain" ? "Ask or paste a question" : "Write your answer"}</b><span>{mode === "explain" ? "Type it, or copy the latest one from your meeting." : "No coaching is shown until you submit."}</span></li>
@@ -335,6 +403,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
             </ol>
           </div>
         )}
+        <ScreenAssist />
         <Result slot={slot} stale={stale} onModelAnswer={mode === "practice" || feedbackShown ? () => { setMode("explain"); void run("explain"); } : undefined} />
       </section>
     </div>

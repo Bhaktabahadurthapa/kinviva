@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "../components/AiPanel";
 import { ActionBar } from "../components/ActionBar";
 import { SimpleStream } from "../components/SimpleStream";
+import { ScreenAssist } from "../components/ScreenAssist";
+import { Splitter } from "../components/Splitter";
 import { TranscriptView } from "../components/TranscriptView";
+import { countMatches } from "../lib/search";
+import { loadSplit, saveSplit } from "../lib/split";
 import { api, errorText } from "../lib/api";
 import type { LiveEvent, LiveState } from "../lib/liveReducer";
 import type { AutoMode, DeviceInfo } from "../lib/types";
@@ -28,6 +32,13 @@ export function LiveView({
 }) {
   const status = live.status;
   const running = status?.state === "running";
+  const [split, setSplitState] = useState(loadSplit);
+  const setSplit = (v: number) => {
+    setSplitState(v);
+    saveSplit(v);
+  };
+  const [query, setQuery] = useState("");
+  const grid = useRef<HTMLDivElement>(null);
   const [notesOpen, setNotesOpen] = useState(false);
   const [notes, setNotes] = useState(live.notes);
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
@@ -75,7 +86,7 @@ export function LiveView({
           </span>
         </div>
       )}
-      <div className={autoMode === "off" ? "live-grid" : "live-stack"}>
+      <div ref={grid} className={autoMode === "off" ? "live-grid" : "live-stack"} style={{ ["--split" as string]: `minmax(0, ${split}fr) 16px minmax(0, ${100 - split}fr)` }}>
         <section className="panel transcript-panel">
           <header>
             <h2>{autoMode === "off" ? "Live transcript" : "Captured audio"}</h2>
@@ -116,11 +127,17 @@ export function LiveView({
               placeholder="Private notes for this meeting. Suggested replies may use them as facts about you."
             />
           )}
+          <div className="tsearch">
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search this transcript" aria-label="Search this transcript" />
+            {query.trim() && <span className="tsearch-count" role="status">{countMatches(live.transcript.finals, query)} found</span>}
+          </div>
           <TranscriptView
+            query={query}
             transcript={live.transcript}
             emptyHint={running ? "Listening… speech will appear here." : "Start a meeting to see the live transcript."}
           />
         </section>
+        <Splitter value={split} onChange={setSplit} container={grid} />
         {autoMode === "off" ? (
           <div className="side">
             <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
@@ -137,6 +154,7 @@ export function LiveView({
           </section>
         )}
       </div>
+      <ScreenAssist />
       <ActionBar live={live} onError={onError} />
     </div>
   );

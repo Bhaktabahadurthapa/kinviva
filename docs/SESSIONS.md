@@ -55,3 +55,8 @@ Migration 3 adds `courses`, and `course_id`/`week` on documents, `page` on chunk
 - Search is keyword-based (SQLite FTS5), not semantic, so a question phrased very differently from the slides may miss them.
 - Work sessions have no behaviour of their own yet.
 - Not yet verified with a real model and real course files.
+
+## Read my screen
+The **Read my screen** button (Meeting, Interview and overlay) and its shortcut (default Cmd/Ctrl+Shift+S) take a screenshot of the main display, shrink it, and send it with the last ~1,500 characters of transcript to the configured AI provider, which must accept images (for example Gemini Flash). The explanation (what is on screen, a simple explanation, what you could say, hard words) streams into the overlay or the page. The image is deleted right after it is read and is never stored.
+
+Optional **automatic** mode (Settings → Assist, off by default) starts a read when the other person says things like "explain what is on the screen" or "look at this code", at most once every 20 seconds. macOS needs Screen & System Audio Recording permission, which MeetingLens already uses for system audio. Capture is macOS-only in this version.

@@ -55,6 +55,27 @@ impl Role {
     }
 }
 
+/// How the spoken answer is written. Chosen by the user; the text is trusted and fixed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Style {
+    Simple,
+    Professional,
+    Technical,
+    Star,
+}
+
+impl Style {
+    fn guidance(self) -> &'static str {
+        match self {
+            Style::Simple => "Simple: short, clear, conversational sentences in everyday words.",
+            Style::Professional => "Professional: a natural, confident interview answer. Direct first sentence, one reason, one example or tradeoff. No filler.",
+            Style::Technical => "Technical: concise engineering depth. Name the mechanism, the tradeoff and how you would verify it, still in plain words.",
+            Style::Star => "STAR: for a behavioral question write say_it as Situation, Task, Action, Result in that order, one or two sentences each, with the labels \"Situation:\", \"Task:\", \"Action:\", \"Result:\". Use ONLY facts found in <my_notes> or <document_excerpts>. If the user's own facts are missing, do not invent any: write each part as a short prompt for what the user should fill in from real experience, and say so in the first line. Never make up companies, dates, metrics or achievements.",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Language {
@@ -84,6 +105,8 @@ pub struct Request {
     pub language: Option<Language>,
     #[serde(default)]
     pub role: Option<Role>,
+    #[serde(default)]
+    pub style: Option<Style>,
 }
 
 impl Request {
@@ -124,7 +147,7 @@ impl Request {
 const APP_RULES: &str = "You are the interview coach inside MeetingLens, a private desktop app. \
 The user is practising for technical interviews and will often read your answer aloud. \
 Rules that always apply:\n\
-- Write clear, plain English. Keep spoken parts short.\n\
+- Write in very simple English that a 10-year-old could follow: everyday words, short sentences, and a few simple words to explain any hard term. Keep spoken parts short and natural, like a person talking.\n\
 - Separate facts, assumptions and uncertainty. Label assumptions and estimates.\n\
 - Never invent the user's experience, employers, projects, results, percentages or metrics, and never use placeholders. Speak as \"I would\" unless the user's notes or documents state a fact about them.\n\
 - You cannot run code or verify facts. Never claim you did.\n\
@@ -167,9 +190,10 @@ fn output_format(req: &Request) -> String {
             };
             format!(
                 "Respond with ONE JSON object and nothing else (no markdown fences, no text before or after). Keys:\n\
-\"say_it\": a concise answer the user can say aloud in about 30 seconds (at most 110 words, no bullet symbols). The first sentence is the direct answer,\n\
+\"say_it\": a concise answer in simple words a 10-year-old could follow, that the user can say aloud in about 30 seconds (at most 110 words, no bullet symbols). The first sentence is the direct answer,\n\
 \"understand_it\": the technical approach first, then how to verify it or a short concrete example (a string; use \\n between short paragraphs or steps),\n\
 {code}\"tradeoffs\": an array of 2 to 5 short strings covering tradeoffs, assumptions and uncertainty (prefix each with \"Tradeoff:\", \"Assumption:\" or \"Uncertain:\"),\n\
+\"hard_words\": an array of up to 6 strings. Reread your say_it and understand_it first. For every word a 10-year-old may not know (technical terms, acronyms, tools, even common ones like API or latency) write \"word: what it means in about 10 simple words\", hardest first. Use an empty array only if every word is easy,\n\
 \"follow_up\": the single most likely follow-up question an interviewer would ask.\n\
 Follow the answer structure in the skill instructions."
             )
@@ -203,6 +227,9 @@ pub fn build_messages(skill: &Skill, req: &Request, notes: &str, passages: &[Pas
     if let Some(role) = req.role {
         system.push_str(&format!("\n=== TARGET ROLE (trusted) ===\nThe user is preparing for a {}\nPitch depth and examples for this role.\n", role.context()));
     }
+    if let (Some(style), Mode::Explain) = (req.style, req.mode) {
+        system.push_str(&format!("\n=== ANSWER STYLE (trusted) ===\n{}\n", style.guidance()));
+    }
     system.push_str("\n=== OUTPUT FORMAT ===\n");
     system.push_str(&output_format(req));
 
@@ -231,8 +258,8 @@ pub fn build_messages(skill: &Skill, req: &Request, notes: &str, passages: &[Pas
         data.push_str("\nNo notes or documents were provided, so you know nothing about the user's own experience.\n");
     }
     vec![
-        ChatMessage { role: "system", content: system },
-        ChatMessage { role: "user", content: data },
+        ChatMessage { role: "system", content: system, images: Vec::new() },
+        ChatMessage { role: "user", content: data, images: Vec::new() },
     ]
 }
 
@@ -242,7 +269,7 @@ pub fn build_messages(skill: &Skill, req: &Request, notes: &str, passages: &[Pas
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Parsed {
     Question { question: String, tests: String },
-    Answer { say_it: String, understand_it: String, code: Option<String>, tradeoffs: Vec<String>, follow_up: String },
+    Answer { say_it: String, understand_it: String, code: Option<String>, tradeoffs: Vec<String>, hard_words: Vec<String>, follow_up: String },
     Feedback { correctness: String, missing_points: Vec<String>, structure: String, clarity: String, coaching_score: Option<u8>, improved_say_it: String, follow_up: String },
 }
 
@@ -288,7 +315,7 @@ pub fn parse_output(mode: Mode, raw: &str) -> Result<Parsed, String> {
                 return Err("the answer was missing `say_it` or `understand_it`".into());
             }
             let code = Some(text(&v, "code")).filter(|c| !c.is_empty());
-            Ok(Parsed::Answer { say_it, understand_it, code, tradeoffs: list(&v, "tradeoffs"), follow_up: text(&v, "follow_up") })
+            Ok(Parsed::Answer { say_it, understand_it, code, tradeoffs: list(&v, "tradeoffs"), hard_words: list(&v, "hard_words"), follow_up: text(&v, "follow_up") })
         }
         Mode::Practice => {
             let correctness = text(&v, "correctness");
@@ -524,12 +551,28 @@ mod tests {
     use super::*;
 
     fn req(cat: Category, mode: Mode, q: &str) -> Request {
-        Request { category: cat, mode, question: q.into(), answer: None, language: None, role: None }
+        Request { category: cat, mode, question: q.into(), answer: None, language: None, role: None, style: None }
     }
 
     fn built(r: Request, notes: &str, passages: &[Passage]) -> Vec<ChatMessage> {
         let r = r.validated().unwrap();
         build_messages(skills::skill_for(r.category).unwrap(), &r, notes, passages)
+    }
+
+    #[test]
+    fn the_chosen_style_is_added_and_star_forbids_inventing_facts() {
+        let mut r = req(Category::CloudDevops, Mode::Explain, "Tell me about a time a deploy failed.");
+        let plain = built(r.clone(), "", &[]);
+        assert!(!plain[0].content.contains("ANSWER STYLE"));
+        r.style = Some(Style::Star);
+        let m = built(r.clone(), "", &[]);
+        assert!(m[0].content.contains("ANSWER STYLE") && m[0].content.contains("Situation:"));
+        assert!(m[0].content.contains("Never make up companies, dates, metrics"));
+        // Style only applies when explaining an answer, not to feedback or mock questions.
+        let mut p = r;
+        p.mode = Mode::Practice;
+        p.answer = Some("I rolled back.".into());
+        assert!(!built(p, "", &[])[0].content.contains("ANSWER STYLE"));
     }
 
     #[test]
@@ -789,5 +832,13 @@ mod tests {
         for out in [finalize(Err(LlmError::Cancelled), Mode::Explain, true), finalize(Err(LlmError::Failed("x".into())), Mode::Explain, true)] {
             assert!(entry_for(&req(Category::Coding, Mode::Explain, "q"), "i4", &out.unwrap()).is_none());
         }
+    }
+
+    #[test]
+    fn interview_answers_are_asked_for_in_simple_spoken_english() {
+        let m = built(req(Category::SystemDesign, Mode::Explain, "How does a cache help?"), "", &[]);
+        assert!(m[0].content.contains("10-year-old"));
+        assert!(m[0].content.contains("\"hard_words\""));
+        assert!(m[0].content.contains("direct answer") && m[0].content.contains("technical approach first"));
     }
 }

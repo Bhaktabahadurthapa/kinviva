@@ -13,6 +13,7 @@ pub mod llm;
 pub mod meeting;
 pub mod prompts;
 pub mod question;
+pub mod screen;
 pub mod secrets;
 pub mod session;
 pub mod settings;
@@ -136,6 +137,8 @@ pub fn run() {
             let db = db::Db::open(&data_dir.join("meetinglens.sqlite"))?;
             db.close_dangling_meetings()?;
             let state = AppState {
+                paused: Default::default(),
+                screen_cancel: Default::default(),
                 db: Arc::new(db),
                 data_dir,
                 live: Arc::new(Mutex::new(state::Live::default())),
@@ -169,6 +172,9 @@ pub fn run() {
             commands::list_models,
             commands::start_meeting,
             commands::stop_meeting,
+            commands::set_paused,
+            commands::screen_read,
+            commands::set_interview_live,
             commands::switch_mic,
             commands::get_snapshot,
             commands::set_live_notes,

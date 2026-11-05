@@ -1,6 +1,6 @@
-const LABELS = ["Key points", "Expert addition", "Meaning", "Details", "Terms", "Answer", "Unclear", "Asking", "Points to cover"];
+const LABELS = ["Key points", "Expert addition", "Meaning", "Details", "Terms", "Hard words", "Answer", "Unclear", "Asking", "Points to cover"];
 /** Headings of a meeting answer, alone on a line. */
-const HEADINGS = ["YOU COULD SAY", "KEY TAKEAWAY", "SOURCES", "CLARIFICATION"];
+const HEADINGS = ["YOU COULD SAY", "KEY TAKEAWAY", "HARD WORDS", "SOURCES", "CLARIFICATION"];
 const HEADING_RE = new RegExp(`^\\**(${HEADINGS.join("|")})\\**\\s*:?\\s*\\**$`, "i");
 const LABEL_RE = new RegExp(`^\\**(${LABELS.join("|")})\\**\\s*:\\s*\\**\\s*(.*)$`, "i");
 

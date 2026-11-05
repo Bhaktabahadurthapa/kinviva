@@ -66,7 +66,7 @@ Source rules:\n\
 - Each excerpt is labelled [S1], [S2], ... (file and page). When a sentence uses an excerpt's definitions, examples, numbers or terminology, put its label right after that sentence. Use only labels that exist; never invent a label, file name or page. The app checks every label and removes any that is not a real retrieved excerpt.\n\
 - Points from your own knowledge carry no label. Use the course's terms where the excerpts give them. If an excerpt disagrees with what is generally taught, follow the excerpt and say so briefly.\n\
 - If no excerpt answers the question, answer from your own knowledge and say so in one short clause. If excerpts conflict, say so briefly.\n\
-- Never copy an excerpt's sentences; explain the idea in your own words, in simple language.\n\
+- Never copy an excerpt's sentences; explain the idea in your own words, in words a 10-year-old can understand.\n\
 - When you explain what the instructor said, add one bullet \"Course link:\" saying in your own words how it connects to an excerpt, with its label. Leave it out if none matches."
         ))
     }

@@ -32,6 +32,7 @@ export interface MeetingStatus {
   audio_to_cloud: boolean;
   stt_host: string | null;
   recording_audio: boolean;
+  paused?: boolean;
   context_meeting_id: string | null;
   context_is_demo: boolean;
   session?: SessionInfo;
@@ -99,6 +100,7 @@ export interface Shortcuts {
   toggle_overlay: string;
   suggest_reply: string;
   explain: string;
+  screen_help: string;
 }
 
 export interface Settings {
@@ -127,6 +129,7 @@ export interface Settings {
   auto_min_words: number;
   overlay_content_protection: boolean;
   overlay_on_minimize: boolean;
+  screen_auto: boolean;
   shortcuts: Shortcuts;
 }
 
@@ -183,6 +186,8 @@ export type InterviewMode = "explain" | "practice" | "question";
 export type InterviewRole = "cloud_devops_engineer" | "backend_engineer" | "ai_engineer" | "software_engineer";
 export type InterviewLanguage = "python" | "java" | "cpp";
 
+export type InterviewStyle = "simple" | "professional" | "technical" | "star";
+
 export interface InterviewRequest {
   category: InterviewCategory;
   mode: InterviewMode;
@@ -190,11 +195,12 @@ export interface InterviewRequest {
   answer?: string | null;
   language?: InterviewLanguage | null;
   role?: InterviewRole | null;
+  style?: InterviewStyle | null;
 }
 
 export type InterviewParsed =
   | { kind: "question"; question: string; tests: string }
-  | { kind: "answer"; say_it: string; understand_it: string; code: string | null; tradeoffs: string[]; follow_up: string }
+  | { kind: "answer"; say_it: string; understand_it: string; code: string | null; tradeoffs: string[]; hard_words?: string[]; follow_up: string }
   | {
       kind: "feedback";
       correctness: string;

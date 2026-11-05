@@ -15,6 +15,7 @@ pub fn apply(app: &AppHandle, s: &Shortcuts) -> Vec<String> {
         ("toggle_overlay", &s.toggle_overlay),
         ("suggest_reply", &s.suggest_reply),
         ("explain", &s.explain),
+        ("screen_help", &s.screen_help),
     ];
     for (name, accel) in pairs {
         if accel.trim().is_empty() {
@@ -34,6 +35,8 @@ pub fn apply(app: &AppHandle, s: &Shortcuts) -> Vec<String> {
             }
             if action == "toggle_overlay" {
                 let _ = crate::commands::toggle_overlay_inner(app);
+            } else if action == "screen_help" {
+                crate::screen::start_and_show(app);
             } else {
                 let _ = app.emit_to("main", "shortcut", &action);
             }

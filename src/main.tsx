@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./dev/mock";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { inTauri } from "./lib/api";
+import { applyAppearance, loadAppearance } from "./lib/appearance";
 import App from "./App";
 import Overlay from "./Overlay";
 import "@fontsource/atkinson-hyperlegible/400.css";
@@ -14,6 +15,7 @@ import "./styles.css";
 
 const label = inTauri ? getCurrentWindow().label : new URLSearchParams(location.search).get("view") ?? "main";
 document.documentElement.dataset.window = label;
+if (label !== "overlay") applyAppearance(loadAppearance());
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>{label === "overlay" ? <Overlay /> : <App />}</React.StrictMode>,

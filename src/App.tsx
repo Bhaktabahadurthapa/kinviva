@@ -9,18 +9,41 @@ import { MeetingView, type MeetingTab } from "./views/MeetingView";
 import { SettingsView } from "./views/SettingsView";
 import { NotesDownload } from "./components/NotesDownload";
 import { chooseSavePath, safeName, type NotesFormat } from "./lib/download";
-import { loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
+import { defaultSession, loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
 import type { Course } from "./lib/types";
 
 /** The two primary areas. Settings is a utility button, not a primary item. */
-type Tab = "meeting" | "interview" | "settings";
+type Tab = "meeting" | "interview" | "sessions" | "knowledge" | "settings";
 
 function Logo() {
+  // The app icon mark: a lens with a voice waveform inside.
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
-      <circle cx="12" cy="12" r="10.5" fill="none" stroke="var(--c-line-strong)" strokeWidth="1.2" />
-      <circle cx="12" cy="12" r="6.8" fill="none" stroke="var(--c-text)" strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="3" fill="var(--c-signal)" />
+    <svg width="28" height="28" viewBox="100 100 824 824" aria-hidden>
+      <defs>
+        <linearGradient id="lg-tile" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#22386a" />
+          <stop offset="1" stopColor="#0c1730" />
+        </linearGradient>
+        <linearGradient id="lg-ring" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#9db9ff" />
+        </linearGradient>
+        <linearGradient id="lg-bar" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#9db9ff" />
+          <stop offset="1" stopColor="#4d7cff" />
+        </linearGradient>
+      </defs>
+      <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#lg-tile)" />
+      <circle cx="512" cy="500" r="206" fill="#0a1226" fillOpacity="0.55" />
+      <circle cx="512" cy="500" r="206" fill="none" stroke="url(#lg-ring)" strokeWidth="40" />
+      <path d="M668 656 L748 736" stroke="url(#lg-ring)" strokeWidth="44" strokeLinecap="round" />
+      <g fill="url(#lg-bar)">
+        <rect x="396" y="466" width="32" height="68" rx="16" />
+        <rect x="448" y="418" width="32" height="164" rx="16" />
+        <rect x="496" y="372" width="32" height="256" rx="16" />
+        <rect x="544" y="418" width="32" height="164" rx="16" />
+        <rect x="596" y="466" width="32" height="68" rx="16" />
+      </g>
     </svg>
   );
 }
@@ -38,10 +61,38 @@ function Elapsed({ since }: { since: number }) {
   return <span className="timecode">{`${hh}:${mm}:${ss}`}</span>;
 }
 
+/** The running meeting's name: edit it any time; saved when you leave the field. */
+function LiveTitle({ id, initial, onError }: { id: string | null; initial: string; onError: (m: string) => void }) {
+  const [value, setValue] = useState(initial);
+  const [saved, setSaved] = useState(initial);
+  const commit = async () => {
+    const next = value.trim();
+    if (!id || next === saved) return;
+    if (!next) return setValue(saved);
+    try {
+      await api.renameMeeting(id, next);
+      setSaved(next);
+    } catch (e) {
+      onError(errorText(e));
+      setValue(saved);
+    }
+  };
+  return (
+    <input
+      className="title-input"
+      aria-label="Meeting name"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
+    />
+  );
+}
+
 export default function App() {
   const { state: live, dispatch } = useLive();
   const [tab, setTab] = useState<Tab>("meeting");
-  const [meetingTab, setMeetingTab] = useState<MeetingTab>("live");
+  const meetingTab: MeetingTab = tab === "sessions" ? "history" : tab === "knowledge" ? "resources" : "live";
   const [session, setSessionState] = useState<SessionChoice>(loadSession);
   const [courses, setCourses] = useState<Course[]>([]);
   const setSession = (s: SessionChoice) => {
@@ -102,17 +153,18 @@ export default function App() {
     try {
       if (running) await api.stopMeeting();
       else if (!busy) {
-        const problem = sessionProblem(session, courses.map((c) => c.id));
+        const inInterview = tab === "interview";
+        const chosen = inInterview ? defaultSession : session;
+        const problem = sessionProblem(chosen, courses.map((c) => c.id));
         if (problem) {
-          setMeetingTab("live");
           setTab("meeting");
           setError(problem);
           return;
         }
-        await api.startMeeting(title, session);
+        await api.startMeeting(title, chosen);
         setTitle("");
-        setTab("meeting");
-        setMeetingTab("live");
+        // Starting from Interview stays in Interview; other screens go to Meeting.
+        if (tab !== "interview") setTab("meeting");
       }
     } catch (e) {
       setError(errorText(e));
@@ -128,15 +180,6 @@ export default function App() {
     );
   }
 
-  const llmHost = (() => {
-    try {
-      return new URL(settings?.llm_base_url ?? "").host;
-    } catch {
-      return "not set";
-    }
-  })();
-  const llmLocal = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(llmHost);
-
   return (
     <div className="app">
       <nav className="rail">
@@ -150,6 +193,8 @@ export default function App() {
           [
             ["meeting", "Meeting"],
             ["interview", "Interview"],
+            ["sessions", "Sessions"],
+            ["knowledge", "Knowledge"],
           ] as [Tab, string][]
         ).map(([t, label], i) => (
           // The index is drawn by CSS so the button's text stays just its label.
@@ -171,20 +216,20 @@ export default function App() {
         <header className="console">
           <div className="onair">
             <span className={`lamp ${running ? "is-live" : ""}`}>
-              {running ? <span className="rec" aria-label="Capturing" /> : <span className="rec-off" />}
-              {running ? "On air" : busy ? status?.state : "Standby"}
+              {running && !status?.paused ? <span className="rec" aria-label="Capturing" /> : <span className="rec-off" />}
+              {running ? (status?.paused ? "Paused" : "On air") : busy ? status?.state : "Standby"}
             </span>
             {running && status?.started_at ? <Elapsed since={status.started_at} /> : <span className="timecode idle">00:00:00</span>}
           </div>
           <div className="console-mid">
             {running ? (
-              <strong className="mtitle">{status?.title}</strong>
+              <LiveTitle key={status?.meeting_id ?? "x"} id={status?.meeting_id ?? null} initial={status?.title ?? ""} onError={setError} />
             ) : (
               <input
                 className="title-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Name this meeting…"
+                placeholder={tab === "interview" ? "Name this interview…" : "Name this meeting…"}
                 disabled={busy}
               />
             )}
@@ -192,12 +237,22 @@ export default function App() {
               <div className="strips">
                 <SourcePill name="Them" source="system" st={status.system} level={live.levels.system} idle={status.state === "idle"} idleEnabled={settings?.capture_system} />
                 <SourcePill name="Me" source="mic" st={status.mic} level={live.levels.mic} idle={status.state === "idle"} idleEnabled={settings?.capture_mic} />
-                <PrivacyPills status={status} llmHost={llmHost} llmLocal={llmLocal} auto={(settings?.auto_assist ?? "off") !== "off"} />
+                <PrivacyPills status={status} />
               </div>
             )}
           </div>
+          {running && (
+            <button
+              className="btn btn-lg"
+              aria-pressed={!!status?.paused}
+              title={status?.paused ? "Resume transcription" : "Stop transcribing for now; capture stays open"}
+              onClick={() => api.setPaused(!status?.paused).catch((e) => setError(errorText(e)))}
+            >
+              {status?.paused ? "Resume" : "Pause"}
+            </button>
+          )}
           <button className={`btn btn-lg ${running ? "btn-danger" : "btn-primary"}`} onClick={toggleMeeting} disabled={busy}>
-            {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Stopping…" : running ? "Stop" : "Start meeting"}
+            {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Stopping…" : running ? "Stop" : tab === "interview" ? "Start interview" : "Start meeting"}
           </button>
         </header>
         {error && (
@@ -229,16 +284,16 @@ export default function App() {
                   }}
                 />
               )}
-              <button className="btn btn-ghost btn-sm" onClick={() => { setTab("meeting"); setMeetingTab("history"); }}>View in History</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => setTab("sessions")}>View in Sessions</button>
               <button className="btn btn-ghost btn-sm" onClick={() => setSaved(null)}>Dismiss</button>
             </span>
           </div>
         )}
         <div className="content">
-          {tab === "meeting" && (
+          {(tab === "meeting" || tab === "sessions" || tab === "knowledge") && (
             <MeetingView
               tab={meetingTab}
-              onTab={setMeetingTab}
+              onTab={(t) => setTab(t === "history" ? "sessions" : t === "resources" ? "knowledge" : "meeting")}
               live={live}
               dispatch={dispatch}
               onError={setError}

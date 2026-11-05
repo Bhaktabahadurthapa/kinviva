@@ -40,7 +40,7 @@ fn fmt_offset(ms: i64) -> String {
 
 /// The three headings of a meeting answer, on a line of their own.
 fn is_heading(line: &str) -> bool {
-    matches!(line.trim().trim_matches('*').trim_end_matches(':').to_uppercase().as_str(), "YOU COULD SAY" | "KEY TAKEAWAY" | "SOURCES" | "CLARIFICATION")
+    matches!(line.trim().trim_matches('*').trim_end_matches(':').to_uppercase().as_str(), "YOU COULD SAY" | "KEY TAKEAWAY" | "HARD WORDS" | "SOURCES" | "CLARIFICATION")
 }
 
 fn title_case(line: &str) -> String {
@@ -240,6 +240,11 @@ pub fn interview_doc(entries: &[InterviewEntry]) -> Doc {
                 if !t.is_empty() {
                     blocks.push(Block::Label("Tradeoffs and assumptions".into()));
                     blocks.push(Block::Bullets(t));
+                }
+                let w = strings(&v, "hard_words");
+                if !w.is_empty() {
+                    blocks.push(Block::Label("Hard words, made simple".into()));
+                    blocks.push(Block::Bullets(w));
                 }
                 labelled(&mut blocks, "Likely follow-up question", &text_of(&v, "follow_up"));
             }

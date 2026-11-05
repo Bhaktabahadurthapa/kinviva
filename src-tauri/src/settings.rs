@@ -10,6 +10,7 @@ pub struct Shortcuts {
     pub toggle_overlay: String,
     pub suggest_reply: String,
     pub explain: String,
+    pub screen_help: String,
 }
 
 impl Default for Shortcuts {
@@ -19,6 +20,7 @@ impl Default for Shortcuts {
             toggle_overlay: "CommandOrControl+Shift+O".into(),
             suggest_reply: "CommandOrControl+Shift+R".into(),
             explain: "CommandOrControl+Shift+E".into(),
+            screen_help: "CommandOrControl+Shift+S".into(),
         }
     }
 }
@@ -46,7 +48,7 @@ pub struct Settings {
     pub llm_temperature: f32,
     /// "auto" | "off" | "minimal" | "low" | "medium" | "high". How much a
     /// reasoning model thinks before answering; less is faster. "auto" asks
-    /// Gemini for "low" and sends nothing to other providers.
+    /// Gemini for "minimal" (fastest) and sends nothing to other providers.
     pub llm_reasoning: String,
     pub context_chars: usize,
     pub use_documents: bool,
@@ -63,6 +65,8 @@ pub struct Settings {
     pub overlay_content_protection: bool,
     /// Show the floating answer overlay automatically while the main window is minimized or hidden.
     pub overlay_on_minimize: bool,
+    /// Read the screen automatically when the other person asks you to explain something shown.
+    pub screen_auto: bool,
     pub shortcuts: Shortcuts,
 }
 
@@ -94,6 +98,7 @@ impl Default for Settings {
             auto_min_words: 6,
             overlay_content_protection: false,
             overlay_on_minimize: true,
+            screen_auto: false,
             shortcuts: Shortcuts::default(),
         }
     }
@@ -127,7 +132,7 @@ impl Settings {
     pub fn reasoning_effort(&self) -> Option<String> {
         match self.llm_reasoning.as_str() {
             "minimal" | "low" | "medium" | "high" => Some(self.llm_reasoning.clone()),
-            "auto" if self.llm_base_url.contains("generativelanguage.googleapis.com") => Some("low".into()),
+            "auto" if self.llm_base_url.contains("generativelanguage.googleapis.com") => Some("minimal".into()),
             _ => None,
         }
     }
@@ -150,7 +155,7 @@ mod tests {
         let mut s = Settings::default();
         assert_eq!(s.reasoning_effort(), None);
         s.llm_base_url = "https://generativelanguage.googleapis.com/v1beta/openai".into();
-        assert_eq!(s.reasoning_effort(), Some("low".into()));
+        assert_eq!(s.reasoning_effort(), Some("minimal".into()));
         s.llm_reasoning = "off".into();
         assert_eq!(s.reasoning_effort(), None);
         s.llm_reasoning = "high".into();

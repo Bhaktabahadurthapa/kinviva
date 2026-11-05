@@ -37,6 +37,8 @@ pub struct MeetingStatus {
     pub audio_to_cloud: bool,
     pub stt_host: Option<String>,
     pub recording_audio: bool,
+    /// Capture is running but audio is not being transcribed or recorded.
+    pub paused: bool,
     /// A saved meeting loaded as context while idle.
     pub context_meeting_id: Option<String>,
     pub context_is_demo: bool,
@@ -57,6 +59,7 @@ impl Default for MeetingStatus {
             audio_to_cloud: false,
             stt_host: None,
             recording_audio: false,
+            paused: false,
             context_meeting_id: None,
             context_is_demo: false,
             session: Default::default(),
@@ -109,6 +112,10 @@ pub struct Snapshot {
 }
 
 pub struct AppState {
+    /// Shared with the audio forwarders: while true, captured audio is dropped.
+    pub paused: Arc<std::sync::atomic::AtomicBool>,
+    /// The screen read in flight, if any (a new one cancels it).
+    pub screen_cancel: Mutex<Option<tokio_util::sync::CancellationToken>>,
     pub db: Arc<Db>,
     pub data_dir: PathBuf,
     pub live: Arc<Mutex<Live>>,

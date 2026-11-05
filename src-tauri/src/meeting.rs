@@ -96,6 +96,7 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>, ses
     let channels = usize::from(settings.capture_mic) + usize::from(settings.capture_system);
     let cfg = stt_config(&settings, &state.data_dir, channels)?;
 
+    state.paused.store(false, std::sync::atomic::Ordering::SeqCst);
     let meeting_id = uuid::Uuid::new_v4().to_string();
     let started_at = now_ms();
     let title = title
@@ -126,7 +127,7 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>, ses
         live.status = st;
     }
     emit_status(app, &state.live);
-    state.questions.lock().unwrap().set_cooldown(settings.question_cooldown_secs);
+    state.questions.lock().unwrap().set_cooldown(crate::auto_assist::question_cooldown(&settings, &state.auto));
     state.auto.reset();
 
     let cancel = CancellationToken::new();
@@ -179,7 +180,7 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>, ses
                 // Generous buffer: a local engine may pause for a few seconds per utterance.
                 let (stt_tx, stt_rx) = mpsc::channel::<Vec<i16>>(4096);
                 let rec_path = settings.save_audio.then(|| rec_dir.join(format!("{}.wav", source.as_str())));
-                session.tasks.push(tokio::spawn(forward_audio(raw_rx, stt_tx, rec_path)));
+                session.tasks.push(tokio::spawn(forward_audio(raw_rx, stt_tx, rec_path, state.paused.clone())));
                 session.tasks.push(tokio::spawn(stt::run(cfg.clone(), source, stt_rx, ev_tx.clone(), cancel.clone())));
             }
             Err(message) => {
@@ -232,7 +233,12 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>, ses
 pub async fn stop(app: &AppHandle, state: &AppState) -> Result<Option<String>, String> {
     let mut guard = state.session.lock().await;
     let Some(mut session) = guard.take() else { return Ok(None) };
-    state.live.lock().unwrap().status.state = "stopping".into();
+    state.paused.store(false, std::sync::atomic::Ordering::SeqCst);
+    {
+        let mut live = state.live.lock().unwrap();
+        live.status.state = "stopping".into();
+        live.status.paused = false;
+    }
     emit_status(app, &state.live);
 
     // 1. Release devices. Dropping the stream drops its sink, closing the audio channel.
@@ -275,6 +281,20 @@ pub async fn stop(app: &AppHandle, state: &AppState) -> Result<Option<String>, S
     Ok(Some(session.meeting_id))
 }
 
+/// Pause or resume transcription while capture stays open. Only while a meeting is running.
+pub async fn set_paused(app: &AppHandle, state: &AppState, paused: bool) -> Result<(), String> {
+    {
+        let mut live = state.live.lock().unwrap();
+        if live.status.state != "running" {
+            return Err("Pause is only available while a meeting is running.".into());
+        }
+        live.status.paused = paused;
+    }
+    state.paused.store(paused, std::sync::atomic::Ordering::SeqCst);
+    emit_status(app, &state.live);
+    Ok(())
+}
+
 pub async fn switch_mic(app: &AppHandle, state: &AppState, device: Option<String>) -> Result<(), String> {
     let mut guard = state.session.lock().await;
     let Some(session) = guard.as_mut() else { return Ok(()) };
@@ -307,18 +327,56 @@ pub async fn switch_mic(app: &AppHandle, state: &AppState, device: Option<String
     out
 }
 
+/// What to do with one captured chunk given the pause switch.
+#[derive(Debug, PartialEq)]
+enum Gate {
+    Pass(Vec<i16>),
+    Silence(Vec<i16>),
+    Drop,
+}
+
+/// Pausing must not leave a half-heard sentence hanging: on the first paused chunk
+/// the provider gets about 1.2 s of silence so its end-of-speech detection fires;
+/// after that audio is dropped until resume.
+#[derive(Default)]
+struct PauseGate {
+    was_paused: bool,
+}
+
+const PAUSE_SILENCE_SAMPLES: usize = 19_200; // 1.2 s at 16 kHz
+
+impl PauseGate {
+    fn next(&mut self, paused: bool, chunk: Vec<i16>) -> Gate {
+        let first = paused && !self.was_paused;
+        self.was_paused = paused;
+        match (paused, first) {
+            (false, _) => Gate::Pass(chunk),
+            (true, true) => Gate::Silence(vec![0; PAUSE_SILENCE_SAMPLES]),
+            (true, false) => Gate::Drop,
+        }
+    }
+}
+
 /// Copy capture audio to the speech provider, optionally recording to WAV.
 async fn forward_audio(
     mut raw: mpsc::Receiver<Vec<i16>>,
     stt: mpsc::Sender<Vec<i16>>,
     record_to: Option<std::path::PathBuf>,
+    paused: Arc<std::sync::atomic::AtomicBool>,
 ) {
+    let mut gate = PauseGate::default();
     let mut writer = record_to.and_then(|p| {
         std::fs::create_dir_all(p.parent()?).ok()?;
         let spec = hound::WavSpec { channels: 1, sample_rate: 16_000, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
         hound::WavWriter::create(p, spec).ok()
     });
     while let Some(chunk) = raw.recv().await {
+        let chunk = match gate.next(paused.load(std::sync::atomic::Ordering::SeqCst), chunk) {
+            Gate::Pass(c) => c,
+            // Paused: close the open utterance with a moment of silence, then drop audio.
+            Gate::Silence(c) => c,
+            Gate::Drop => continue,
+        };
         if let Some(w) = writer.as_mut() {
             for s in &chunk {
                 let _ = w.write_sample(*s);
@@ -488,5 +546,22 @@ async fn emit_levels(
                 let _ = app.emit("audio-levels", map);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod pause_tests {
+    use super::*;
+
+    #[test]
+    fn pausing_flushes_with_silence_then_drops_and_resumes_cleanly() {
+        let mut g = PauseGate::default();
+        assert_eq!(g.next(false, vec![1, 2]), Gate::Pass(vec![1, 2]));
+        assert_eq!(g.next(true, vec![3]), Gate::Silence(vec![0; PAUSE_SILENCE_SAMPLES]));
+        assert_eq!(g.next(true, vec![4]), Gate::Drop);
+        assert_eq!(g.next(true, vec![5]), Gate::Drop);
+        assert_eq!(g.next(false, vec![6]), Gate::Pass(vec![6]));
+        // A second pause flushes again.
+        assert!(matches!(g.next(true, vec![7]), Gate::Silence(_)));
     }
 }

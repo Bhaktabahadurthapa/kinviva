@@ -9,13 +9,8 @@ import { ResourcesView } from "./ResourcesView";
 
 export type MeetingTab = "live" | "history" | "resources";
 
-const TABS: [MeetingTab, string][] = [
-  ["live", "Live"],
-  ["history", "History"],
-  ["resources", "Resources"],
-];
 
-/** The Meeting area: session type on top, then Live, History and Resources. */
+/** The Meeting, Sessions and Knowledge destinations (the sidebar picks which one shows). */
 export function MeetingView({
   tab,
   onTab,
@@ -48,18 +43,11 @@ export function MeetingView({
   const active = running ? live.status?.session : undefined;
   return (
     <div className="meeting-area">
-      <div className="subnav">
-        <div className="subnav-tabs" role="tablist" aria-label="Meeting sections">
-          {TABS.map(([t, label]) => (
-            <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? "active" : ""} onClick={() => onTab(t)}>
-              {label}
-            </button>
-          ))}
-        </div>
-        {tab === "live" && (
+      {tab === "live" && (
+        <div className="subnav">
           <SessionBar value={session} courses={courses} locked={running} onChange={onSession} onCoursesChanged={onCoursesChanged} onError={onError} />
-        )}
-      </div>
+        </div>
+      )}
       {active?.kind === "class" && (
         <div className="banner banner-ok session-banner">
           Class session · {active.course_name}

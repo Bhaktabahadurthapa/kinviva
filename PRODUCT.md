@@ -1,0 +1,2 @@
+# PRODUCT
+MeetingLens is a local-first desktop assistant: it transcribes meetings and interviews, explains what was said in simple words, drafts answers grounded in your own notes and documents, and saves sessions for review. AI answers are suggestions, not verified personal experience; interview answers never invent qualifications. Recording consent and local law are the user's responsibility. See `docs/architecture/current-system.md`.

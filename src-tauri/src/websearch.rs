@@ -57,7 +57,7 @@ fn parse(body: &str) -> Result<Vec<WebSource>, String> {
 
 /// Searches the web. Errors are readable and never contain the key.
 pub async fn search(endpoint: &str, api_key: &str, query: &str, cancel: &CancellationToken) -> Result<Vec<WebSource>, String> {
-    let client = reqwest::Client::builder().connect_timeout(Duration::from_secs(5)).timeout(Duration::from_secs(8)).build().map_err(|e| e.to_string())?;
+    let client = reqwest::Client::builder().connect_timeout(Duration::from_secs(2)).timeout(Duration::from_secs(3)).build().map_err(|e| e.to_string())?;
     let req = client
         .post(endpoint)
         .bearer_auth(api_key)

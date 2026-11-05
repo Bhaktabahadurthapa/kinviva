@@ -59,3 +59,10 @@ describe("citations", () => {
     expect(spokenPart("Answer: plain text")).toBe("plain text");
   });
 });
+
+describe("hard words", () => {
+  it("are not part of the spoken copy", () => {
+    const t = "YOU COULD SAY\nUse a queue.\n\nKEY TAKEAWAY\nDecouple.\n\nHARD WORDS\nqueue: a line where jobs wait\n\nSOURCES\n- a";
+    expect(spokenPart(t)).toBe("Use a queue.");
+  });
+});

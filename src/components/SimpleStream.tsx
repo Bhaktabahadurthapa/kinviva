@@ -62,6 +62,19 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
     if (finals.length === 0) setShown([]);
   }, [finals.length === 0]);
 
+  // A failed request used to vanish silently. Show why, for the newest failure
+  // that no later answer has replaced.
+  const failure = (() => {
+    for (const seg of [...finals].reverse()) {
+      if (seg.source !== "system") continue;
+      const n = side[seg.id];
+      if (isDone(n?.meaning) || hasAnswer(n)) return null;
+      const err = [n?.meaning, n?.answer].find((x) => x?.state === "error" && x.error);
+      if (err) return friendlyError(err.error!);
+    }
+    return null;
+  })();
+
   const visible = shown.filter((id) => id >= 0);
   const latest = visible[visible.length - 1];
 
@@ -80,7 +93,12 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
 
   return (
     <div className="simple-stream" ref={box} aria-live="polite">
-      {visible.length === 0 && running && <p className="empty">When they finish a thought, its meaning appears here in simple words.</p>}
+      {failure && (
+        <div className="banner" role="alert">
+          <b>The AI could not answer.</b> {failure}
+        </div>
+      )}
+      {visible.length === 0 && running && !failure && <p className="empty">When they finish a thought, its meaning appears here in simple words.</p>}
       {visible.length === 0 && !running && (
         <div className="how">
           <p className="empty">Simple explanations appear here automatically.</p>
@@ -122,6 +140,14 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
       })}
     </div>
   );
+}
+
+/** Turns a provider error into what to do next. */
+function friendlyError(e: string): string {
+  if (/could not read key|credential store|add your ai provider/i.test(e)) return `${e} Open Settings → AI and save your API key again.`;
+  if (/401|403|api key|unauthor|permission/i.test(e)) return `${e} Check your API key in Settings → AI.`;
+  if (/429|quota|rate/i.test(e)) return `${e} The provider is limiting requests; wait a moment.`;
+  return e;
 }
 
 function CopyButton({ text }: { text: string }) {

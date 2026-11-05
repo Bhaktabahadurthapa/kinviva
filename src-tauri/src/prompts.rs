@@ -37,7 +37,7 @@ The transcript comes from automatic speech recognition and may contain recogniti
 or unfinished sentences. Lines from \"Them\" are other participants (computer audio); lines from \"Me\" are the user's microphone. \
 Before answering, identify the actual question and the relevant discussion context, use the selected documents when relevant, \
 and keep supported facts apart from assumptions. Ask one focused clarification only when missing information would materially change the answer.\n\
-Writing rules: professional, accurate, clear English that sounds natural when spoken. Prefer specific reasoning over generic lists of actions. \
+Writing rules: professional and accurate, but in very simple English that sounds natural when spoken. Use words a 10-year-old can understand: everyday words, short sentences (about 12 words), and a few simple words to explain any hard term. Sound like a person talking to a friend, not a textbook. Prefer specific reasoning over generic lists of actions. \
 Use confident language when evidence supports it and qualified language when uncertain. Avoid filler, unnecessary jargon, repetition and exaggerated claims. \
 Never invent percentages, company facts, personal experience, project results, names, numbers or opinions that are not in the transcript, the user's notes or the document excerpts. \
 Do not use placeholders or a fill-in section. If sources conflict or do not answer the question, say so briefly. \
@@ -51,24 +51,26 @@ Key points:\n\
 - 3 to 5 bullets, the most important first. Each bullet explains one idea the speaker raised: what it means, then why it matters or how it works, with a concrete example, number, tool or trade-off. Do not just repeat the speaker's words.\n\
 Expert addition:\n\
 - One bullet with the most useful thing an expert would add that was not said: a risk, a common mistake or the next question to ask. Leave this section out if you are not sure.\n\
-Terms:\n\
-- Only for uncommon or ambiguous terms a smart newcomer would not know, in one short plain sentence each. Never define common industry words (Kubernetes, deploy, API, CI/CD). Otherwise leave the Terms section out.\n\
+Hard words:\n\
+- Before you finish, reread your own answer and the speaker's words. For every word a 10-year-old may not know (technical terms, acronyms, tools, business words; even common ones like API, latency, deploy), write one line: the word, then a colon, then what it means in about 10 simple words. Cover at most 6 words, the hardest first. Leave this section out only if every word is easy.\n\
 Unclear: only if words were missing or garbled; say what is uncertain. Leave this line out otherwise.\n\
 Rules:\n\
 - If the speaker asked a question, output ONLY \"Answer:\" with the expert answer in 4 to 6 prioritised bullets (decisive first action first, each with its reason, tool or command). No Key points, and do not restate the question.\n\
 - Write in your own words. Keep the speaker's exact names, numbers and terms, but explain them; do not copy or reword the sentence.\n\
-- Everyday words, short sentences (under 20 words each), no jargon without a quick explanation.\n\
+- Use words a 10-year-old can understand: everyday words, short sentences (about 12 words), and a few simple words to explain any hard term. Sound like a person talking to a friend, not a textbook.\n\
 - Be accurate: explain the speaker's idea using general expert knowledge. Do not invent facts about this meeting, its people, or its numbers.\n\
 - When <document_excerpts> are present, use them only to add the user's own course or document detail, in your own words. Never copy their sentences.\n\
 - Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.",
         Action::Suggest => "Write the answer the user could say to the question in <latest> (if there is no <latest>, the most recent question from \"Them\").\n\
 Output exactly NO_ANSWER only when the question is clearly rhetorical, the speaker answers it themselves, \
 or it is clearly addressed to someone else. Any question about what or how the user would do, decide, design or recommend is addressed to the user: answer it.\n\
-Otherwise use exactly this layout, with these three headings on their own lines:\n\
+Otherwise use exactly this layout, with these four headings on their own lines:\n\
 YOU COULD SAY\n\
-One paragraph, about 60 to 100 words (shorter for a simple factual question, longer for a complex one). The first sentence answers the question directly. Then the reasoning, relevant evidence or an example, and the main tradeoff when it helps. Do not force an example or tradeoff into a simple factual answer. Use bullets only if a list or procedure was asked for. Write it as natural spoken English in the first person only for opinions and decisions the question asks for, never for facts about the user's past.\n\
+One paragraph, about 60 to 100 words (shorter for a simple factual question, longer for a complex one). The first sentence answers the question directly. Then the reasoning, relevant evidence or an example, and the main tradeoff when it helps. Do not force an example or tradeoff into a simple factual answer. Use bullets only if a list or procedure was asked for. Write it as natural spoken English a 10-year-old could follow: everyday words, short sentences, and a few simple words to explain any hard term. Use the first person only for opinions and decisions the question asks for, never for facts about the user's past.\n\
 KEY TAKEAWAY\n\
 One sentence with the central idea.\n\
+HARD WORDS\n\
+Reread your YOU COULD SAY text. For every word a 10-year-old may not know (technical terms, acronyms, tools, business words; even common ones like API or latency), write one line \"word: what it means in about 10 simple words\". At most 6 lines, hardest first. If every word is easy, write \"None\".\n\
 SOURCES\n\
 List the excerpt labels you relied on, such as [S1], one per line. Add one line starting \"General knowledge:\" saying what came from your own expertise rather than the documents. If no excerpt was used, write only the General knowledge line.\n\
 Rules:\n\
@@ -83,9 +85,11 @@ Rules:\n\
         Action::Ask => "Answer the user's question using the meeting transcript, the user's notes, the document excerpts and your own expertise.\n\
 Use exactly this layout, with these headings on their own lines:\n\
 YOU COULD SAY\n\
-A direct first sentence, then the reasoning, with evidence or an example when it helps. Default to one paragraph of 60 to 100 words, adjusted to the question.\n\
+A direct first sentence, then the reasoning, with evidence or an example when it helps. Default to one paragraph of 60 to 100 words, adjusted to the question. Use words a 10-year-old can understand and short, natural sentences.\n\
 KEY TAKEAWAY\n\
 One sentence.\n\
+HARD WORDS\n\
+Reread your YOU COULD SAY text. For every word a 10-year-old may not know (technical terms, acronyms, tools, business words; even common ones like API or latency), write one line \"word: what it means in about 10 simple words\". At most 6 lines, hardest first. If every word is easy, write \"None\".\n\
 SOURCES\n\
 The excerpt labels you relied on, such as [S1], one per line, plus one \"General knowledge:\" line for anything from your own expertise. Put an excerpt's label right after the sentence that uses it.\n\
 If the transcript, notes or documents do not support part of the answer, say so briefly instead of guessing.",
@@ -99,11 +103,13 @@ const COACH: &str = "The other participant asked the user about the user's own w
 You know nothing about the user, so do NOT answer for them, do NOT state any fact about what they did, used or think, and do NOT use placeholders.\n\
 Use exactly this layout, with these headings on their own lines:\n\
 YOU COULD SAY\n\
-Two or three sentences, 40 to 70 words, framing how to answer this kind of question well (for example the situation, the action and the result) without any personal fact.\n\
+Two or three short, simple sentences, 40 to 70 words, framing how to answer this kind of question well (for example the situation, the action and the result) without any personal fact. Use words a 10-year-old can understand.\n\
 CLARIFICATION\n\
 One focused question asking the user for the missing detail that would let you write a real answer.\n\
 KEY TAKEAWAY\n\
 One sentence on what the interviewer wants to learn.\n\
+HARD WORDS\n\
+Reread your YOU COULD SAY text. For every word a 10-year-old may not know (technical terms, acronyms, tools, business words; even common ones like API or latency), write one line \"word: what it means in about 10 simple words\". At most 6 lines, hardest first. If every word is easy, write \"None\".\n\
 SOURCES\n\
 General knowledge: no notes or documents about the user were provided.";
 
@@ -202,8 +208,8 @@ pub fn build_with_expert(input: &PromptInput, expert: Option<&str>) -> Vec<ChatM
         system.push_str("\n=== END EXPERT APPROACH ===");
     }
     vec![
-        ChatMessage { role: "system", content: system },
-        ChatMessage { role: "user", content: ctx },
+        ChatMessage { role: "system", content: system, images: Vec::new() },
+        ChatMessage { role: "user", content: ctx, images: Vec::new() },
     ]
 }
 
@@ -379,5 +385,24 @@ mod tests {
         ];
         let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: What is alpha?", notes: "", passages: &passages, question: None, focus: None, session: &Default::default() });
         assert!(m[1].content.contains("[S1] a.pdf, p. 2\nAlpha.") && m[1].content.contains("[S2] b.md, part 5\nBeta."));
+    }
+
+    #[test]
+    fn every_meeting_prompt_asks_for_words_a_ten_year_old_can_follow() {
+        for action in [Action::Suggest, Action::Ask, Action::Explain] {
+            let m = build(&PromptInput { action, transcript: "Them: What is a cache?", notes: "", passages: &[], question: Some("What is a cache?"), focus: None, session: &Default::default() });
+            assert!(m[0].content.contains("10-year-old"), "{action:?}: base rules");
+            assert!(m[1].content.contains("10-year-old") || action == Action::Suggest, "{action:?}");
+        }
+        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: What is a cache?", notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
+        assert!(m[1].content.contains("10-year-old could follow"));
+    }
+
+    #[test]
+    fn answers_ask_the_model_to_check_and_explain_hard_words() {
+        for (action, heading) in [(Action::Suggest, "HARD WORDS"), (Action::Ask, "HARD WORDS"), (Action::Explain, "Hard words:")] {
+            let m = build(&PromptInput { action, transcript: "Them: What is a cache?", notes: "", passages: &[], question: Some("What is a cache?"), focus: None, session: &Default::default() });
+            assert!(m[1].content.contains(heading), "{action:?} needs a hard-words step");
+        }
     }
 }
