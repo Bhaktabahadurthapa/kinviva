@@ -2,6 +2,8 @@ import { listen } from "@tauri-apps/api/event";
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { initialInterview, interviewReducer, isBusy, latestQuestion, type Slot } from "../lib/interview";
+import { Splitter } from "../components/Splitter";
+import { INTERVIEW_SPLIT_KEY, loadSplit, saveSplit } from "../lib/split";
 import { ScreenAssist } from "../components/ScreenAssist";
 import { NotesDownload } from "../components/NotesDownload";
 import { chooseSavePath, type NotesFormat } from "../lib/download";
@@ -124,6 +126,8 @@ function Result({ slot, stale, onModelAnswer }: { slot: Slot; stale: boolean; on
   );
 }
 
+const IV_DEFAULT = 40;
+
 export function InterviewView({ live, onError, since, onNewSession }: { live: LiveState; onError: (m: string) => void; since: number; onNewSession: () => void }) {
   const [savedCount, setSavedCount] = useState(0);
   const [allCount, setAllCount] = useState(0);
@@ -147,6 +151,12 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
       onError(errorText(e));
     }
   };
+  const [split, setSplitState] = useState(() => loadSplit(INTERVIEW_SPLIT_KEY, IV_DEFAULT));
+  const setSplit = (v: number) => {
+    setSplitState(v);
+    saveSplit(v, INTERVIEW_SPLIT_KEY);
+  };
+  const grid = useRef<HTMLDivElement>(null);
   const [category, setCategory] = useState<InterviewCategory>("cloud_devops");
   const [language, setLanguage] = useState<InterviewLanguage>("python");
   const [mode, setMode] = useState<InterviewMode>("explain");
@@ -258,7 +268,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
   const fromMeeting = useMemo(() => latestQuestion(live.question?.text, live.transcript.finals), [live.question, live.transcript.finals]);
 
   return (
-    <div className="interview">
+    <div ref={grid} className="interview" style={{ ["--split" as string]: `minmax(0, ${split}fr) 16px minmax(0, ${100 - split}fr)` }}>
       <section className="panel iv-input">
         <header>
           <h2>Interview practice</h2>
@@ -375,6 +385,8 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
           </div>
         </div>
       </section>
+
+      <Splitter value={split} onChange={setSplit} container={grid} reset={IV_DEFAULT} />
 
       <section className="iv-output" aria-live="polite">
         <div className="iv-notes card">

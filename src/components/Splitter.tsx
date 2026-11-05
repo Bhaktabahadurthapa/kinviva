@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { clampSplit, MAX_SPLIT, MIN_SPLIT, splitFromPointer } from "../lib/split";
 
 /** Drag (or use the arrow keys) to resize the panel on its left. */
-export function Splitter({ value, onChange, container }: { value: number; onChange: (v: number) => void; container: React.RefObject<HTMLElement> }) {
+export function Splitter({ value, onChange, container, reset = 45 }: { value: number; onChange: (v: number) => void; container: React.RefObject<HTMLElement>; reset?: number }) {
   const dragging = useRef(false);
   const move = (e: React.PointerEvent) => {
     if (!dragging.current || !container.current) return;
@@ -26,7 +26,7 @@ export function Splitter({ value, onChange, container }: { value: number; onChan
       onPointerMove={move}
       onPointerUp={() => (dragging.current = false)}
       onPointerCancel={() => (dragging.current = false)}
-      onDoubleClick={() => onChange(45)}
+      onDoubleClick={() => onChange(reset)}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") onChange(clampSplit(value - 3));
         else if (e.key === "ArrowRight") onChange(clampSplit(value + 3));

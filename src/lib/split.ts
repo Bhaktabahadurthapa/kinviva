@@ -3,6 +3,7 @@ export const MIN_SPLIT = 25;
 export const MAX_SPLIT = 75;
 export const DEFAULT_SPLIT = 45;
 const KEY = "ml.split";
+export const INTERVIEW_SPLIT_KEY = "ml.split.interview";
 
 export function clampSplit(pct: number): number {
   if (!Number.isFinite(pct)) return DEFAULT_SPLIT;
@@ -15,18 +16,18 @@ export function splitFromPointer(x: number, left: number, width: number): number
   return clampSplit(((x - left) / width) * 100);
 }
 
-export function loadSplit(): number {
+export function loadSplit(key: string = KEY, fallback: number = DEFAULT_SPLIT): number {
   try {
-    const v = localStorage.getItem(KEY);
-    return v === null ? DEFAULT_SPLIT : clampSplit(Number(v));
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : clampSplit(Number(v));
   } catch {
-    return DEFAULT_SPLIT;
+    return fallback;
   }
 }
 
-export function saveSplit(v: number) {
+export function saveSplit(v: number, key: string = KEY) {
   try {
-    localStorage.setItem(KEY, String(v));
+    localStorage.setItem(key, String(v));
   } catch {
     /* not essential */
   }
