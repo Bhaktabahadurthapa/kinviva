@@ -13,6 +13,8 @@ const OVERLAP_CHARS: usize = 150;
 pub struct Extracted {
     pub kind: String,
     pub text: String,
+    /// PDF text per page (index 0 is page 1). Empty for text files.
+    pub pages: Vec<String>,
 }
 
 pub fn extract(path: &Path) -> Result<Extracted, String> {
@@ -21,13 +23,14 @@ pub fn extract(path: &Path) -> Result<Extracted, String> {
         return Err(format!("File is larger than {} MB.", MAX_FILE_BYTES / 1024 / 1024));
     }
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
-    let (kind, text) = match ext.as_str() {
-        "txt" | "text" => ("txt", read_text(path)?),
-        "md" | "markdown" => ("md", read_text(path)?),
+    let (kind, pages) = match ext.as_str() {
+        "txt" | "text" => ("txt", vec![read_text(path)?]),
+        "md" | "markdown" => ("md", vec![read_text(path)?]),
         "pdf" => ("pdf", extract_pdf(path)?),
         other => return Err(format!("Unsupported file type \".{other}\". Use .txt, .md or .pdf.")),
     };
-    let text = normalise(&text);
+    let pages: Vec<String> = pages.iter().map(|p| normalise(p)).collect();
+    let text = pages.join("\n");
     if text.trim().is_empty() {
         return Err(if kind == "pdf" {
             "No text could be extracted from this PDF. It may be scanned images; OCR is not supported.".into()
@@ -35,7 +38,8 @@ pub fn extract(path: &Path) -> Result<Extracted, String> {
             "The file is empty.".into()
         });
     }
-    Ok(Extracted { kind: kind.into(), text })
+    let pages = if kind == "pdf" { pages } else { Vec::new() };
+    Ok(Extracted { kind: kind.into(), text, pages })
 }
 
 fn read_text(path: &Path) -> Result<String, String> {
@@ -43,13 +47,13 @@ fn read_text(path: &Path) -> Result<String, String> {
     String::from_utf8(bytes).map_err(|_| "File is not valid UTF-8 text.".into())
 }
 
-fn extract_pdf(path: &Path) -> Result<String, String> {
+fn extract_pdf(path: &Path) -> Result<Vec<String>, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("Cannot read file: {e}"))?;
     if !bytes.starts_with(b"%PDF") {
         return Err("This file does not look like a PDF.".into());
     }
     // The PDF parser can panic on malformed input; contain it.
-    let result = std::panic::catch_unwind(|| pdf_extract::extract_text_from_mem(&bytes));
+    let result = std::panic::catch_unwind(|| pdf_extract::extract_text_from_mem_by_pages(&bytes));
     match result {
         Ok(Ok(text)) => Ok(text),
         Ok(Err(e)) => Err(format!("Could not extract text from PDF (it may be encrypted or damaged): {e}")),
@@ -74,6 +78,19 @@ fn normalise(text: &str) -> String {
         }
     }
     out
+}
+
+/// Chunks tagged with the page they came from (PDFs) or `None` (text files).
+/// A chunk never spans two pages, so every passage has one citable page.
+pub fn chunk_pages(x: &Extracted) -> Vec<(Option<i64>, String)> {
+    if x.pages.is_empty() {
+        return chunk(&x.text).into_iter().map(|c| (None, c)).collect();
+    }
+    x.pages
+        .iter()
+        .enumerate()
+        .flat_map(|(i, p)| chunk(p).into_iter().map(move |c| (Some(i as i64 + 1), c)))
+        .collect()
 }
 
 /// Split into ~CHUNK_CHARS pieces on paragraph/sentence boundaries with overlap.
@@ -195,5 +212,16 @@ mod tests {
         std::fs::write(&broken, b"%PDF-1.4\n garbage garbage").unwrap();
         let err = extract(&broken).unwrap_err();
         assert!(err.contains("Could not extract text from PDF"), "{err}");
+    }
+
+    #[test]
+    fn pdf_chunks_keep_their_page_and_never_span_pages() {
+        let x = Extracted { kind: "pdf".into(), text: String::new(), pages: vec!["First page text.".into(), String::new(), "Third page text. ".repeat(120)] };
+        let chunks = chunk_pages(&x);
+        assert_eq!(chunks[0], (Some(1), "First page text.".to_string()));
+        assert!(chunks.iter().skip(1).all(|(p, _)| *p == Some(3)), "empty page 2 gives no chunk");
+        assert!(chunks.len() > 2, "a long page is split into several chunks of the same page");
+        let text_file = Extracted { kind: "md".into(), text: "Some notes".into(), pages: vec![] };
+        assert_eq!(chunk_pages(&text_file), vec![(None, "Some notes".to_string())]);
     }
 }

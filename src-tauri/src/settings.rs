@@ -50,6 +50,8 @@ pub struct Settings {
     pub llm_reasoning: String,
     pub context_chars: usize,
     pub use_documents: bool,
+    /// Search the web (Tavily, with the user's own key) for answers. Off by default.
+    pub web_search: bool,
     // Assist
     pub question_detection: bool,
     pub question_cooldown_secs: u32,
@@ -83,6 +85,7 @@ impl Default for Settings {
             llm_reasoning: "auto".into(),
             context_chars: 6000,
             use_documents: true,
+            web_search: false,
             question_detection: false,
             question_cooldown_secs: 20,
             auto_assist: "explain_reply".into(),

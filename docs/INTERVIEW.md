@@ -1,5 +1,7 @@
 # Interview Practice
 
+Pick a **role** (Cloud/DevOps, Backend, AI or Software engineer) first; it sets a default category and tells the model how deep to go. The role is a fixed list in the trusted part of the request.
+
 Interview Practice helps you rehearse Cloud/DevOps, system design, AI engineering and coding questions. It sits in the **Interview** tab and uses the AI provider you already set up in Settings → AI. There is no new configuration and no extra provider.
 
 ## Modes
@@ -12,6 +14,8 @@ Interview Practice helps you rehearse Cloud/DevOps, system design, AI engineerin
 - **Likely follow-up question**.
 
 **Practice first.** You see no coaching until you write your own answer and press **Check my answer**. The feedback covers correctness, missing points, structure and clarity, plus a stronger spoken version and a likely follow-up. Any score is labelled *coaching feedback, not a calibrated hiring assessment*. You can then press **Show the model answer**.
+
+**Mock practice.** Press "Give me a question" and the app writes one question for your role and category. Answer it, press **Check my answer** for feedback, then "Next question" (the previous question is passed so it is not repeated).
 
 The coding category adds an **Answer language** choice (Python, Java, C++). The application itself stays Rust and TypeScript.
 

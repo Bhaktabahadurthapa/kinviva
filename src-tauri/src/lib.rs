@@ -14,12 +14,14 @@ pub mod meeting;
 pub mod prompts;
 pub mod question;
 pub mod secrets;
+pub mod session;
 pub mod settings;
 pub mod skills;
 pub mod shortcuts;
 pub mod state;
 pub mod stt;
 pub mod transcript;
+pub mod websearch;
 
 use state::AppState;
 use std::sync::{Arc, Mutex};
@@ -112,6 +114,9 @@ pub fn run() {
             commands::create_demo_meeting,
             commands::add_document,
             commands::list_documents,
+            commands::list_courses,
+            commands::create_course,
+            commands::delete_course,
             commands::set_document_active,
             commands::delete_document,
             commands::preview_retrieval,

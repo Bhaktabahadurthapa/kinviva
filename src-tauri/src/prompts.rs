@@ -74,6 +74,7 @@ is answered directly with the best practical steps or reasons, as an expert woul
 - Write it as a script the user can read aloud: everyday words, short sentences (under 20 words each).\n\
 - When <document_excerpts> contain relevant facts, build the answer from them first and use their exact names and numbers.\n\
 - If the excerpts or notes already give every fact the answer needs, leave the Fill in line out completely.\n\
+- If the question asks to design, architect or build a system or platform, use up to 8 bullets: first the overall approach, then at least one bullet for every focus area the interviewer named (for example isolation, security, cost), then the main trade-off.\n\
 - Be specific and correct. Prefer the exact names, numbers and terms used in the meeting.",
         Action::Recap => "Summarise the meeting so far for the user.\n\
 - Use 3 to 6 short bullet points: main topics, decisions, open questions, and any action items with owners if stated.\n\
@@ -116,6 +117,8 @@ pub struct PromptInput<'a> {
     pub question: Option<&'a str>,
     /// The newest lines to focus on (auto-assist); the transcript is context.
     pub focus: Option<&'a str>,
+    /// Session type and course. Class sessions add their own instructions and cited excerpts.
+    pub session: &'a crate::session::SessionInfo,
 }
 
 pub fn build(input: &PromptInput) -> Vec<ChatMessage> {
@@ -140,12 +143,18 @@ pub fn build(input: &PromptInput) -> Vec<ChatMessage> {
     }
     if !input.passages.is_empty() {
         ctx.push_str("<document_excerpts>\n");
-        for p in input.passages {
-            ctx.push_str(&format!("[{} #{}]\n{}\n\n", p.document, p.chunk + 1, p.text.trim()));
+        for (i, p) in input.passages.iter().enumerate() {
+            if input.session.is_class() {
+                ctx.push_str(&format!("[S{}] {}\n{}\n\n", i + 1, crate::session::citation_text(p), p.text.trim()));
+            } else {
+                ctx.push_str(&format!("[{} #{}]\n{}\n\n", p.document, p.chunk + 1, p.text.trim()));
+            }
         }
         ctx.push_str("</document_excerpts>\n");
     }
-    if input.notes.trim().is_empty() && input.passages.is_empty() {
+    if input.session.is_class() && input.passages.is_empty() {
+        ctx.push_str("\nNo course resources matched this topic. Say \"Not found in your course resources.\" before any general-knowledge answer.\n");
+    } else if input.notes.trim().is_empty() && input.passages.is_empty() {
         ctx.push_str("\nNo notes or documents were provided. You know nothing about the user beyond the transcript; do not claim they have notes, experience, results or opinions.\n");
     }
     ctx.push('\n');
@@ -153,7 +162,7 @@ pub fn build(input: &PromptInput) -> Vec<ChatMessage> {
         .focus
         .unwrap_or_else(|| input.transcript.lines().rev().find(|l| l.starts_with("Them:")).unwrap_or(""));
     let no_context = input.notes.trim().is_empty() && input.passages.is_empty();
-    if input.action == Action::Suggest && no_context && about_user(asked) {
+    if input.action == Action::Suggest && no_context && about_user(asked) && !input.session.is_class() {
         ctx.push_str(COACH);
     } else {
         ctx.push_str(instructions(input.action));
@@ -162,8 +171,13 @@ pub fn build(input: &PromptInput) -> Vec<ChatMessage> {
         ctx.push_str("\n\nUser's question: ");
         ctx.push_str(q.trim());
     }
+    let mut system = BASE.to_string();
+    if let Some(extra) = input.session.instructions() {
+        system.push_str("\n\n");
+        system.push_str(&extra);
+    }
     vec![
-        ChatMessage { role: "system", content: BASE.to_string() },
+        ChatMessage { role: "system", content: system },
         ChatMessage { role: "user", content: ctx },
     ]
 }
@@ -174,7 +188,7 @@ mod tests {
 
     #[test]
     fn suggest_prompt_contains_grounding_rules_and_context() {
-        let passages = vec![Passage { document: "cv.md".into(), chunk: 2, text: "Five years of Rust.".into() }];
+        let passages = vec![Passage { document: "cv.md".into(), chunk: 2, text: "Five years of Rust.".into(), page: None, week: None }];
         let m = build(&PromptInput {
             action: Action::Suggest,
             transcript: "Them: How long have you used Rust?",
@@ -182,6 +196,7 @@ mod tests {
             passages: &passages,
             question: None,
             focus: None,
+            session: &Default::default(),
         });
         assert_eq!(m.len(), 2);
         let u = &m[1].content;
@@ -198,7 +213,7 @@ mod tests {
 
     #[test]
     fn explain_prompt_asks_for_uncertainty_and_plain_english() {
-        let m = build(&PromptInput { action: Action::Explain, transcript: "", notes: "", passages: &[], question: None, focus: None });
+        let m = build(&PromptInput { action: Action::Explain, transcript: "", notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
         let u = &m[1].content;
         assert!(u.contains("(no speech transcribed yet)"));
         assert!(u.contains("Unclear:"));
@@ -210,14 +225,14 @@ mod tests {
 
     #[test]
     fn personal_question_without_notes_gets_coaching_not_an_answer() {
-        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "", passages: &[], question: None, focus: None });
+        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
         assert!(m[1].content.contains("Points to cover:"));
         assert!(!m[1].content.contains("decisive first action"));
         // With notes about the user, a real answer is allowed.
-        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "I used ScreenCaptureKit", passages: &[], question: None, focus: None });
+        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How did you do it?", notes: "I used ScreenCaptureKit", passages: &[], question: None, focus: None, session: &Default::default() });
         assert!(m[1].content.contains("decisive first action"));
         // A question about the topic itself is answered normally.
-        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: So what is an API used for?", notes: "", passages: &[], question: None, focus: None });
+        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: So what is an API used for?", notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
         assert!(!m[1].content.contains("Points to cover:"));
     }
 
@@ -235,7 +250,7 @@ mod tests {
 
     #[test]
     fn ask_includes_question() {
-        let m = build(&PromptInput { action: Action::Ask, transcript: "Them: hi", notes: "", passages: &[], question: Some(" Who owns the budget? "), focus: None });
+        let m = build(&PromptInput { action: Action::Ask, transcript: "Them: hi", notes: "", passages: &[], question: Some(" Who owns the budget? "), focus: None, session: &Default::default() });
         assert!(m[1].content.ends_with("User's question: Who owns the budget?"));
     }
 
@@ -248,10 +263,11 @@ mod tests {
             passages: &[],
             question: None,
             focus: Some("Them: the new point"),
+            session: &Default::default(),
         });
         assert!(m[1].content.contains("</transcript>\n<latest>\nThem: the new point\n</latest>"));
         // No focus, no block.
-        let m = build(&PromptInput { action: Action::Explain, transcript: "Them: x", notes: "", passages: &[], question: None, focus: None });
+        let m = build(&PromptInput { action: Action::Explain, transcript: "Them: x", notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
         assert!(!m[1].content.contains("</transcript>\n<latest>"));
     }
 
@@ -259,5 +275,48 @@ mod tests {
     fn slots() {
         assert_eq!(Action::Suggest.slot(), "reply");
         assert_eq!(Action::Explain.slot(), "meaning");
+    }
+
+    fn class_session() -> crate::session::SessionInfo {
+        crate::session::SessionInfo {
+            kind: crate::session::SessionKind::Class,
+            course_id: Some("os".into()),
+            course_name: Some("Operating Systems".into()),
+            week: Some(2),
+        }
+    }
+
+    #[test]
+    fn class_sessions_label_excerpts_for_citation_and_add_their_own_instructions() {
+        let passages = vec![
+            Passage { document: "week2.pdf".into(), chunk: 0, text: "Round robin uses a time quantum.".into(), page: Some(4), week: Some(2) },
+            Passage { document: "notes.md".into(), chunk: 1, text: "Aging prevents starvation.".into(), page: None, week: None },
+        ];
+        let s = class_session();
+        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: How does round robin work?", notes: "", passages: &passages, question: None, focus: None, session: &s });
+        // Session instructions are in the system message; data stays in the user message.
+        assert!(m[0].content.contains("Operating Systems") && m[0].content.contains("week 2") && m[0].content.contains("[S1]"));
+        assert!(m[0].content.contains("may contain recognition errors"), "base rules are still present");
+        assert!(!m[1].content.contains("SESSION:"));
+        assert!(m[1].content.contains("[S1] week2.pdf, p. 4\nRound robin uses a time quantum."));
+        assert!(m[1].content.contains("[S2] notes.md, part 2\nAging prevents starvation."));
+        // The personal-history coaching mode never replaces a class answer.
+        let m = build(&PromptInput { action: Action::Suggest, transcript: "Them: Tell me about your experience", notes: "", passages: &[], question: None, focus: None, session: &s });
+        assert!(!m[1].content.contains("Points to cover"));
+        assert!(m[1].content.contains("Not found in your course resources"));
+    }
+
+    #[test]
+    fn general_and_work_sessions_keep_the_original_prompt() {
+        let passages = vec![Passage { document: "cv.md".into(), chunk: 2, text: "Five years of Rust.".into(), page: None, week: None }];
+        for kind in [crate::session::SessionKind::General, crate::session::SessionKind::Work] {
+            let s = crate::session::SessionInfo { kind, ..Default::default() };
+            let a = build(&PromptInput { action: Action::Suggest, transcript: "Them: How long have you used Rust?", notes: "", passages: &passages, question: None, focus: None, session: &s });
+            let b = build(&PromptInput { action: Action::Suggest, transcript: "Them: How long have you used Rust?", notes: "", passages: &passages, question: None, focus: None, session: &Default::default() });
+            assert_eq!(a[0].content, b[0].content);
+            assert_eq!(a[1].content, b[1].content);
+            assert!(a[1].content.contains("[cv.md #3]"));
+            assert!(!a[0].content.contains("SESSION:"));
+        }
     }
 }

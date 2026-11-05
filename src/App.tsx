@@ -4,13 +4,14 @@ import { PrivacyPills, SourceErrors, SourcePill } from "./components/StatusBar";
 import { api, errorText, inTauri } from "./lib/api";
 import { useLive } from "./lib/useLive";
 import type { Settings } from "./lib/types";
-import { DocumentsView } from "./views/DocumentsView";
 import { InterviewView } from "./views/InterviewView";
-import { HistoryView } from "./views/HistoryView";
-import { LiveView } from "./views/LiveView";
+import { MeetingView, type MeetingTab } from "./views/MeetingView";
 import { SettingsView } from "./views/SettingsView";
+import { loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
+import type { Course } from "./lib/types";
 
-type Tab = "live" | "interview" | "history" | "documents" | "settings";
+/** The two primary areas. Settings is a utility button, not a primary item. */
+type Tab = "meeting" | "interview" | "settings";
 
 function Logo() {
   return (
@@ -37,7 +38,18 @@ function Elapsed({ since }: { since: number }) {
 
 export default function App() {
   const { state: live, dispatch } = useLive();
-  const [tab, setTab] = useState<Tab>("live");
+  const [tab, setTab] = useState<Tab>("meeting");
+  const [meetingTab, setMeetingTab] = useState<MeetingTab>("live");
+  const [session, setSessionState] = useState<SessionChoice>(loadSession);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const setSession = (s: SessionChoice) => {
+    setSessionState(s);
+    saveSession(s);
+  };
+  const loadCourses = () => api.listCourses().then(setCourses).catch((e) => setError(errorText(e)));
+  useEffect(() => {
+    if (inTauri) void loadCourses();
+  }, []);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -75,9 +87,17 @@ export default function App() {
     try {
       if (running) await api.stopMeeting();
       else if (!busy) {
-        await api.startMeeting(title);
+        const problem = sessionProblem(session, courses.map((c) => c.id));
+        if (problem) {
+          setMeetingTab("live");
+          setTab("meeting");
+          setError(problem);
+          return;
+        }
+        await api.startMeeting(title, session);
         setTitle("");
-        setTab("live");
+        setTab("meeting");
+        setMeetingTab("live");
       }
     } catch (e) {
       setError(errorText(e));
@@ -113,11 +133,8 @@ export default function App() {
         </div>
         {(
           [
-            ["live", "Live"],
+            ["meeting", "Meeting"],
             ["interview", "Interview"],
-            ["history", "History"],
-            ["documents", "Documents"],
-            ["settings", settings?.onboarded === false ? "Setup" : "Settings"],
           ] as [Tab, string][]
         ).map(([t, label], i) => (
           // The index is drawn by CSS so the button's text stays just its label.
@@ -126,7 +143,10 @@ export default function App() {
           </button>
         ))}
         <div className="rail-foot">
-          <button className="rail-btn" onClick={() => api.toggleOverlay().catch((e) => setError(errorText(e)))}>
+          <button className={`rail-btn rail-util ${tab === "settings" ? "active" : ""}`} onClick={() => setTab("settings")}>
+            {settings?.onboarded === false ? "Setup" : "Settings"}
+          </button>
+          <button className="rail-btn rail-util" onClick={() => api.toggleOverlay().catch((e) => setError(errorText(e)))}>
             Overlay
           </button>
           <span className="rail-tag">local-first{version && ` · v${version}`}</span>
@@ -175,8 +195,10 @@ export default function App() {
         )}
         {status && <SourceErrors status={status} />}
         <div className="content">
-          {tab === "live" && (
-            <LiveView
+          {tab === "meeting" && (
+            <MeetingView
+              tab={meetingTab}
+              onTab={setMeetingTab}
               live={live}
               dispatch={dispatch}
               onError={setError}
@@ -187,11 +209,15 @@ export default function App() {
                 setSettings(next);
                 api.saveSettings(next).catch((e) => setError(errorText(e)));
               }}
+              session={session}
+              onSession={setSession}
+              courses={courses}
+              onCoursesChanged={loadCourses}
+              running={!!running}
+              historyKey={historyKey}
             />
           )}
           {tab === "interview" && <InterviewView live={live} onError={setError} />}
-          {tab === "history" && <HistoryView onError={setError} onOpenLive={() => setTab("live")} refreshKey={historyKey} />}
-          {tab === "documents" && <DocumentsView onError={setError} />}
           {tab === "settings" && <SettingsView onError={setError} onSaved={setSettings} />}
         </div>
       </main>

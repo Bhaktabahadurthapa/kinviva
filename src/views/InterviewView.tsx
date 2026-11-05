@@ -2,7 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { initialInterview, interviewReducer, isBusy, latestQuestion, type Slot } from "../lib/interview";
-import type { InterviewCategory, InterviewEvent, InterviewLanguage, InterviewMode, SkillInfo } from "../lib/types";
+import type { InterviewCategory, InterviewEvent, InterviewLanguage, InterviewMode, InterviewRole, SkillInfo } from "../lib/types";
 import type { LiveState } from "../lib/liveReducer";
 
 const CATEGORIES: [InterviewCategory, string][] = [
@@ -10,6 +10,12 @@ const CATEGORIES: [InterviewCategory, string][] = [
   ["system_design", "System design"],
   ["ai_engineering", "AI engineering"],
   ["coding", "Coding"],
+];
+const ROLES: [InterviewRole, string, InterviewCategory][] = [
+  ["cloud_devops_engineer", "Cloud / DevOps engineer", "cloud_devops"],
+  ["backend_engineer", "Backend engineer", "system_design"],
+  ["ai_engineer", "AI engineer", "ai_engineering"],
+  ["software_engineer", "Software engineer", "coding"],
 ];
 const LANGUAGES: [InterviewLanguage, string][] = [
   ["python", "Python"],
@@ -58,6 +64,13 @@ function Result({ slot, stale, onModelAnswer }: { slot: Slot; stale: boolean; on
           <Section title="Answer (plain text)"><div className="iv-text"><Lines text={slot.fallbackText} /></div></Section>
         </>
       )}
+      {r?.kind === "question" && (
+        <Section title="Mock question" tone="say">
+          <div className="iv-say"><p>{r.question}</p></div>
+          {r.tests && <p className="iv-disclaimer">Tests: {r.tests}</p>}
+          <p className="iv-disclaimer">Write your answer on the left, then press Check my answer.</p>
+        </Section>
+      )}
       {r?.kind === "answer" && (
         <>
           <Section title="Say it" tone="say">
@@ -101,6 +114,7 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
   const [category, setCategory] = useState<InterviewCategory>("cloud_devops");
   const [language, setLanguage] = useState<InterviewLanguage>("python");
   const [mode, setMode] = useState<InterviewMode>("explain");
+  const [role, setRole] = useState<InterviewRole>("cloud_devops_engineer");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [state, dispatch] = useReducer(interviewReducer, initialInterview);
@@ -112,16 +126,28 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
     return () => void sub.then((un) => un());
   }, []);
 
-  const slot = state.slots[mode];
   const busy = Object.values(state.slots).some(isBusy);
-  const inputKey = (m: InterviewMode) => JSON.stringify([category, m, category === "coding" ? language : null, question.trim(), m === "practice" ? answer.trim() : ""]);
-  const stale = slot.status === "done" && slot.inputKey !== inputKey(mode);
+  // A generated question does not depend on the question box, so it is never "stale" for that reason.
+  const inputKey = (m: InterviewMode) =>
+    JSON.stringify([category, role, m, category === "coding" ? language : null, m === "question" ? "" : question.trim(), m === "practice" ? answer.trim() : ""]);
+  // In mock practice the feedback replaces the generated question once you submit your answer.
+  const feedbackShown = mode === "question" && state.slots.practice.status !== "idle" && state.slots.practice.inputKey === inputKey("practice");
+  const slot = feedbackShown ? state.slots.practice : state.slots[mode];
+  const stale = slot.status === "done" && slot.inputKey !== inputKey(feedbackShown ? "practice" : mode);
+  // The generated question fills the question box and clears the previous answer.
+  const generated = state.slots.question.result?.kind === "question" ? state.slots.question.result.question : null;
+  useEffect(() => {
+    if (generated) {
+      setQuestion(generated);
+      setAnswer("");
+    }
+  }, [generated]);
   const skill = skills.find((s) => s.category === category);
   const bad = skills.filter((s) => s.error);
 
   /** Changing what is being asked cancels the running request so its answer cannot land on the new question. */
   const cancelRunning = () => {
-    for (const m of ["explain", "practice"] as const) {
+    for (const m of ["explain", "practice", "question"] as const) {
       const s = state.slots[m];
       if (isBusy(s)) {
         if (s.requestId) api.aiCancel(s.requestId).catch(() => {});
@@ -144,6 +170,7 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
         question,
         answer: m === "practice" ? answer : null,
         language: category === "coding" ? language : null,
+        role,
       });
       dispatch({ type: "started", mode: m, requestId: id });
     } catch (e) {
@@ -165,10 +192,27 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
             <button className={mode === "practice" ? "active" : ""} aria-pressed={mode === "practice"} onClick={() => setMode("practice")}>
               Practice first
             </button>
+            <button className={mode === "question" ? "active" : ""} aria-pressed={mode === "question"} onClick={() => setMode("question")}>
+              Mock practice
+            </button>
           </div>
         </header>
         <div className="iv-body">
           <div className="iv-row">
+            <label>
+              <span>Role</span>
+              <select
+                value={role}
+                onChange={(e) => {
+                  const r = ROLES.find((x) => x[0] === e.target.value)!;
+                  cancelRunning();
+                  setRole(r[0]);
+                  setCategory(r[2]);
+                }}
+              >
+                {ROLES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </label>
             <label>
               <span>Category</span>
               <select value={category} onChange={(e) => change(setCategory)(e.target.value as InterviewCategory)}>
@@ -188,7 +232,7 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
           {bad.map((s) => <div key={s.name} className="banner banner-bad">{s.error}</div>)}
 
           <label className="iv-field">
-            <span>Question {mode === "practice" ? "(you will answer it first)" : ""}</span>
+            <span>Question {mode === "practice" ? "(you will answer it first)" : mode === "question" ? "(written for you)" : ""}</span>
             <textarea
               value={question}
               onChange={(e) => change(setQuestion)(e.target.value)}
@@ -203,7 +247,7 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
             <span className="iv-note">Editable. Nothing is sent until you press the button below.</span>
           </div>
 
-          {mode === "practice" && (
+          {(mode === "practice" || (mode === "question" && question.trim())) && (
             <label className="iv-field">
               <span>Your answer</span>
               <textarea value={answer} onChange={(e) => change(setAnswer)(e.target.value)} placeholder="Answer as you would in the interview. Feedback appears after you submit." rows={6} />
@@ -215,6 +259,17 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
               <button className="btn btn-primary" disabled={!question.trim() || isBusy(slot)} onClick={() => run("explain")}>
                 {isBusy(slot) ? "Writing…" : "Explain answer"}
               </button>
+            ) : mode === "question" ? (
+              <>
+                <button className={`btn ${question.trim() ? "" : "btn-primary"}`} disabled={busy} onClick={() => run("question")}>
+                  {isBusy(state.slots.question) ? "Writing a question…" : question.trim() ? "Next question" : "Give me a question"}
+                </button>
+                {question.trim() && (
+                  <button className="btn btn-primary" disabled={!answer.trim() || busy} onClick={() => run("practice")}>
+                    {isBusy(state.slots.practice) ? "Reviewing…" : "Check my answer"}
+                  </button>
+                )}
+              </>
             ) : (
               <button className="btn btn-primary" disabled={!question.trim() || !answer.trim() || isBusy(slot)} onClick={() => run("practice")}>
                 {isBusy(slot) ? "Reviewing…" : "Check my answer"}
@@ -232,7 +287,7 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
       <section className="iv-output" aria-live="polite">
         {slot.status === "idle" && (
           <div className="how">
-            <p className="empty">{mode === "explain" ? "Get a spoken answer plus the reasoning behind it." : "Answer first. Then get feedback on correctness, missing points, structure and clarity."}</p>
+            <p className="empty">{mode === "explain" ? "Get a spoken answer plus the reasoning behind it." : mode === "question" ? "Get a mock question for your role, answer it, then get feedback." : "Answer first. Then get feedback on correctness, missing points, structure and clarity."}</p>
             <ol className="how-steps">
               <li><b>Pick a category</b><span>Each one uses its own coaching skill.</span></li>
               <li><b>{mode === "explain" ? "Ask or paste a question" : "Write your answer"}</b><span>{mode === "explain" ? "Type it, or copy the latest one from your meeting." : "No coaching is shown until you submit."}</span></li>
@@ -240,7 +295,7 @@ export function InterviewView({ live, onError }: { live: LiveState; onError: (m:
             </ol>
           </div>
         )}
-        <Result slot={slot} stale={stale} onModelAnswer={mode === "practice" ? () => { setMode("explain"); void run("explain"); } : undefined} />
+        <Result slot={slot} stale={stale} onModelAnswer={mode === "practice" || feedbackShown ? () => { setMode("explain"); void run("explain"); } : undefined} />
       </section>
     </div>
   );

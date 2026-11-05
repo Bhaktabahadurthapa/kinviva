@@ -312,6 +312,18 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           <input type="checkbox" checked={s.use_documents} onChange={(e) => set("use_documents", e.target.checked)} />
           Include matching passages from context documents
         </label>
+        <label className="check">
+          <input type="checkbox" checked={s.web_search} onChange={(e) => set("web_search", e.target.checked)} />
+          Search the web for answers (Tavily)
+        </label>
+        {s.web_search && (
+          <>
+            <p className="hint">
+              Sends only the question being answered (not the whole meeting) to Tavily, using your own key from tavily.com, and adds a few result snippets to the AI prompt. Results can be wrong, so check them.
+            </p>
+            <KeyField name="web_search_key" label="Tavily API key" has={!!secrets.web_search_key} onChange={loadSecrets} />
+          </>
+        )}
       </section>
 
       <section className="card">

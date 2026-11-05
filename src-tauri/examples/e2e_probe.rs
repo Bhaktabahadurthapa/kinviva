@@ -135,7 +135,7 @@ async fn main() {
     let window = transcript.recent_window(4000);
     let mut responses = Vec::new();
     for action in [Action::Explain, Action::Suggest] {
-        let msgs = prompts::build(&PromptInput { action, transcript: &window, notes: "", passages: &[], question: None, focus: None });
+        let msgs = prompts::build(&PromptInput { action, transcript: &window, notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
         let t = Instant::now();
         let mut first: Option<u128> = None;
         let mut n = 0;
@@ -150,7 +150,7 @@ async fn main() {
     }
     let c = CancellationToken::new();
     let c2 = c.clone();
-    let msgs = prompts::build(&PromptInput { action: Action::Recap, transcript: &window, notes: "", passages: &[], question: None, focus: None });
+    let msgs = prompts::build(&PromptInput { action: Action::Recap, transcript: &window, notes: "", passages: &[], question: None, focus: None, session: &Default::default() });
     let t = Instant::now();
     let mut got = 0;
     let r = llm::stream_chat(&cfg, msgs, c, |_| { got += 1; if got == 3 { c2.cancel(); } }).await;

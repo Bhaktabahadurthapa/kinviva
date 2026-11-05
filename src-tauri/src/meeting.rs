@@ -84,7 +84,7 @@ fn host_of(url: &str) -> Option<String> {
     url::Url::parse(url).ok().and_then(|u| u.host_str().map(String::from))
 }
 
-pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>) -> Result<MeetingStatus, String> {
+pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>, session: crate::session::SessionInfo) -> Result<MeetingStatus, String> {
     let mut guard = state.session.lock().await;
     if guard.is_some() {
         return Err("A meeting is already running.".into());
@@ -102,6 +102,7 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>) -> 
         .filter(|t| !t.trim().is_empty())
         .unwrap_or_else(|| format!("Meeting {}", chrono::Local::now().format("%b %-d, %H:%M")));
     state.db.create_meeting(&meeting_id, &title, started_at, false)?;
+    state.db.set_meeting_session(&meeting_id, session.kind.as_str(), session.course_id.as_deref(), session.week)?;
 
     {
         let mut live = state.live.lock().unwrap();
@@ -117,6 +118,7 @@ pub async fn start(app: &AppHandle, state: &AppState, title: Option<String>) -> 
             audio_to_cloud: cfg.is_cloud(),
             stt_host: if cfg.is_cloud() { host_of(&settings.deepgram_endpoint) } else { None },
             recording_audio: settings.save_audio,
+            session: session.clone(),
             ..Default::default()
         };
         st.mic.enabled = settings.capture_mic;

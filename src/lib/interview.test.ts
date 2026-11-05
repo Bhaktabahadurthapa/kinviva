@@ -81,6 +81,19 @@ describe("interviewReducer", () => {
   });
 });
 
+describe("mock question slot", () => {
+  it("is its own slot and replaces the request in flight", () => {
+    let s = run(initialInterview, "a");
+    s = interviewReducer(s, { type: "starting", mode: "question", inputKey: "k" });
+    s = interviewReducer(s, { type: "started", mode: "question", requestId: "q1" });
+    expect(s.slots.explain.status).toBe("cancelled");
+    const q = { kind: "question" as const, question: "How do you roll back?", tests: "release safety" };
+    s = interviewReducer(s, { type: "event", event: ev("q1", "done", { mode: "question", result: q }) });
+    expect(s.slots.question.result).toEqual(q);
+    expect(s.slots.practice.status).toBe("idle");
+  });
+});
+
 describe("latestQuestion", () => {
   const finals = [
     { source: "system", text: "Walk me through failover?" },

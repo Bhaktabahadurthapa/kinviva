@@ -18,8 +18,9 @@ export interface InterviewState {
   early: InterviewEvent[];
 }
 
+const MODES = ["explain", "practice", "question"] as const;
 const empty = (): Slot => ({ requestId: null, status: "idle", received: 0, result: null, fallbackText: null, error: null, inputKey: "" });
-export const initialInterview: InterviewState = { slots: { explain: empty(), practice: empty() }, early: [] };
+export const initialInterview: InterviewState = { slots: { explain: empty(), practice: empty(), question: empty() }, early: [] };
 
 export type InterviewAction =
   | { type: "starting"; mode: InterviewMode; inputKey: string }
@@ -47,7 +48,7 @@ export function interviewReducer(state: InterviewState, a: InterviewAction): Int
     case "starting": {
       // Only one request runs at a time (the backend replaces the previous one).
       const slots = { ...state.slots };
-      for (const m of ["explain", "practice"] as const) {
+      for (const m of MODES) {
         const s = slots[m];
         if (m !== a.mode && (s.status === "streaming" || s.status === "starting")) slots[m] = { ...s, status: "cancelled", requestId: null };
       }
@@ -63,7 +64,7 @@ export function interviewReducer(state: InterviewState, a: InterviewAction): Int
       return { ...state, slots: { ...state.slots, [a.mode]: { ...state.slots[a.mode], status: "error", error: a.error, requestId: null } } };
     case "event": {
       const e = a.event;
-      const mode = (["explain", "practice"] as const).find((m) => state.slots[m].requestId === e.request_id);
+      const mode = MODES.find((m) => state.slots[m].requestId === e.request_id);
       if (!mode) {
         const waiting = Object.values(state.slots).some((s) => s.status === "starting");
         return waiting ? { ...state, early: [...state.early, e].slice(-20) } : state;

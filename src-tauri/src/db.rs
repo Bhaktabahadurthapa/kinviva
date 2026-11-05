@@ -68,6 +68,23 @@ const MIGRATIONS: &[&str] = &[
         INSERT INTO doc_chunks_fts(doc_chunks_fts, rowid, text) VALUES ('delete', old.id, old.text);
     END;
     "#,
+    // 3: Class sessions: courses, weekly resources, page citations, session type on meetings
+    r#"
+    CREATE TABLE courses (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT NOT NULL DEFAULT '',
+        term TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL
+    );
+    ALTER TABLE documents ADD COLUMN course_id TEXT;
+    ALTER TABLE documents ADD COLUMN week INTEGER;
+    ALTER TABLE doc_chunks ADD COLUMN page INTEGER;
+    ALTER TABLE meetings ADD COLUMN session_type TEXT NOT NULL DEFAULT 'general';
+    ALTER TABLE meetings ADD COLUMN course_id TEXT;
+    ALTER TABLE meetings ADD COLUMN week INTEGER;
+    CREATE INDEX documents_course ON documents(course_id, week);
+    "#,
 ];
 
 pub struct Db {
@@ -82,6 +99,11 @@ pub struct MeetingSummary {
     pub ended_at: Option<i64>,
     pub segment_count: i64,
     pub is_demo: bool,
+    /// class | work | general
+    pub session_type: String,
+    pub course_id: Option<String>,
+    pub course_name: Option<String>,
+    pub week: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -112,6 +134,28 @@ pub struct DocumentInfo {
     pub chunks: i64,
     pub active: bool,
     pub created_at: i64,
+    /// The course this resource belongs to; `None` for the general library.
+    pub course_id: Option<String>,
+    pub week: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Course {
+    pub id: String,
+    pub name: String,
+    pub code: String,
+    pub term: String,
+    pub created_at: i64,
+    pub resources: i64,
+}
+
+/// Which documents a search may use.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Scope {
+    /// The general library (documents that belong to no course).
+    Library,
+    /// One course's resources; resources for `week` rank first.
+    Course { id: String, week: Option<i64> },
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -119,6 +163,10 @@ pub struct Passage {
     pub document: String,
     pub chunk: i64,
     pub text: String,
+    /// PDF page (1-based); `None` for text files.
+    pub page: Option<i64>,
+    /// Course week the document belongs to, if any.
+    pub week: Option<i64>,
 }
 
 pub fn now_ms() -> i64 {
@@ -245,7 +293,8 @@ impl Db {
         let mut stmt = conn
             .prepare(
                 "SELECT m.id, m.title, m.started_at, m.ended_at, m.is_demo,
-                        (SELECT COUNT(*) FROM segments s WHERE s.meeting_id = m.id)
+                        (SELECT COUNT(*) FROM segments s WHERE s.meeting_id = m.id),
+                        m.session_type, (SELECT c.name FROM courses c WHERE c.id = m.course_id), m.week, m.course_id
                  FROM meetings m
                  WHERE ?1 IS NULL OR m.title LIKE ?1 OR m.notes LIKE ?1
                     OR EXISTS (SELECT 1 FROM segments s WHERE s.meeting_id = m.id AND s.text LIKE ?1)
@@ -261,6 +310,10 @@ impl Db {
                     ended_at: r.get(3)?,
                     is_demo: r.get::<_, i64>(4)? != 0,
                     segment_count: r.get(5)?,
+                    session_type: r.get(6)?,
+                    course_name: r.get(7)?,
+                    week: r.get(8)?,
+                    course_id: r.get(9)?,
                 })
             })
             .map_err(e)?;
@@ -342,20 +395,65 @@ impl Db {
     }
 
     // ---- documents ----
-    pub fn add_document(&self, id: &str, name: &str, kind: &str, path: &str, chunks: &[String]) -> R<()> {
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_document(&self, id: &str, name: &str, kind: &str, path: &str, chunks: &[(Option<i64>, String)], course_id: Option<&str>, week: Option<i64>) -> R<()> {
         let mut conn = self.conn.lock().unwrap();
         let tx = conn.transaction().map_err(e)?;
-        let chars: usize = chunks.iter().map(|c| c.chars().count()).sum();
+        let chars: usize = chunks.iter().map(|c| c.1.chars().count()).sum();
         tx.execute(
-            "INSERT INTO documents(id, name, kind, path, chars, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-            params![id, name, kind, path, chars as i64, now_ms()],
+            "INSERT INTO documents(id, name, kind, path, chars, created_at, course_id, week) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            params![id, name, kind, path, chars as i64, now_ms(), course_id, week],
         )
         .map_err(e)?;
-        for (i, c) in chunks.iter().enumerate() {
-            tx.execute("INSERT INTO doc_chunks(document_id, ord, text) VALUES (?1, ?2, ?3)", params![id, i as i64, c])
+        for (i, (page, text)) in chunks.iter().enumerate() {
+            tx.execute("INSERT INTO doc_chunks(document_id, ord, text, page) VALUES (?1, ?2, ?3, ?4)", params![id, i as i64, text, page])
                 .map_err(e)?;
         }
         tx.commit().map_err(e)
+    }
+
+    // ---- courses ----
+    pub fn create_course(&self, id: &str, name: &str, code: &str, term: &str) -> R<()> {
+        self.conn
+            .lock()
+            .unwrap()
+            .execute("INSERT INTO courses(id, name, code, term, created_at) VALUES (?1, ?2, ?3, ?4, ?5)", params![id, name, code, term, now_ms()])
+            .map(|_| ())
+            .map_err(e)
+    }
+
+    pub fn list_courses(&self) -> R<Vec<Course>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT c.id, c.name, c.code, c.term, c.created_at, (SELECT COUNT(*) FROM documents d WHERE d.course_id = c.id) FROM courses c ORDER BY c.created_at DESC")
+            .map_err(e)?;
+        let rows = stmt
+            .query_map([], |r| Ok(Course { id: r.get(0)?, name: r.get(1)?, code: r.get(2)?, term: r.get(3)?, created_at: r.get(4)?, resources: r.get(5)? }))
+            .map_err(e)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(e)
+    }
+
+    /// Deletes a course and its resources. Saved meetings keep their text; they just lose the course link.
+    pub fn delete_course(&self, id: &str) -> R<()> {
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction().map_err(e)?;
+        tx.execute("DELETE FROM documents WHERE course_id = ?1", [id]).map_err(e)?;
+        tx.execute("UPDATE meetings SET course_id = NULL WHERE course_id = ?1", [id]).map_err(e)?;
+        tx.execute("DELETE FROM courses WHERE id = ?1", [id]).map_err(e)?;
+        tx.commit().map_err(e)
+    }
+
+    pub fn course_name(&self, id: &str) -> R<Option<String>> {
+        self.conn.lock().unwrap().query_row("SELECT name FROM courses WHERE id = ?1", [id], |r| r.get(0)).optional().map_err(e)
+    }
+
+    pub fn set_meeting_session(&self, id: &str, kind: &str, course_id: Option<&str>, week: Option<i64>) -> R<()> {
+        self.conn
+            .lock()
+            .unwrap()
+            .execute("UPDATE meetings SET session_type = ?2, course_id = ?3, week = ?4 WHERE id = ?1", params![id, kind, course_id, week])
+            .map(|_| ())
+            .map_err(e)
     }
 
     pub fn list_documents(&self) -> R<Vec<DocumentInfo>> {
@@ -363,7 +461,7 @@ impl Db {
         let mut stmt = conn
             .prepare(
                 "SELECT d.id, d.name, d.kind, d.chars, d.active, d.created_at,
-                        (SELECT COUNT(*) FROM doc_chunks c WHERE c.document_id = d.id)
+                        (SELECT COUNT(*) FROM doc_chunks c WHERE c.document_id = d.id), d.course_id, d.week
                  FROM documents d ORDER BY d.created_at DESC",
             )
             .map_err(e)?;
@@ -377,6 +475,8 @@ impl Db {
                     active: r.get::<_, i64>(4)? != 0,
                     created_at: r.get(5)?,
                     chunks: r.get(6)?,
+                    course_id: r.get(7)?,
+                    week: r.get(8)?,
                 })
             })
             .map_err(e)?;
@@ -401,24 +501,35 @@ impl Db {
             .map_err(e)
     }
 
-    /// Full-text retrieval over active documents, best matches first.
+    /// Full-text retrieval over the general library, best matches first.
     pub fn search_passages(&self, fts_query: &str, limit: usize) -> R<Vec<Passage>> {
+        self.search_scoped(fts_query, limit, &Scope::Library)
+    }
+
+    /// Full-text retrieval over active documents in `scope`. For a course with a
+    /// week, resources for that week come first, then the rest by relevance.
+    pub fn search_scoped(&self, fts_query: &str, limit: usize, scope: &Scope) -> R<Vec<Passage>> {
         if fts_query.trim().is_empty() {
             return Ok(Vec::new());
         }
+        let (course, week) = match scope {
+            Scope::Library => (None, None),
+            Scope::Course { id, week } => (Some(id.as_str()), *week),
+        };
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
             .prepare(
-                "SELECT d.name, c.ord, c.text FROM doc_chunks_fts f
+                "SELECT d.name, c.ord, c.text, c.page, d.week FROM doc_chunks_fts f
                  JOIN doc_chunks c ON c.id = f.rowid
                  JOIN documents d ON d.id = c.document_id
                  WHERE doc_chunks_fts MATCH ?1 AND d.active = 1
-                 ORDER BY bm25(doc_chunks_fts) LIMIT ?2",
+                   AND ((?3 IS NULL AND d.course_id IS NULL) OR d.course_id = ?3)
+                 ORDER BY CASE WHEN ?4 IS NOT NULL AND d.week = ?4 THEN 0 ELSE 1 END, bm25(doc_chunks_fts) LIMIT ?2",
             )
             .map_err(e)?;
         let rows = stmt
-            .query_map(params![fts_query, limit as i64], |r| {
-                Ok(Passage { document: r.get(0)?, chunk: r.get(1)?, text: r.get(2)? })
+            .query_map(params![fts_query, limit as i64, course, week], |r| {
+                Ok(Passage { document: r.get(0)?, chunk: r.get(1)?, text: r.get(2)?, page: r.get(3)?, week: r.get(4)? })
             })
             .map_err(e)?;
         rows.collect::<Result<Vec<_>, _>>().map_err(e)
@@ -497,15 +608,96 @@ mod tests {
     #[test]
     fn fts_retrieves_only_active_documents() {
         let db = Db::open_in_memory().unwrap();
-        db.add_document("d1", "resume.md", "md", "/x", &["Led migration to PostgreSQL in 2023.".into(), "Hobbies: cycling.".into()]).unwrap();
-        db.add_document("d2", "other.txt", "txt", "/y", &["PostgreSQL tuning notes.".into()]).unwrap();
+        db.add_document("d1", "resume.md", "md", "/x", &[(None, "Led migration to PostgreSQL in 2023.".into()), (None, "Hobbies: cycling.".into())], None, None).unwrap();
+        db.add_document("d2", "other.txt", "txt", "/y", &[(None, "PostgreSQL tuning notes.".into())], None, None).unwrap();
         let hits = db.search_passages("\"postgresql\"", 5).unwrap();
         assert_eq!(hits.len(), 2);
         db.set_document_active("d2", false).unwrap();
         let hits = db.search_passages("\"postgresql\"", 5).unwrap();
-        assert_eq!(hits, vec![Passage { document: "resume.md".into(), chunk: 0, text: "Led migration to PostgreSQL in 2023.".into() }]);
+        assert_eq!(hits, vec![Passage { document: "resume.md".into(), chunk: 0, text: "Led migration to PostgreSQL in 2023.".into(), page: None, week: None }]);
         db.delete_document("d1").unwrap();
         assert!(db.search_passages("\"postgresql\"", 5).unwrap().is_empty());
         assert_eq!(db.list_documents().unwrap().len(), 1);
+    }
+
+    fn course_db() -> Db {
+        let db = Db::open_in_memory().unwrap();
+        db.create_course("os", "Operating Systems", "CS350", "Fall").unwrap();
+        db.create_course("ml", "Machine Learning", "", "").unwrap();
+        db.add_document("os-w2", "week2.pdf", "pdf", "/a", &[(Some(1), "Scheduling uses a ready queue.".into()), (Some(2), "Round robin scheduling uses a time quantum.".into())], Some("os"), Some(2)).unwrap();
+        db.add_document("os-w5", "week5.pdf", "pdf", "/b", &[(Some(7), "Scheduling in multiprocessors needs load balancing.".into())], Some("os"), Some(5)).unwrap();
+        db.add_document("ml-w1", "ml1.pdf", "pdf", "/c", &[(Some(3), "Scheduling the learning rate decays over epochs.".into())], Some("ml"), Some(1)).unwrap();
+        db.add_document("lib", "notes.md", "md", "/d", &[(None, "Personal scheduling notes.".into())], None, None).unwrap();
+        db
+    }
+
+    #[test]
+    fn a_class_search_reads_only_its_own_course_and_keeps_pages() {
+        let db = course_db();
+        let os = Scope::Course { id: "os".into(), week: None };
+        let hits = db.search_scoped("\"scheduling\"", 10, &os).unwrap();
+        assert_eq!(hits.len(), 3);
+        assert!(hits.iter().all(|h| h.document.starts_with("week")), "other courses or the library leaked: {hits:?}");
+        assert!(hits.iter().any(|h| h.document == "week2.pdf" && h.page == Some(2) && h.week == Some(2)));
+        // The library and other courses never see course files, and vice versa.
+        let lib = db.search_passages("\"scheduling\"", 10).unwrap();
+        assert_eq!(lib.iter().map(|p| p.document.as_str()).collect::<Vec<_>>(), vec!["notes.md"]);
+        let ml = db.search_scoped("\"scheduling\"", 10, &Scope::Course { id: "ml".into(), week: None }).unwrap();
+        assert_eq!(ml.len(), 1);
+        assert_eq!(ml[0].document, "ml1.pdf");
+    }
+
+    #[test]
+    fn the_selected_week_ranks_first() {
+        let db = course_db();
+        let hits = db.search_scoped("\"scheduling\"", 10, &Scope::Course { id: "os".into(), week: Some(5) }).unwrap();
+        assert_eq!(hits[0].document, "week5.pdf");
+        assert_eq!(hits[0].page, Some(7));
+    }
+
+    #[test]
+    fn course_lifecycle_and_session_are_saved_with_the_meeting() {
+        let db = course_db();
+        let cs = db.list_courses().unwrap();
+        assert_eq!(cs.iter().find(|c| c.id == "os").unwrap().resources, 2);
+        assert_eq!(db.course_name("os").unwrap().as_deref(), Some("Operating Systems"));
+        assert_eq!(db.course_name("nope").unwrap(), None);
+
+        db.create_meeting("m1", "Lecture 3", 1, false).unwrap();
+        assert_eq!(db.get_meeting("m1").unwrap().meeting.session_type, "general");
+        db.set_meeting_session("m1", "class", Some("os"), Some(3)).unwrap();
+        let m = db.get_meeting("m1").unwrap().meeting;
+        assert_eq!((m.session_type.as_str(), m.course_name.as_deref(), m.week), ("class", Some("Operating Systems"), Some(3)));
+
+        db.delete_course("os").unwrap();
+        assert!(db.list_documents().unwrap().iter().all(|d| d.course_id.as_deref() != Some("os")));
+        assert!(db.search_scoped("\"scheduling\"", 10, &Scope::Course { id: "os".into(), week: None }).unwrap().is_empty());
+        let m = db.get_meeting("m1").unwrap().meeting;
+        assert_eq!((m.session_type.as_str(), m.course_name), ("class", None), "the meeting survives; only the course link is dropped");
+        assert_eq!(db.list_courses().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn migration_three_upgrades_an_existing_database_without_losing_data() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("old.sqlite");
+        {
+            let mut conn = Connection::open(&path).unwrap();
+            for (i, sql) in MIGRATIONS.iter().take(2).enumerate() {
+                let tx = conn.transaction().unwrap();
+                tx.execute_batch(sql).unwrap();
+                tx.execute_batch(&format!("PRAGMA user_version = {}", i + 1)).unwrap();
+                tx.commit().unwrap();
+            }
+            conn.execute("INSERT INTO meetings(id, title, started_at) VALUES ('old', 'Before', 1)", []).unwrap();
+            conn.execute("INSERT INTO documents(id, name, kind, path, chars, created_at) VALUES ('d', 'cv.md', 'md', '/x', 5, 1)", []).unwrap();
+            conn.execute("INSERT INTO doc_chunks(document_id, ord, text) VALUES ('d', 0, 'Rust engineer')", []).unwrap();
+        }
+        let db = Db::open(&path).unwrap();
+        assert_eq!(db.schema_version(), MIGRATIONS.len() as i64);
+        assert_eq!(db.get_meeting("old").unwrap().meeting.session_type, "general");
+        let hits = db.search_passages("\"rust\"", 5).unwrap();
+        assert_eq!((hits.len(), hits[0].page), (1, None));
+        assert_eq!(db.list_documents().unwrap()[0].course_id, None);
     }
 }

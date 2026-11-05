@@ -23,10 +23,10 @@ async fn main() {
     let passages: Vec<meetinglens_lib::db::Passage> = a
         .get(5)
         .and_then(|p| std::fs::read_to_string(p).ok().map(|t| (p.clone(), t)))
-        .map(|(p, t)| vec![meetinglens_lib::db::Passage { document: p.rsplit('/').next().unwrap_or(&p).to_string(), chunk: 0, text: t }])
+        .map(|(p, t)| vec![meetinglens_lib::db::Passage { document: p.rsplit('/').next().unwrap_or(&p).to_string(), chunk: 0, text: t, page: None, week: None }])
         .unwrap_or_default();
     for action in [Action::Explain, Action::Suggest] {
-        let msgs = prompts::build(&PromptInput { action, transcript: &text, notes: "", passages: &passages, question: None, focus: Some(&focus) });
+        let msgs = prompts::build(&PromptInput { action, transcript: &text, notes: "", passages: &passages, question: None, session: &Default::default(), focus: Some(&focus) });
         let t = Instant::now();
         match llm::stream_chat(&cfg, msgs, CancellationToken::new(), |_| {}).await {
             Ok(out) => println!("===== {:?} · {} · {} ms\n{}\n", action, cfg.model, t.elapsed().as_millis(), out.trim()),

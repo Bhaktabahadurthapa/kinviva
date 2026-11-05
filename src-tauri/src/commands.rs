@@ -83,8 +83,55 @@ pub async fn list_models(base_url: String, use_api_key: bool) -> R<Vec<String>> 
 }
 
 #[tauri::command]
-pub async fn start_meeting(app: AppHandle, state: State<'_, AppState>, title: Option<String>) -> R<MeetingStatus> {
-    meeting::start(&app, &state, title).await
+pub async fn start_meeting(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    title: Option<String>,
+    session_type: Option<crate::session::SessionKind>,
+    course_id: Option<String>,
+    week: Option<i64>,
+) -> R<MeetingStatus> {
+    let session = resolve_session(&state, session_type.unwrap_or_default(), course_id, week)?;
+    meeting::start(&app, &state, title, session).await
+}
+
+/// Validates the chosen session. A Class session needs an existing course; the
+/// course and week are ignored for Work and General.
+pub fn resolve_session(state: &AppState, kind: crate::session::SessionKind, course_id: Option<String>, week: Option<i64>) -> R<crate::session::SessionInfo> {
+    use crate::session::{SessionInfo, SessionKind, MAX_WEEK};
+    if kind != SessionKind::Class {
+        return Ok(SessionInfo { kind, ..Default::default() });
+    }
+    let id = course_id.filter(|c| !c.is_empty()).ok_or("Choose a course for this class session, or create one first.")?;
+    let name = state.db.course_name(&id)?.ok_or("That course no longer exists. Choose another.")?;
+    if week.is_some_and(|w| !(1..=MAX_WEEK).contains(&w)) {
+        return Err(format!("Week must be between 1 and {MAX_WEEK}."));
+    }
+    Ok(SessionInfo { kind, course_id: Some(id), course_name: Some(name), week })
+}
+
+#[tauri::command]
+pub fn list_courses(state: State<AppState>) -> R<Vec<crate::db::Course>> {
+    state.db.list_courses()
+}
+
+#[tauri::command]
+pub fn create_course(state: State<AppState>, name: String, code: Option<String>, term: Option<String>) -> R<crate::db::Course> {
+    let name = name.trim();
+    if name.is_empty() {
+        return Err("Give the course a name.".into());
+    }
+    if name.chars().count() > 120 {
+        return Err("The course name is too long.".into());
+    }
+    let id = uuid::Uuid::new_v4().to_string();
+    state.db.create_course(&id, name, code.as_deref().unwrap_or("").trim(), term.as_deref().unwrap_or("").trim())?;
+    state.db.list_courses()?.into_iter().find(|c| c.id == id).ok_or_else(|| "Course was not saved.".into())
+}
+
+#[tauri::command]
+pub fn delete_course(state: State<AppState>, id: String) -> R<()> {
+    state.db.delete_course(&id)
 }
 
 #[tauri::command]
@@ -187,8 +234,16 @@ pub async fn load_meeting_context(app: AppHandle, state: State<'_, AppState>, id
         return Err("Stop the current meeting first.".into());
     }
     let m = state.db.get_meeting(&id)?;
+    let kind = match m.meeting.session_type.as_str() {
+        "class" => crate::session::SessionKind::Class,
+        "work" => crate::session::SessionKind::Work,
+        _ => crate::session::SessionKind::General,
+    };
+    // A deleted course falls back to the general session instead of failing.
+    let session = resolve_session(&state, kind, m.meeting.course_id.clone(), m.meeting.week).unwrap_or_default();
     {
         let mut live = state.live.lock().unwrap();
+        live.status.session = session;
         live.transcript.clear();
         for s in m.segments {
             live.transcript.push_final(s);
@@ -211,13 +266,20 @@ pub fn create_demo_meeting(state: State<AppState>) -> R<String> {
 }
 
 #[tauri::command]
-pub fn add_document(state: State<AppState>, path: String) -> R<DocumentInfo> {
+pub fn add_document(state: State<AppState>, path: String, course_id: Option<String>, week: Option<i64>) -> R<DocumentInfo> {
     let p = PathBuf::from(&path);
+    let course_id = course_id.filter(|c| !c.is_empty());
+    if let Some(c) = &course_id {
+        state.db.course_name(c)?.ok_or("That course no longer exists.")?;
+    }
+    if week.is_some_and(|w| !(1..=crate::session::MAX_WEEK).contains(&w)) {
+        return Err(format!("Week must be between 1 and {}.", crate::session::MAX_WEEK));
+    }
     let extracted = docs::extract(&p)?;
-    let chunks = docs::chunk(&extracted.text);
+    let chunks = docs::chunk_pages(&extracted);
     let id = uuid::Uuid::new_v4().to_string();
     let name = p.file_name().and_then(|n| n.to_str()).unwrap_or("document").to_string();
-    state.db.add_document(&id, &name, &extracted.kind, &path, &chunks)?;
+    state.db.add_document(&id, &name, &extracted.kind, &path, &chunks, course_id.as_deref(), course_id.as_ref().and(week))?;
     state
         .db
         .list_documents()?

@@ -1,6 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   AiAction,
+  Course,
+  SessionKind,
   DeviceInfo,
   DocumentInfo,
   InterviewRequest,
@@ -32,7 +34,13 @@ export const api = {
   secretStatus: () => invoke<Record<string, boolean>>("secret_status"),
   listModels: (baseUrl: string, useApiKey: boolean) =>
     invoke<string[]>("list_models", { baseUrl, useApiKey }),
-  startMeeting: (title?: string) => invoke<MeetingStatus>("start_meeting", { title: title || null }),
+  startMeeting: (title?: string, session?: { kind: SessionKind; courseId?: string | null; week?: number | null }) =>
+    invoke<MeetingStatus>("start_meeting", {
+      title: title || null,
+      sessionType: session?.kind ?? "general",
+      courseId: session?.kind === "class" ? session.courseId ?? null : null,
+      week: session?.kind === "class" ? session.week ?? null : null,
+    }),
   stopMeeting: () => invoke<string | null>("stop_meeting"),
   switchMic: (device: string | null) => invoke<void>("switch_mic", { device }),
   getSnapshot: () => invoke<Snapshot>("get_snapshot"),
@@ -50,7 +58,11 @@ export const api = {
     invoke<string>("export_meeting", { id, format, path }),
   loadMeetingContext: (id: string) => invoke<void>("load_meeting_context", { id }),
   createDemoMeeting: () => invoke<string>("create_demo_meeting"),
-  addDocument: (path: string) => invoke<DocumentInfo>("add_document", { path }),
+  addDocument: (path: string, courseId?: string | null, week?: number | null) =>
+    invoke<DocumentInfo>("add_document", { path, courseId: courseId ?? null, week: week ?? null }),
+  listCourses: () => invoke<Course[]>("list_courses"),
+  createCourse: (name: string, code?: string, term?: string) => invoke<Course>("create_course", { name, code: code || null, term: term || null }),
+  deleteCourse: (id: string) => invoke<void>("delete_course", { id }),
   listDocuments: () => invoke<DocumentInfo[]>("list_documents"),
   setDocumentActive: (id: string, active: boolean) => invoke<void>("set_document_active", { id, active }),
   deleteDocument: (id: string) => invoke<void>("delete_document", { id }),

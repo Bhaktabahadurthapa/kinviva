@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { SideNote } from "../lib/liveReducer";
 import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
+import { citationText, resolveCitations } from "../lib/citations";
 
 /** Minimum time between new explanations appearing, so each can be read. */
 const REVEAL_GAP_MS = 300;
@@ -103,7 +104,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
             </div>
             {note.meaning && (
               <div className="simple-meaning">
-                <AiText text={note.meaning.text} streaming={!isFinished(note.meaning)} />
+                <AiText text={resolveCitations(note.meaning.text, note.meaning.sources)} streaming={!isFinished(note.meaning)} />
               </div>
             )}
             {answer && hasAnswer(note) && (
@@ -112,8 +113,8 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
                   <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : (note.meaning ? "Your script — you could say" : "Answer — you could say")}</span>
                   <CopyButton text={answer.text} />
                 </div>
-                <AiText text={answer.text} streaming={!isFinished(answer)} />
-                {isFinished(answer) && <SourceLine sources={answer.sources} />}
+                <AiText text={resolveCitations(answer.text, answer.sources)} streaming={!isFinished(answer)} />
+                {isFinished(answer) && <SourceLine sources={answer.sources} web={answer.web} />}
               </div>
             )}
           </article>
@@ -144,10 +145,14 @@ function CopyButton({ text }: { text: string }) {
 }
 
 /** Which of the user's files were searched for this answer (not a claim the model quoted them). */
-function SourceLine({ sources }: { sources: AiSlot["sources"] }) {
-  const names = [...new Set(sources.map((p) => p.document))];
-  return names.length ? (
-    <p className="script-sources">From your files: {names.join(", ")}</p>
+function SourceLine({ sources, web }: { sources: AiSlot["sources"]; web?: AiSlot["web"] }) {
+  const names = [...new Set(sources.map(citationText))];
+  const hosts = [...new Set((web ?? []).map((w) => { try { return new URL(w.url).host; } catch { return w.url; } }))];
+  return names.length || hosts.length ? (
+    <p className="script-sources">
+      {names.length > 0 && <>From your files: {names.join(", ")}. </>}
+      {hosts.length > 0 && <>Web: {hosts.join(", ")}.</>}
+    </p>
   ) : (
     <p className="script-sources script-sources-none">Not based on your files. Add notes or files under Documents to get scripts with your own facts.</p>
   );

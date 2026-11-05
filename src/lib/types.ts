@@ -34,12 +34,34 @@ export interface MeetingStatus {
   recording_audio: boolean;
   context_meeting_id: string | null;
   context_is_demo: boolean;
+  session?: SessionInfo;
+}
+
+export type SessionKind = "class" | "work" | "general";
+
+export interface SessionInfo {
+  kind: SessionKind;
+  course_id: string | null;
+  course_name: string | null;
+  week: number | null;
+}
+
+export interface Course {
+  id: string;
+  name: string;
+  code: string;
+  term: string;
+  created_at: number;
+  resources: number;
 }
 
 export interface Passage {
   document: string;
   chunk: number;
   text: string;
+  /** PDF page (1-based); null for text files. */
+  page?: number | null;
+  week?: number | null;
 }
 
 export type AutoMode = "off" | "explain" | "explain_reply";
@@ -58,6 +80,7 @@ export interface AiSlot {
   question: string | null;
   auto: boolean;
   segment_id: number | null;
+  web?: { title: string; url: string; snippet: string }[];
 }
 
 export interface AiEvent extends AiSlot {
@@ -97,6 +120,7 @@ export interface Settings {
   llm_reasoning: "auto" | "off" | "minimal" | "low" | "medium" | "high";
   context_chars: number;
   use_documents: boolean;
+  web_search: boolean;
   question_detection: boolean;
   question_cooldown_secs: number;
   auto_assist: AutoMode;
@@ -112,6 +136,10 @@ export interface MeetingSummary {
   ended_at: number | null;
   segment_count: number;
   is_demo: boolean;
+  session_type?: SessionKind;
+  course_id?: string | null;
+  course_name?: string | null;
+  week?: number | null;
 }
 
 export interface AiMessage {
@@ -139,6 +167,8 @@ export interface DocumentInfo {
   chunks: number;
   active: boolean;
   created_at: number;
+  course_id?: string | null;
+  week?: number | null;
 }
 
 export interface DeviceInfo {
@@ -148,7 +178,8 @@ export interface DeviceInfo {
 
 // ---- Interview Practice ----
 export type InterviewCategory = "cloud_devops" | "system_design" | "ai_engineering" | "coding";
-export type InterviewMode = "explain" | "practice";
+export type InterviewMode = "explain" | "practice" | "question";
+export type InterviewRole = "cloud_devops_engineer" | "backend_engineer" | "ai_engineer" | "software_engineer";
 export type InterviewLanguage = "python" | "java" | "cpp";
 
 export interface InterviewRequest {
@@ -157,9 +188,11 @@ export interface InterviewRequest {
   question: string;
   answer?: string | null;
   language?: InterviewLanguage | null;
+  role?: InterviewRole | null;
 }
 
 export type InterviewParsed =
+  | { kind: "question"; question: string; tests: string }
   | { kind: "answer"; say_it: string; understand_it: string; code: string | null; tradeoffs: string[]; follow_up: string }
   | {
       kind: "feedback";

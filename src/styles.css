@@ -955,3 +955,31 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 .iv-wait { color: var(--c-text-3); font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.06em; }
 .iv-wait span { margin-left: 8px; }
 @media (max-width: 900px) { .interview { grid-template-columns: 1fr; overflow: auto; } }
+
+/* ---- Meeting area: session type + sub navigation ---- */
+.meeting-area { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.meeting-body { flex: 1; min-height: 0; overflow: auto; }
+.meeting-body > .live { height: 100%; }
+.subnav { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; padding: var(--s-3) var(--s-5) 0; border-bottom: 1px solid var(--c-line); }
+.subnav-tabs { display: flex; gap: 2px; }
+.subnav-tabs button { background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 14px; font-size: var(--t-base); color: var(--c-text-3); cursor: pointer; margin-bottom: -1px; }
+.subnav-tabs button:hover { color: var(--c-text); }
+.subnav-tabs button.active { color: var(--c-text); border-bottom-color: var(--c-signal); font-weight: 700; }
+.session-bar { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; padding-bottom: 8px; margin-left: auto; }
+.session-new { display: flex; gap: 6px; align-items: center; }
+.session-new input { padding: 4px 8px; font-size: var(--t-xs); width: 170px; }
+.session-hint { font-size: var(--t-xs); color: var(--c-text-3); max-width: 300px; line-height: 1.35; }
+.session-banner { margin: var(--s-3) var(--s-5) 0; }
+.rail-util { opacity: 0.85; font-size: var(--t-sm); }
+.rail-util::before { display: none; }
+.course-card { margin-bottom: var(--s-4); }
+.course-head { display: flex; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; align-items: flex-start; }
+.course-head h2 { margin: 0; }
+.course-add { display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap; }
+.course-new { margin-bottom: var(--s-4); }
+.week-group h3 { margin: var(--s-3) 0 4px; font-family: var(--f-mono); font-size: var(--t-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-signal); font-weight: 500; }
+.week-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--s-3); align-items: center; padding: 4px 0; border-top: 1px dashed var(--c-line); }
+.week-row label { display: flex; gap: 8px; align-items: center; font-size: var(--t-base); }
+.library-title { margin-top: var(--s-6); }
+.week-row input[type="checkbox"] { width: auto; flex: none; }
+.week-row label { min-width: 0; overflow-wrap: anywhere; }

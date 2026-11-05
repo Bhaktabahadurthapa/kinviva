@@ -7,7 +7,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     onboarded: true, capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
     stt_provider: "whisper_native", deepgram_model: "nova-3", deepgram_endpoint: "wss://api.deepgram.com/v1/listen",
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
-    llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true,
+    llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true, web_search: false,
     question_detection: false, question_cooldown_secs: 20, auto_assist: "explain_reply", auto_min_words: 6,
     overlay_content_protection: false,
     shortcuts: { toggle_meeting: "CommandOrControl+Shift+M", toggle_overlay: "CommandOrControl+Shift+O", suggest_reply: "CommandOrControl+Shift+R", explain: "CommandOrControl+Shift+E" },
@@ -25,8 +25,13 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
       { category: "coding", name: "coding-interview", description: "Coach coding answers in Python, Java or C++.", error: null },
     ],
     interview_run: "mock-request",
+    list_courses: [{ id: "os", name: "Operating Systems", code: "CS350", term: "Fall", created_at: 1, resources: 2 }],
     list_meetings: [],
-    list_documents: [],
+    list_documents: [
+      { id: "d1", name: "week2-scheduling.pdf", kind: "pdf", chars: 9000, chunks: 12, active: true, created_at: 1, course_id: "os", week: 2 },
+      { id: "d2", name: "syllabus.md", kind: "md", chars: 1200, chunks: 2, active: true, created_at: 1, course_id: "os", week: null },
+      { id: "d3", name: "my-notes.txt", kind: "txt", chars: 800, chunks: 1, active: true, created_at: 1, course_id: null, week: null },
+    ],
     app_info: { version: "dev", data_dir: "(mock)", os: "macos", schema_version: 1 },
     secret_status: { llm_api_key: false },
     get_snapshot: {

@@ -6,6 +6,7 @@ use crate::docs;
 use crate::llm::{self, LlmConfig, LlmError};
 use crate::prompts::{self, Action, PromptInput};
 use crate::secrets;
+use crate::websearch;
 use crate::state::{AiSlot, AppState};
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
@@ -82,35 +83,41 @@ pub fn start_with(
         return Err("Type a question first.".into());
     }
     let slot = action.slot();
-    let (transcript, notes, meeting_id) = {
+    let (transcript, notes, meeting_id, session) = {
         let live = state.live.lock().unwrap();
         let window = if action == Action::Recap { settings.context_chars * 2 } else { settings.context_chars };
         (
             live.transcript.recent_window(window),
             live.notes.clone(),
             live.status.meeting_id.clone().or(live.status.context_meeting_id.clone()),
+            live.status.session.clone(),
         )
     };
     if action != Action::Ask && transcript.trim().is_empty() {
         return Err("Nothing has been transcribed yet.".into());
     }
-    let passages = if settings.use_documents {
+    // A class session always reads its course resources; the setting only
+    // controls the general library.
+    let passages = if settings.use_documents || session.is_class() {
         let tail: String = transcript.chars().rev().take(600).collect::<Vec<_>>().into_iter().rev().collect();
         let q = docs::fts_query(
             &format!("{} {} {}", tail, focus.clone().unwrap_or_default(), question.clone().unwrap_or_default()),
             12,
         );
-        state.db.search_passages(&q, 4).unwrap_or_default()
+        let limit = if session.is_class() { 6 } else { 4 };
+        state.db.search_scoped(&q, limit, &session.scope()).unwrap_or_default()
     } else {
         Vec::new()
     };
-    let messages = prompts::build(&PromptInput {
+    let web_query = web_query_for(action, &transcript, focus.as_deref(), question.as_deref());
+    let mut messages = prompts::build(&PromptInput {
         action,
         transcript: &transcript,
         notes: &notes,
         passages: &passages,
         question: question.as_deref(),
         focus: focus.as_deref(),
+        session: &session,
     });
 
     // A request the user asks for replaces the previous one in its panel.
@@ -155,13 +162,34 @@ pub fn start_with(
             question: question.clone(),
             auto: auto_for.is_some(),
             segment_id: auto_for,
+            web: Vec::new(),
         }
     });
 
     let app2 = app.clone();
     let rid = request_id.clone();
+    let stored_passages = if session.is_class() { passages.clone() } else { Vec::new() };
+    let web_endpoint = settings.web_search.then_some(()).and(web_query);
     tauri::async_runtime::spawn(async move {
         let state = app2.state::<AppState>();
+        if let Some(query) = web_endpoint {
+            // Search the web first (optional); a failure never blocks the answer.
+            match web_results(&query, &cancel).await {
+                Ok(found) if !found.is_empty() => {
+                    if let Some(m) = messages.last_mut() {
+                        m.content = format!("{}\n{}", websearch::prompt_block(&found), m.content);
+                    }
+                    publish_to(&app2, &state, slot, &local, |s| {
+                        if s.request_id.as_deref() == Some(rid.as_str()) {
+                            s.web = found.clone();
+                        }
+                    });
+                }
+                Ok(_) => {}
+                Err(e) if e == "cancelled" => {}
+                Err(e) => report_web_error(&app2, e),
+            }
+        }
         let result = llm::stream_chat(&cfg, messages, cancel, |delta| {
             publish_to(&app2, &state, slot, &local, |s| {
                 if s.request_id.as_deref() == Some(rid.as_str()) {
@@ -193,10 +221,40 @@ pub fn start_with(
             }
         });
         if status != "error" {
-            let _ = state.db.add_ai_message(&rid, meeting_id.as_deref(), action.as_str(), question.as_deref(), &text, &cfg.model, status);
+            // Saved answers carry real file and page citations, not [S1] markers.
+            let saved = crate::session::resolve_citations(&text, &stored_passages);
+            let _ = state.db.add_ai_message(&rid, meeting_id.as_deref(), action.as_str(), question.as_deref(), &saved, &cfg.model, status);
         }
     });
     Ok(request_id)
+}
+
+/// What to search for: only questions the user asks and answers they request are searched.
+fn web_query_for(action: Action, transcript: &str, focus: Option<&str>, question: Option<&str>) -> Option<String> {
+    if !matches!(action, Action::Suggest | Action::Ask) {
+        return None;
+    }
+    let text = question
+        .filter(|q| !q.trim().is_empty())
+        .or(focus.filter(|f| !f.trim().is_empty()))
+        .or_else(|| transcript.lines().rev().find(|l| l.starts_with("Them:")))?;
+    let q = websearch::query_from(text);
+    (!q.is_empty()).then_some(q)
+}
+
+async fn web_results(query: &str, cancel: &CancellationToken) -> Result<Vec<websearch::WebSource>, String> {
+    let key = secrets::get("web_search_key")?.ok_or("Add your web search key in Settings → AI.")?;
+    websearch::search(websearch::DEFAULT_ENDPOINT, &key, query, cancel).await
+}
+
+/// Each distinct web-search problem is reported once, not on every answer.
+fn report_web_error(app: &AppHandle, e: String) {
+    static LAST: Mutex<Option<String>> = Mutex::new(None);
+    let mut last = LAST.lock().unwrap();
+    if last.as_deref() != Some(e.as_str()) {
+        let _ = app.emit("app-error", format!("Web search: {e}"));
+        *last = Some(e);
+    }
 }
 
 pub fn cancel(state: &AppState, request_id: &str) -> bool {

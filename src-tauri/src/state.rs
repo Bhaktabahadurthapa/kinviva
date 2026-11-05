@@ -40,6 +40,8 @@ pub struct MeetingStatus {
     /// A saved meeting loaded as context while idle.
     pub context_meeting_id: Option<String>,
     pub context_is_demo: bool,
+    /// Session type of the running meeting (Class / Work / General).
+    pub session: crate::session::SessionInfo,
 }
 
 impl Default for MeetingStatus {
@@ -57,6 +59,7 @@ impl Default for MeetingStatus {
             recording_audio: false,
             context_meeting_id: None,
             context_is_demo: false,
+            session: Default::default(),
         }
     }
 }
@@ -85,6 +88,8 @@ pub struct AiSlot {
     pub auto: bool,
     /// The "Them" line an automatic answer belongs to.
     pub segment_id: Option<i64>,
+    /// Web results used for this answer (when web search is on).
+    pub web: Vec<crate::websearch::WebSource>,
 }
 
 #[derive(Default)]

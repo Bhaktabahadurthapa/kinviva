@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { api, errorText } from "../lib/api";
 import type { DocumentInfo, Passage } from "../lib/types";
 
-export function DocumentsView({ onError }: { onError: (m: string) => void }) {
+export function DocumentsView({ onError, embedded }: { onError: (m: string) => void; embedded?: boolean }) {
   const [docs, setDocs] = useState<DocumentInfo[]>([]);
   const [results, setResults] = useState<{ name: string; ok: boolean; msg: string }[]>([]);
   const [probe, setProbe] = useState("");
   const [hits, setHits] = useState<Passage[] | null>(null);
-  const load = () => api.listDocuments().then(setDocs).catch((e) => onError(errorText(e)));
+  const load = () => api.listDocuments().then((all) => setDocs(all.filter((d) => !d.course_id))).catch((e) => onError(errorText(e)));
   useEffect(() => void load(), []);
 
   const add = async () => {
@@ -30,13 +30,13 @@ export function DocumentsView({ onError }: { onError: (m: string) => void }) {
   };
 
   return (
-    <div className="page">
+    <div className={embedded ? "" : "page"}>
       <header className="page-head">
         <div>
-          <h1>Context documents</h1>
+          {!embedded && <h1>Context documents</h1>}
           <p className="lead">
-            Add notes, a résumé, or an agenda (.txt, .md, .pdf). When you use an AI action, MeetingLens searches active documents for
-            passages matching the recent conversation and includes up to four of them. Each answer lists the passages it used.
+            Notes, a résumé or an agenda (.txt, .md, .pdf) for Work and General sessions and Interview practice. When you use an AI action,
+            MeetingLens searches active documents for passages matching the recent conversation and includes up to four of them. Course files are kept separate (above).
           </p>
         </div>
         <button className="btn btn-primary" onClick={add}>
@@ -107,7 +107,7 @@ export function DocumentsView({ onError }: { onError: (m: string) => void }) {
         {hits?.map((p, i) => (
           <blockquote key={i}>
             <cite>
-              {p.document} #{p.chunk + 1}
+              {p.page != null ? `${p.document}, p. ${p.page}` : `${p.document} #${p.chunk + 1}`}
             </cite>
             {p.text}
           </blockquote>

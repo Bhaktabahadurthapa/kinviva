@@ -7,7 +7,9 @@ use std::collections::{HashSet, VecDeque};
 const STARTERS: &[&str] = &[
     "what", "why", "how", "when", "where", "who", "which", "can you", "could you", "would you",
     "will you", "do you", "did you", "have you", "are you", "is there", "is it", "tell me",
-    "walk me through", "explain", "describe", "any thoughts", "thoughts on",
+    "walk me through", "explain", "describe", "any thoughts", "thoughts on", "design", "architect",
+    "build a", "build an", "implement", "propose", "outline", "compare", "recommend", "suggest", "give me", "show me",
+    "write a", "write an", "create a", "create an", "let's design", "i want you to", "your task",
 ];
 
 /// Question openers that count anywhere in a sentence, not only at its start.
@@ -15,6 +17,7 @@ const INSIDE: &[&str] = &[
     " how do you ", " how would you ", " how can you ", " how did you ", " what is your ", " what would you ", " what do you ",
     " what are your ", " why do you ", " why would you ", " can you ", " could you ", " would you ", " do you ", " did you ",
     " have you ", " tell me ", " walk me through ", " what happens if ", " what happens when ",
+    " design a ", " design an ", " design the ", " architect a ", " how would ", " your task is ", " the question is ",
 ];
 
 pub struct QuestionDetector {
@@ -116,5 +119,14 @@ mod tests {
         assert!(looks_like_question("So imagine your service is down. What is your first move"));
         assert!(!looks_like_question("We moved the tutorial behind the sign-up step"));
         assert!(!looks_like_question("I know how you design it but that is fine"));
+    }
+
+    #[test]
+    fn design_and_other_imperative_prompts_are_questions() {
+        assert!(looks_like_question("Design a multi-tenant CI/CD platform for internal teams across AWS and Azure. Focus on isolation, security and cost."));
+        assert!(looks_like_question("Okay next one. Design a rate limiter for a public API"));
+        assert!(looks_like_question("Compare Kubernetes namespaces and separate clusters for tenant isolation"));
+        assert!(looks_like_question("Imagine you must design an audit pipeline for payments"));
+        assert!(!looks_like_question("Thanks, that design looks good to me"));
     }
 }
