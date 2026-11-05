@@ -85,6 +85,11 @@ export const api = {
   listMeetings: (search?: string) => invoke<MeetingSummary[]>("list_meetings", { search: search || null }),
   getMeeting: (id: string) => invoke<MeetingDetail>("get_meeting", { id }),
   renameMeeting: (id: string, title: string) => invoke<void>("rename_meeting", { id, title }),
+  listTrash: () => invoke<MeetingSummary[]>("list_trash"),
+  trashMeetings: (ids: string[]) => invoke<number>("trash_meetings", { ids }),
+  restoreMeetings: (ids: string[]) => invoke<number>("restore_meetings", { ids }),
+  purgeMeetings: (ids: string[], withLinked: boolean) => invoke<number>("purge_meetings", { ids, withLinked }),
+  emptyTrash: (withLinked: boolean) => invoke<number>("empty_trash", { withLinked }),
   deleteMeeting: (id: string) => invoke<void>("delete_meeting", { id }),
   exportMeeting: (id: string, format: "md" | "txt" | "docx", path: string) =>
     invoke<string>("export_meeting", { id, format, path }),

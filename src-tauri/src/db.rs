@@ -171,6 +171,11 @@ const MIGRATIONS: &[&str] = &[
     r#"
     ALTER TABLE discover_items ADD COLUMN image TEXT;
     "#,
+    // 8: sessions go to a Trash first (deleted_at) and are only erased for good from there
+    r#"
+    ALTER TABLE meetings ADD COLUMN deleted_at INTEGER;
+    CREATE INDEX meetings_deleted ON meetings(deleted_at);
+    "#,
 ];
 
 #[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]
@@ -187,6 +192,13 @@ pub struct DiagramRecord {
     pub model: Option<String>,
     /// generated | edited
     pub origin: String,
+}
+
+#[derive(Clone, Copy)]
+enum Scope3 {
+    Active = 0,
+    Trash = 1,
+    Any = 2,
 }
 
 pub struct Db {
@@ -206,6 +218,8 @@ pub struct MeetingSummary {
     pub course_id: Option<String>,
     pub course_name: Option<String>,
     pub week: Option<i64>,
+    /// When it was moved to the Trash (`None` for a normal session).
+    pub deleted_at: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]
@@ -388,6 +402,61 @@ impl Db {
             .map(|_| ())
             .map_err(e)
     }
+    /// Moves sessions to the Trash. Nothing is erased; they can be restored.
+    pub fn trash_meetings(&self, ids: &[String], now: i64) -> R<usize> {
+        let conn = self.conn.lock().unwrap();
+        let mut n = 0;
+        for id in ids {
+            n += conn.execute("UPDATE meetings SET deleted_at = ?2 WHERE id = ?1 AND deleted_at IS NULL", params![id, now]).map_err(e)?;
+        }
+        Ok(n)
+    }
+
+    pub fn restore_meetings(&self, ids: &[String]) -> R<usize> {
+        let conn = self.conn.lock().unwrap();
+        let mut n = 0;
+        for id in ids {
+            n += conn.execute("UPDATE meetings SET deleted_at = NULL WHERE id = ?1 AND deleted_at IS NOT NULL", [id]).map_err(e)?;
+        }
+        Ok(n)
+    }
+
+    /// Ids that are in the Trash (all of them when `ids` is empty and `all` is true).
+    pub fn trashed_ids(&self, ids: &[String], all: bool) -> R<Vec<String>> {
+        let conn = self.conn.lock().unwrap();
+        let mut out = Vec::new();
+        let mut stmt = conn.prepare("SELECT id FROM meetings WHERE deleted_at IS NOT NULL").map_err(e)?;
+        for r in stmt.query_map([], |r| r.get::<_, String>(0)).map_err(e)? {
+            let id = r.map_err(e)?;
+            if all || ids.contains(&id) {
+                out.push(id);
+            }
+        }
+        Ok(out)
+    }
+
+    /// Erases sessions for good, but only ones already in the Trash. With `with_linked`, notes, whiteboards,
+    /// charts, incidents and diagrams saved from those sessions go too; otherwise they stay, unlinked.
+    pub fn purge_meetings(&self, ids: &[String], with_linked: bool) -> R<usize> {
+        let ids = self.trashed_ids(ids, false)?;
+        let conn = self.conn.lock().unwrap();
+        let mut n = 0;
+        for id in &ids {
+            if with_linked {
+                conn.execute("DELETE FROM records WHERE meeting_id = ?1 AND kind != 'board_rev'", [id]).map_err(e)?;
+                conn.execute("DELETE FROM records WHERE kind = 'board_rev' AND meta NOT IN (SELECT id FROM records WHERE kind = 'board')", []).map_err(e)?;
+                conn.execute("DELETE FROM diagrams WHERE meeting_id = ?1", [id]).map_err(e)?;
+            } else {
+                conn.execute("UPDATE records SET meeting_id = NULL WHERE meeting_id = ?1", [id]).map_err(e)?;
+                conn.execute("UPDATE diagrams SET meeting_id = NULL WHERE meeting_id = ?1", [id]).map_err(e)?;
+            }
+            n += conn.execute("DELETE FROM meetings WHERE id = ?1 AND deleted_at IS NOT NULL", [id]).map_err(e)?;
+        }
+        // Free the space the erased text used.
+        let _ = conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);");
+        Ok(n)
+    }
+
     /// Meetings left open by a crash are closed at their last segment time.
     pub fn close_dangling_meetings(&self) -> R<()> {
         self.conn
@@ -412,22 +481,32 @@ impl Db {
         Ok(conn.last_insert_rowid())
     }
 
+    /// Normal sessions (not in the Trash).
     pub fn list_meetings(&self, search: Option<&str>) -> R<Vec<MeetingSummary>> {
+        self.list_meetings_in(search, Scope3::Active)
+    }
+
+    pub fn list_trash(&self) -> R<Vec<MeetingSummary>> {
+        self.list_meetings_in(None, Scope3::Trash)
+    }
+
+    fn list_meetings_in(&self, search: Option<&str>, scope: Scope3) -> R<Vec<MeetingSummary>> {
         let conn = self.conn.lock().unwrap();
         let pattern = search.filter(|s| !s.trim().is_empty()).map(|s| format!("%{}%", s.trim()));
         let mut stmt = conn
             .prepare(
                 "SELECT m.id, m.title, m.started_at, m.ended_at, m.is_demo,
                         (SELECT COUNT(*) FROM segments s WHERE s.meeting_id = m.id),
-                        m.session_type, (SELECT c.name FROM courses c WHERE c.id = m.course_id), m.week, m.course_id
+                        m.session_type, (SELECT c.name FROM courses c WHERE c.id = m.course_id), m.week, m.course_id, m.deleted_at
                  FROM meetings m
-                 WHERE ?1 IS NULL OR m.title LIKE ?1 OR m.notes LIKE ?1
-                    OR EXISTS (SELECT 1 FROM segments s WHERE s.meeting_id = m.id AND s.text LIKE ?1)
-                 ORDER BY m.started_at DESC",
+                 WHERE (?1 IS NULL OR m.title LIKE ?1 OR m.notes LIKE ?1
+                    OR EXISTS (SELECT 1 FROM segments s WHERE s.meeting_id = m.id AND s.text LIKE ?1))
+                   AND (?2 = 2 OR (?2 = 0 AND m.deleted_at IS NULL) OR (?2 = 1 AND m.deleted_at IS NOT NULL))
+                 ORDER BY COALESCE(m.deleted_at, m.started_at) DESC",
             )
             .map_err(e)?;
         let rows = stmt
-            .query_map([pattern], |r| {
+            .query_map(params![pattern, scope as i64], |r| {
                 Ok(MeetingSummary {
                     id: r.get(0)?,
                     title: r.get(1)?,
@@ -439,6 +518,7 @@ impl Db {
                     course_name: r.get(7)?,
                     week: r.get(8)?,
                     course_id: r.get(9)?,
+                    deleted_at: r.get(10)?,
                 })
             })
             .map_err(e)?;
@@ -447,7 +527,7 @@ impl Db {
 
     pub fn get_meeting(&self, id: &str) -> R<MeetingDetail> {
         let summary = self
-            .list_meetings(None)?
+            .list_meetings_in(None, Scope3::Any)?
             .into_iter()
             .find(|m| m.id == id)
             .ok_or_else(|| "Meeting not found.".to_string())?;
@@ -927,4 +1007,42 @@ mod tests {
         db.delete_diagram("a").unwrap();
         assert_eq!(db.list_diagrams(None, 10).unwrap().len(), 1);
     }
+
+    #[test]
+    fn sessions_go_to_the_trash_first_and_only_leave_for_good_from_there() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = Db::open(&dir.path().join("t.sqlite")).unwrap();
+        for (id, t) in [("m1", 1000), ("m2", 2000), ("m3", 3000)] {
+            db.create_meeting(id, id, t, false).unwrap();
+            db.add_segment(id, Source::System, "We discussed the budget.", 0, 900).unwrap();
+        }
+        let note = |id: &str, m: &str| crate::store::Record { id: id.into(), kind: "note".into(), title: id.into(), body: String::new(), meta: None, meeting_id: Some(m.into()), created_at: 0, updated_at: 0 };
+        db.save_record(&note("n1", "m1"), 5).unwrap();
+        db.save_record(&note("n2", "m2"), 5).unwrap();
+        // Trash: hidden from the list, search and the Dashboard numbers, but still there.
+        assert_eq!(db.trash_meetings(&["m1".into(), "m2".into(), "missing".into()], 9000).unwrap(), 2);
+        assert_eq!(db.list_meetings(None).unwrap().iter().map(|m| m.id.as_str()).collect::<Vec<_>>(), vec!["m3"]);
+        assert_eq!(db.list_meetings(Some("budget")).unwrap().len(), 1);
+        assert_eq!(db.list_trash().unwrap().len(), 2);
+        assert_eq!(db.stats(10_000).unwrap().sessions, 1);
+        assert!(db.global_search("budget", 5).unwrap().iter().all(|h| h.id == "m3"));
+        assert_eq!(db.get_meeting("m1").unwrap().meeting.deleted_at, Some(9000)); // still viewable from the Trash
+        // Restore.
+        assert_eq!(db.restore_meetings(&["m2".into()]).unwrap(), 1);
+        assert_eq!(db.list_meetings(None).unwrap().len(), 2);
+        // A session that is not in the Trash cannot be erased.
+        assert_eq!(db.purge_meetings(&["m3".into(), "m2".into()], true).unwrap(), 0);
+        assert!(db.get_meeting("m3").is_ok());
+        // Purge without the linked items: the note stays, unlinked.
+        assert_eq!(db.purge_meetings(&["m1".into()], false).unwrap(), 1);
+        assert!(db.get_meeting("m1").is_err());
+        assert_eq!(db.get_record("n1").unwrap().unwrap().meeting_id, None);
+        // Purge with the linked items.
+        db.trash_meetings(&["m2".into()], 9500).unwrap();
+        assert_eq!(db.purge_meetings(&["m2".into()], true).unwrap(), 1);
+        assert!(db.get_record("n2").unwrap().is_none());
+        assert_eq!(db.list_trash().unwrap().len(), 0);
+        assert_eq!(db.schema_version(), MIGRATIONS.len() as i64);
+    }
 }
+

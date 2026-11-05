@@ -1797,3 +1797,13 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .app .rail { background: linear-gradient(180deg, #262c3d 0%, #1d2230 100%); border-right-color: #161a26; } :root:not([data-theme="light"]) .app .rail-foot { background: #212636; } }
 :root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #262c3d 0%, #1d2230 100%); border-right-color: #161a26; }
 :root[data-theme="dark"] .app .rail-foot { background: #212636; }
+
+/* Trash and bulk actions in Session history */
+.history-view { align-self: flex-start; margin: 0 0 var(--s-2); }
+.history-bulk { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; padding: 6px 2px 8px; }
+.history-list li { display: flex; align-items: flex-start; gap: 6px; }
+.history-list li > button { flex: 1; min-width: 0; }
+.history-check { width: 18px; height: 18px; margin-top: 14px; flex: none; accent-color: var(--c-signal); }
+.undo-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 18px; background: var(--c-text); color: var(--c-surface); border-radius: 12px; box-shadow: 0 14px 40px -14px rgba(0, 0, 0, 0.5); }
+.undo-toast .btn { background: var(--c-surface); color: var(--c-text); }
+.undo-toast .btn-ghost { background: none; color: inherit; border-color: transparent; }

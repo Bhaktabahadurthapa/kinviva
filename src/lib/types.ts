@@ -149,6 +149,7 @@ export interface MeetingSummary {
   course_id?: string | null;
   course_name?: string | null;
   week?: number | null;
+  deleted_at?: number | null;
 }
 
 export interface AiMessage {

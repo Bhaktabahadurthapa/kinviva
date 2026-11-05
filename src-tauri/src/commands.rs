@@ -462,6 +462,48 @@ pub fn rename_meeting(state: State<AppState>, id: String, title: String) -> R<()
 }
 
 #[tauri::command]
+pub fn list_trash(state: State<AppState>) -> R<Vec<MeetingSummary>> {
+    state.db.list_trash()
+}
+
+/// Moves sessions to the Trash (they can be restored).
+#[tauri::command]
+pub async fn trash_meetings(state: State<'_, AppState>, ids: Vec<String>) -> R<usize> {
+    if let Some(active) = state.session.lock().await.as_ref().map(|s| s.meeting_id.clone()) {
+        if ids.contains(&active) {
+            return Err("Stop the running meeting before deleting it.".into());
+        }
+    }
+    state.db.trash_meetings(&ids, now_ms())
+}
+
+#[tauri::command]
+pub fn restore_meetings(state: State<AppState>, ids: Vec<String>) -> R<usize> {
+    state.db.restore_meetings(&ids)
+}
+
+/// Erases sessions in the Trash for good, with their saved audio. Sessions not in the Trash are never touched.
+#[tauri::command]
+pub fn purge_meetings(state: State<AppState>, ids: Vec<String>, with_linked: bool) -> R<usize> {
+    let doomed = state.db.trashed_ids(&ids, false)?;
+    let n = state.db.purge_meetings(&doomed, with_linked)?;
+    for id in &doomed {
+        let _ = std::fs::remove_dir_all(state.data_dir.join("recordings").join(id));
+    }
+    Ok(n)
+}
+
+#[tauri::command]
+pub fn empty_trash(state: State<AppState>, with_linked: bool) -> R<usize> {
+    let all = state.db.trashed_ids(&[], true)?;
+    let n = state.db.purge_meetings(&all, with_linked)?;
+    for id in &all {
+        let _ = std::fs::remove_dir_all(state.data_dir.join("recordings").join(id));
+    }
+    Ok(n)
+}
+
+#[tauri::command]
 pub async fn delete_meeting(state: State<'_, AppState>, id: String) -> R<()> {
     if state.session.lock().await.as_ref().map(|s| s.meeting_id == id).unwrap_or(false) {
         return Err("Stop the meeting before deleting it.".into());

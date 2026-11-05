@@ -282,7 +282,7 @@ impl Db {
                         (SELECT COUNT(*) FROM segments s WHERE s.meeting_id = m.id),
                         (SELECT COUNT(*) FROM records r WHERE r.kind = 'note' AND r.meeting_id = m.id),
                         (SELECT COUNT(*) FROM diagrams d WHERE d.meeting_id = m.id)
-                 FROM meetings m WHERE m.is_demo = 0 ORDER BY m.started_at DESC LIMIT 6",
+                 FROM meetings m WHERE m.is_demo = 0 AND m.deleted_at IS NULL ORDER BY m.started_at DESC LIMIT 6",
             )
             .map_err(e)?;
         let recent = stmt
@@ -291,7 +291,7 @@ impl Db {
             .collect::<Result<Vec<_>, _>>()
             .map_err(e)?;
         Ok(Stats {
-            sessions: n("SELECT COUNT(*) FROM meetings WHERE is_demo = 0"),
+            sessions: n("SELECT COUNT(*) FROM meetings WHERE is_demo = 0 AND deleted_at IS NULL"),
             interviews: n("SELECT COUNT(*) FROM interview_entries"),
             notes: n("SELECT COUNT(*) FROM records WHERE kind = 'note'"),
             diagrams: n("SELECT COUNT(*) FROM diagrams"),
@@ -303,7 +303,7 @@ impl Db {
             learning_done: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill') AND status = 'done'"),
             learning_doing: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill') AND status = 'doing'"),
             saved_articles: n("SELECT COUNT(*) FROM discover_items WHERE saved = 1"),
-            sessions_week: n(&format!("SELECT COUNT(*) FROM meetings WHERE is_demo = 0 AND started_at >= {since}")),
+            sessions_week: n(&format!("SELECT COUNT(*) FROM meetings WHERE is_demo = 0 AND deleted_at IS NULL AND started_at >= {since}")),
             notes_week: n(&format!("SELECT COUNT(*) FROM records WHERE kind = 'note' AND created_at >= {since}")),
             diagrams_week: n(&format!("SELECT COUNT(*) FROM diagrams WHERE created_at >= {since}")),
             whiteboards_week: n(&format!("SELECT COUNT(*) FROM records WHERE kind = 'board' AND created_at >= {since}")),
@@ -335,8 +335,8 @@ impl Db {
                 }
                 Ok(())
             };
-            run("SELECT id, title, notes, started_at FROM meetings WHERE is_demo = 0 AND (title LIKE ?1 OR notes LIKE ?1) ORDER BY started_at DESC LIMIT ?2", "session", 2)?;
-            run("SELECT m.id, m.title, s.text, m.started_at FROM segments s JOIN meetings m ON m.id = s.meeting_id WHERE m.is_demo = 0 AND s.text LIKE ?1 GROUP BY m.id ORDER BY m.started_at DESC LIMIT ?2", "transcript", 2)?;
+            run("SELECT id, title, notes, started_at FROM meetings WHERE is_demo = 0 AND deleted_at IS NULL AND (title LIKE ?1 OR notes LIKE ?1) ORDER BY started_at DESC LIMIT ?2", "session", 2)?;
+            run("SELECT m.id, m.title, s.text, m.started_at FROM segments s JOIN meetings m ON m.id = s.meeting_id WHERE m.is_demo = 0 AND m.deleted_at IS NULL AND s.text LIKE ?1 GROUP BY m.id ORDER BY m.started_at DESC LIMIT ?2", "transcript", 2)?;
             run("SELECT id, title, body, updated_at FROM records WHERE kind = 'note' AND (title LIKE ?1 OR body LIKE ?1) ORDER BY updated_at DESC LIMIT ?2", "note", 2)?;
             run("SELECT id, title, body, updated_at FROM records WHERE kind = 'incident' AND (title LIKE ?1 OR body LIKE ?1) ORDER BY updated_at DESC LIMIT ?2", "incident", 2)?;
             run("SELECT id, title, '', updated_at FROM records WHERE kind = 'board' AND title LIKE ?1 ORDER BY updated_at DESC LIMIT ?2", "whiteboard", 2)?;

@@ -17,12 +17,22 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
   const [title, setTitle] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [dec, setDec] = useState(false);
+  const [view, setView] = useState<"sessions" | "trash">("sessions");
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [trashCount, setTrashCount] = useState(0);
+  const [ask, setAsk] = useState<{ ids: string[]; all: boolean } | null>(null);
+  const [linked, setLinked] = useState(false);
+  const [undo, setUndo] = useState<string[] | null>(null);
+  const inTrash = view === "trash";
 
-  const load = () => api.listMeetings(search).then(setList).catch((e) => onError(errorText(e)));
+  const load = () => {
+    (inTrash ? api.listTrash() : api.listMeetings(search)).then((l) => { setList(l); setChecked(new Set()); }).catch((e) => onError(errorText(e)));
+    api.listTrash().then((t) => setTrashCount(t.length)).catch(() => {});
+  };
   useEffect(() => {
     const t = setTimeout(load, 200);
     return () => clearTimeout(t);
-  }, [search, refreshKey]);
+  }, [search, refreshKey, view]);
 
   const open = async (id: string) => {
     try {
@@ -30,6 +40,40 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
       setSel(d);
       setTitle(d.meeting.title);
       setMsg(null);
+    } catch (e) {
+      onError(errorText(e));
+    }
+  };
+
+  const trash = async (ids: string[]) => {
+    try {
+      await api.trashMeetings(ids);
+      setSel(null);
+      setUndo(ids);
+      load();
+    } catch (e) {
+      onError(errorText(e));
+    }
+  };
+  const restore = async (ids: string[]) => {
+    try {
+      await api.restoreMeetings(ids);
+      setSel(null);
+      setUndo(null);
+      load();
+    } catch (e) {
+      onError(errorText(e));
+    }
+  };
+  const purge = async () => {
+    if (!ask) return;
+    try {
+      const n = ask.all ? await api.emptyTrash(linked) : await api.purgeMeetings(ask.ids, linked);
+      setMsg(`${n} session${n === 1 ? "" : "s"} deleted permanently.`);
+      setAsk(null);
+      setLinked(false);
+      setSel(null);
+      load();
     } catch (e) {
       onError(errorText(e));
     }
@@ -50,6 +94,19 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
   return (
     <div className="history">
       <aside className="history-list">
+        <div className="seg history-view" role="tablist" aria-label="Sessions or Trash">
+          <button role="tab" aria-selected={!inTrash} className={!inTrash ? "active" : ""} onClick={() => { setView("sessions"); setSel(null); }}>Sessions</button>
+          <button role="tab" aria-selected={inTrash} className={inTrash ? "active" : ""} onClick={() => { setView("trash"); setSel(null); }}>Trash{trashCount ? ` (${trashCount})` : ""}</button>
+        </div>
+        {list.length > 0 && (
+          <div className="history-bulk">
+            <label className="check"><input type="checkbox" checked={checked.size === list.length} onChange={(e) => setChecked(e.target.checked ? new Set(list.map((m) => m.id)) : new Set())} /> {checked.size ? `${checked.size} selected` : "Select all"}</label>
+            {checked.size > 0 && !inTrash && <button className="btn btn-sm btn-danger" onClick={() => void trash([...checked])}>Move to Trash</button>}
+            {checked.size > 0 && inTrash && <button className="btn btn-sm" onClick={() => void restore([...checked])}>Restore</button>}
+            {checked.size > 0 && inTrash && <button className="btn btn-sm btn-danger" onClick={() => setAsk({ ids: [...checked], all: false })}>Delete permanently</button>}
+            {inTrash && checked.size === 0 && <button className="btn btn-sm btn-danger" onClick={() => setAsk({ ids: list.map((m) => m.id), all: true })}>Empty Trash</button>}
+          </div>
+        )}
         <div className="history-tools">
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles, notes, transcripts" aria-label="Search meetings" />
           <button
@@ -64,10 +121,12 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
             + Demo
           </button>
         </div>
-        {list.length === 0 && <p className="empty">No saved meetings yet.</p>}
+        {list.length === 0 && <p className="empty">{inTrash ? "The Trash is empty." : "No saved meetings yet."}</p>}
+        {inTrash && list.length > 0 && <p className="hint">Sessions here are hidden everywhere. Restore them, or delete them permanently to erase their transcript, notes and saved audio.</p>}
         <ul>
           {list.map((m) => (
             <li key={m.id} className={sel?.meeting.id === m.id ? "active" : ""}>
+              <input type="checkbox" className="history-check" aria-label={`Select ${m.title}`} checked={checked.has(m.id)} onChange={(e) => setChecked((c) => { const n = new Set(c); if (e.target.checked) n.add(m.id); else n.delete(m.id); return n; })} />
               <button onClick={() => open(m.id)}>
                 <span className="t">
                   {m.is_demo && <span className="tag-demo">DEMO</span>} {m.title}
@@ -106,21 +165,9 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
                 >
                   Open in assistant
                 </button>
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={async () => {
-                    if (!confirm(`Delete “${sel.meeting.title}” permanently?`)) return;
-                    try {
-                      await api.deleteMeeting(sel.meeting.id);
-                      setSel(null);
-                      load();
-                    } catch (e) {
-                      onError(errorText(e));
-                    }
-                  }}
-                >
-                  Delete
-                </button>
+                {!inTrash && <button className="btn btn-sm btn-danger" onClick={() => void trash([sel.meeting.id])}>Move to Trash</button>}
+                {inTrash && <button className="btn btn-sm" onClick={() => void restore([sel.meeting.id])}>Restore</button>}
+                {inTrash && <button className="btn btn-sm btn-danger" onClick={() => setAsk({ ids: [sel.meeting.id], all: false })}>Delete permanently</button>}
               </div>
             </header>
             {sel.meeting.is_demo && <div className="banner banner-demo">DEMO DATA — generated sample, not a real meeting.</div>}
@@ -154,6 +201,26 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
         )}
       </section>
       {dec && sel && <DecisionsDialog meetingId={sel.meeting.id} onClose={() => setDec(false)} onError={onError} onSaved={() => {}} />}
+      {undo && !inTrash && (
+        <div className="undo-toast" role="status">
+          Moved {undo.length} session{undo.length === 1 ? "" : "s"} to the Trash.
+          <button className="btn btn-sm" onClick={() => void restore(undo)}>Undo</button>
+          <button className="btn btn-ghost btn-sm" aria-label="Dismiss" onClick={() => setUndo(null)}>✕</button>
+        </div>
+      )}
+      {ask && (
+        <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && setAsk(null)}>
+          <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="purge-title" style={{ textAlign: "left" }}>
+            <h2 id="purge-title" style={{ textAlign: "center" }}>{ask.all ? "Empty the Trash?" : `Delete ${ask.ids.length} session${ask.ids.length === 1 ? "" : "s"} permanently?`}</h2>
+            <p className="dialog-sub" style={{ textAlign: "center" }}>This erases the transcript, answers and any saved audio from this computer. It cannot be undone.</p>
+            <label className="check" style={{ margin: "0 0 16px" }}><input type="checkbox" checked={linked} onChange={(e) => setLinked(e.target.checked)} /> Also delete the notes, diagrams and boards saved from {ask.ids.length === 1 && !ask.all ? "this session" : "these sessions"}</label>
+            <div className="dialog-actions">
+              <button className="btn" onClick={() => setAsk(null)}>Cancel</button>
+              <button className="btn btn-danger" onClick={() => void purge()}>Delete permanently</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
