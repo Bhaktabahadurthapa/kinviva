@@ -116,6 +116,57 @@ const MIGRATIONS: &[&str] = &[
     CREATE INDEX diagrams_time ON diagrams(created_at);
     CREATE INDEX diagrams_meeting ON diagrams(meeting_id);
     "#,
+    // 6: notes, whiteboards, charts and incidents (one generic table), learning, discover
+    r#"
+    CREATE TABLE records (
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL DEFAULT '',
+        meta TEXT,
+        meeting_id TEXT REFERENCES meetings(id) ON DELETE SET NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+    );
+    CREATE INDEX records_kind ON records(kind, updated_at);
+    CREATE TABLE learning_items (
+        id TEXT PRIMARY KEY,
+        kind TEXT NOT NULL,
+        title TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'todo',
+        parent_id TEXT,
+        source TEXT,
+        url TEXT,
+        detail TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        completed_at INTEGER
+    );
+    CREATE TABLE quiz_attempts (
+        id TEXT PRIMARY KEY,
+        topic TEXT NOT NULL,
+        total INTEGER NOT NULL,
+        correct INTEGER NOT NULL,
+        created_at INTEGER NOT NULL
+    );
+    CREATE TABLE discover_items (
+        id TEXT PRIMARY KEY,
+        url TEXT UNIQUE NOT NULL,
+        title TEXT NOT NULL,
+        source TEXT NOT NULL,
+        summary TEXT,
+        published_at INTEGER,
+        fetched_at INTEGER NOT NULL,
+        topic TEXT,
+        kind TEXT NOT NULL,
+        score REAL NOT NULL DEFAULT 0,
+        stars INTEGER,
+        language TEXT,
+        is_read INTEGER NOT NULL DEFAULT 0,
+        saved INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX discover_time ON discover_items(published_at);
+    "#,
 ];
 
 #[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]
@@ -135,7 +186,7 @@ pub struct DiagramRecord {
 }
 
 pub struct Db {
-    conn: Mutex<Connection>,
+    pub(crate) conn: Mutex<Connection>,
 }
 
 #[derive(Debug, Clone, Serialize)]

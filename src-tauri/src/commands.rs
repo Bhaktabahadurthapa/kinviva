@@ -220,6 +220,122 @@ pub async fn architecture_generate(state: State<'_, AppState>, request_id: Strin
     }
 }
 
+fn now_ms() -> i64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
+}
+
+/// Structured Copilot tools (technical explanations, troubleshooting plans, decisions, study
+/// material, learning plans and so on). The result is validated before it is returned.
+#[tauri::command]
+pub async fn studio_generate(state: State<'_, AppState>, request_id: String, kind: String, input: Option<String>, meeting_id: Option<String>) -> R<String> {
+    let kind = crate::studio::Kind::parse(&kind).ok_or("Unknown tool.")?;
+    let settings = state.settings();
+    let mut cfg = assistant::llm_config(&state)?;
+    cfg.json_mode = kind.is_json();
+    let input = input.unwrap_or_default();
+    let (transcript, notes) = match meeting_id.as_deref() {
+        Some(id) => {
+            let d = state.db.get_meeting(id)?;
+            let text = d.segments.iter().map(|s| format!("{}: {}", s.source.speaker_label(), s.text)).collect::<Vec<_>>().join("\n");
+            (text.chars().rev().take(settings.context_chars * 3).collect::<Vec<_>>().into_iter().rev().collect::<String>(), d.notes)
+        }
+        None => {
+            let live = state.live.lock().unwrap();
+            (live.transcript.recent_window(settings.context_chars * 2), live.notes.clone())
+        }
+    };
+    if kind.needs_transcript() && transcript.trim().is_empty() {
+        return Err("Nothing has been transcribed yet. Start a session or open a saved one first.".into());
+    }
+    if !kind.needs_transcript() && transcript.trim().is_empty() && input.trim().is_empty() {
+        return Err("Type or paste something to work from first.".into());
+    }
+    let passages = if settings.use_documents {
+        let tail: String = transcript.chars().rev().take(600).collect::<Vec<_>>().into_iter().rev().collect();
+        state.db.search_passages(&crate::docs::fts_query(&format!("{input} {tail}"), 14), 6).unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let messages = crate::studio::build_messages(kind, &transcript, &notes, &passages, &input);
+    let cancel = tokio_util::sync::CancellationToken::new();
+    state.ai_tasks.lock().unwrap().insert(request_id.clone(), cancel.clone());
+    let result = crate::llm::stream_chat(&cfg, messages, cancel, |_| {}).await;
+    state.ai_tasks.lock().unwrap().remove(&request_id);
+    match result {
+        Ok(text) => crate::studio::post(kind, &text, &transcript),
+        Err(crate::llm::LlmError::Cancelled) => Err("Cancelled.".into()),
+        Err(crate::llm::LlmError::Failed(m)) => Err(m),
+    }
+}
+
+#[tauri::command]
+pub fn record_save(state: State<AppState>, record: crate::store::Record) -> R<crate::store::Record> {
+    state.db.save_record(&record, now_ms())
+}
+
+#[tauri::command]
+pub fn record_list(state: State<AppState>, kind: String, search: Option<String>, meeting_id: Option<String>, with_body: Option<bool>) -> R<Vec<crate::store::Record>> {
+    state.db.list_records(&kind, search.as_deref(), meeting_id.as_deref(), with_body.unwrap_or(true), 300)
+}
+
+#[tauri::command]
+pub fn record_get(state: State<AppState>, id: String) -> R<Option<crate::store::Record>> {
+    state.db.get_record(&id)
+}
+
+#[tauri::command]
+pub fn record_delete(state: State<AppState>, id: String) -> R<()> {
+    state.db.delete_record(&id)
+}
+
+/// Saves a restorable copy of a whiteboard (the newest 30 are kept).
+#[tauri::command]
+pub fn board_snapshot(state: State<AppState>, board_id: String, label: String, scene: String) -> R<()> {
+    let rec = crate::store::Record { id: uuid::Uuid::new_v4().to_string(), kind: "board_rev".into(), title: label.chars().take(120).collect(), body: scene, meta: Some(board_id.clone()), meeting_id: None, created_at: 0, updated_at: 0 };
+    state.db.save_record(&rec, now_ms())?;
+    state.db.trim_revisions(&board_id, 30)
+}
+
+#[tauri::command]
+pub fn board_revisions(state: State<AppState>, board_id: String) -> R<Vec<crate::store::Record>> {
+    state.db.list_revisions(&board_id)
+}
+
+#[tauri::command]
+pub fn learning_list(state: State<AppState>) -> R<Vec<crate::store::LearningItem>> {
+    state.db.list_learning()
+}
+
+#[tauri::command]
+pub fn learning_save(state: State<AppState>, item: crate::store::LearningItem) -> R<crate::store::LearningItem> {
+    state.db.save_learning(&item, now_ms())
+}
+
+#[tauri::command]
+pub fn learning_delete(state: State<AppState>, id: String) -> R<()> {
+    state.db.delete_learning(&id)
+}
+
+#[tauri::command]
+pub fn quiz_record(state: State<AppState>, topic: String, total: i64, correct: i64) -> R<()> {
+    state.db.add_quiz_attempt(&topic, total, correct, now_ms())
+}
+
+#[tauri::command]
+pub fn quiz_stats(state: State<AppState>) -> R<crate::store::QuizStats> {
+    state.db.quiz_stats()
+}
+
+#[tauri::command]
+pub fn dashboard_stats(state: State<AppState>) -> R<crate::store::Stats> {
+    state.db.stats()
+}
+
+#[tauri::command]
+pub fn global_search(state: State<AppState>, query: String) -> R<Vec<crate::store::SearchHit>> {
+    state.db.global_search(&query, 6)
+}
+
 #[tauri::command]
 pub fn architecture_save(state: State<AppState>, diagram: crate::db::DiagramRecord) -> R<()> {
     // Limits keep one saved diagram small; the front end already validated the source.

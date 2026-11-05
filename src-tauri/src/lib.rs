@@ -21,6 +21,8 @@ pub mod settings;
 pub mod skills;
 pub mod shortcuts;
 pub mod state;
+pub mod store;
+pub mod studio;
 pub mod stt;
 pub mod transcript;
 pub mod websearch;
@@ -183,6 +185,20 @@ pub fn run() {
             commands::ai_cancel,
             commands::interview_run,
             commands::architecture_generate,
+            commands::studio_generate,
+            commands::record_save,
+            commands::record_list,
+            commands::record_get,
+            commands::record_delete,
+            commands::board_snapshot,
+            commands::board_revisions,
+            commands::learning_list,
+            commands::learning_save,
+            commands::learning_delete,
+            commands::quiz_record,
+            commands::quiz_stats,
+            commands::dashboard_stats,
+            commands::global_search,
             commands::architecture_save,
             commands::architecture_list,
             commands::architecture_delete,

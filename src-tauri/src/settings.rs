@@ -29,6 +29,12 @@ impl Default for Shortcuts {
 #[serde(default)]
 pub struct Settings {
     pub onboarded: bool,
+    // Profile (used by Discover and My Learning; stays on this computer)
+    pub profile_role: String,
+    pub profile_level: String,
+    pub interests: Vec<String>,
+    /// Discover contacts the internet only after the user turns it on.
+    pub discover_enabled: bool,
     // Audio
     pub capture_mic: bool,
     pub capture_system: bool,
@@ -74,6 +80,10 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             onboarded: false,
+            profile_role: String::new(),
+            profile_level: "intermediate".into(),
+            interests: Vec::new(),
+            discover_enabled: false,
             capture_mic: true,
             capture_system: true,
             mic_device: None,
