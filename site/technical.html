@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Technical Copilot · MeetingLens</title>
+  <meta name="description" content="Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Technical Copilot · MeetingLens">
+  <meta property="og:description" content="Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.">
+  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/v2-troubleshoot.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#232a40">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script>document.documentElement.className = "js";</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="MeetingLens home"><img src="logo.svg" width="34" height="34" alt=""><span>Meeting<em>Lens</em></span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
+      <nav id="site-nav" aria-label="Primary">
+        <a href="features.html">Features</a>
+        <a href="technical.html" aria-current="page">Technical</a>
+        <a href="whiteboard.html">Whiteboard</a>
+        <a href="discover.html">Discover</a>
+        <a href="interview.html">Interview</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="video.html">Video</a>
+        <a class="btn btn-primary btn-small" href="download.html">Download</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <div class="page-head"><div class="wrap"><p class="eyebrow">Technical Copilot</p><h1>Understand and solve engineering problems, safely.</h1><p class="lead">For Kubernetes, AWS, Azure, Linux, networking, Terraform, CI/CD, databases, monitoring and more. It explains, it plans, it draws, and it never touches your systems.</p><nav class="toc" aria-label="On this page"><a href="#explain">Explain</a><a href="#troubleshoot">Troubleshoot</a><a href="#incidents">Incidents</a><a href="#architecture">Architecture</a></nav></div></div>
+    <section><div class="wrap"><div class="notice"><b>About versions</b><p>The installer you can download today is <b>0.1.4</b>. The new workspace on these pages (Dashboard, Technical Copilot, Whiteboard, Discover, My Learning and more) is built and in the source code, and arrives in the next installer, <b>0.1.5</b>. Each feature below says which one it belongs to.</p></div></div></section>
+    <section id="explain" style="padding-top:20px;padding-bottom:20px"><div class="wrap"><div class="grid g3">
+      <article class="card reveal"><span class="ico t-teal"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></span><span class="badge b-next">New in 0.1.5</span><h3>Explain a term or a point</h3><p>Paste a command, an error or a design question, or leave it empty to explain the latest technical point from the conversation.</p></article>
+      <article class="card reveal"><span class="ico t-blue"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V6a2 2 0 0 1 2-2h14v14H5a2 2 0 0 0-2 2zM8 8h7M8 12h5"/></svg></span><span class="badge b-next">New in 0.1.5</span><h3>Simple words first, then depth</h3><p>A short plain explanation, then how it works with an example and one common mistake, and the key terms in a word list.</p></article>
+      <article class="card reveal"><span class="ico t-rose"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v10H9l-5 4zM8 9h8M8 12h5"/></svg></span><span class="badge b-next">New in 0.1.5</span><h3>Covers the stack</h3><p>Kubernetes, AWS, Azure, Linux, networking, Terraform, CI/CD, DevSecOps, SRE, monitoring, databases, microservices, AI agents and MCP.</p></article>
+    </div></div></section>
+    <section id="troubleshoot" style="padding-top:20px"><div class="wrap">
+        <div class="spot reveal">
+          <div class="spot-text"><p class="eyebrow">Troubleshoot</p><span class="badge b-next">New in 0.1.5</span><h2>A plan you can trust, not a guess.</h2><p class="lead">Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.</p><ul><li>Causes are labelled <b>hypotheses, not confirmed</b></li><li>Each command shows its purpose, what to expect and a risk level</li><li>A command that could change anything is <b>removed and counted</b></li><li>MeetingLens <b>never runs a command</b>. You review it and run it yourself</li><li>Save the plan to notes, or track it as an incident</li></ul></div>
+          <figure class="shot"><img src="media/v2-troubleshoot.jpg" alt="A troubleshooting plan with hypotheses and read-only commands" loading="lazy" width="1800" height="1125"><figcaption>Sample data</figcaption></figure>
+        </div>
+      </div></section>
+    <section class="alt"><div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Safety rules</p><h2>What counts as read-only.</h2><p class="lead">A command is kept only if it looks at things without changing them. The check is code, not the model, and it is tested against dozens of examples.</p></div>
+      <table class="table reveal"><thead><tr><th>Kept</th><th>Removed</th></tr></thead><tbody>
+        <tr><td><code>kubectl get pods -n prod</code><br><code>kubectl describe pod web-1</code><br><code>kubectl logs deploy/api --tail=100</code></td><td><code>kubectl delete pod web-1</code><br><code>kubectl apply -f x.yaml</code><br><code>kubectl rollout restart deploy/api</code></td></tr>
+        <tr><td><code>aws ec2 describe-instances</code><br><code>az aks show -n c1 -g rg1</code></td><td><code>aws ec2 terminate-instances</code><br><code>terraform apply</code> · <code>terraform destroy</code></td></tr>
+        <tr><td><code>dig example.com</code> · <code>ss -tulpn</code> · <code>df -h</code> · <code>ping -c 3 host</code></td><td>Anything with <code>sudo</code>, pipes, redirects, chaining, <code>rm</code>, or an endless <code>ping</code> or <code>tail -f</code></td></tr>
+      </tbody></table>
+    </div></section>
+    <section id="incidents"><div class="wrap">
+      <div class="grid g2">
+        <article class="card reveal"><span class="ico t-rose"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2zM12 10v5M12 18h.01"/></svg></span><span class="badge b-next">New in 0.1.5</span><h3>Incident tracker</h3><p>Keep symptoms, hypotheses, evidence, investigative actions, decisions, open questions and follow-ups in one place. Fill it from the conversation, and it only adds what people actually said.</p></article>
+        <article class="card reveal"><span class="ico t-green"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/></svg></span><span class="badge b-next">New in 0.1.5</span><h3>Never a root cause without evidence</h3><p>The root cause field stays locked until one hypothesis is marked supported and some evidence is recorded. A wrong confident answer is worse than no answer.</p></article>
+      </div>
+    </div></section>
+    <section class="alt" id="architecture"><div class="wrap">
+        <div class="spot reveal flip">
+          <div class="spot-text"><p class="eyebrow">Architecture</p><span class="badge b-next">New in 0.1.5</span><h2>Draw the system people describe.</h2><p class="lead">Say it out loud: a load balancer, an ingress controller, Kubernetes services and PostgreSQL. MeetingLens drafts the diagram and explains it in simple words.</p><ul><li>Flowcharts and sequence diagrams from the conversation</li><li>Zoom, pan, full screen, edit the Mermaid source, export SVG or PNG</li><li>Saved with your session, with plain-English concerns such as single points of failure</li><li>Updates while you talk, only after a quiet moment and never more than every 45 seconds</li></ul></div>
+          <figure class="shot"><img src="media/v2-architecture.jpg" alt="An architecture diagram of a load balancer, ingress, services and a database with an explanation panel" loading="lazy" width="1800" height="1125"><figcaption>Sample data</figcaption></figure>
+        </div>
+
+      <div class="sec-head center" style="margin-top:80px"><h2>Facts and guesses are never mixed.</h2><p class="lead">The label on each part is decided by code that checks the transcript and your documents.</p></div>
+      <div class="legend reveal"><div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div><div class="ev m"><b>Mentioned</b><p>The conversation used those words.</p></div><div class="ev i"><b>Inferred</b><p>MeetingLens suggests it. Dashed, with a warning when there is little evidence.</p></div></div>
+      <div class="grid g2" style="margin-top:20px">
+        <article class="card reveal"><span class="ico t-purple"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3"/></svg></span><h3>Locked down</h3><p>Diagram source is checked before it is drawn: no links, scripts, HTML or directives, and a size limit. The picture is cleaned again before it is shown.</p></article>
+        <article class="card reveal"><span class="ico t-teal"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4"/></svg></span><h3>Illustrative when thin</h3><p>If there is little evidence, the diagram is clearly marked illustrative and confidence is lowered.</p></article>
+      </div>
+    </div></section>
+    <section><div class="wrap"><div class="cta-band reveal"><h2>Bring a real problem.</h2><p class="lead">Download MeetingLens for Mac or Windows. No account, no subscription.</p><a class="btn btn-primary btn-big" href="download.html">Download MeetingLens</a></div></div></section>
+  </main>
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>MeetingLens</b></p>
+          <p>Hear it. Understand it. Visualize it. Keep it.</p>
+          <p>Local-first, free, with no account.</p>
+        </div>
+        <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; learning</a></div>
+        <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
+        <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
+      </div>
+      <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use MeetingLens within the rules of your school, employer and local law on recording.</p>
+    </div>
+  </footer>
+  <script src="site.js"></script>
+</body>
+</html>

@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Interview · MeetingLens</title>
-  <meta name="description" content="MeetingLens Interview mode: automatic answers to the interviewer&#x27;s questions, answer styles, mock practice and downloadable practice notes.">
+  <meta name="description" content="Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Interview · MeetingLens">
-  <meta property="og:description" content="MeetingLens Interview mode: automatic answers to the interviewer&#x27;s questions, answer styles, mock practice and downloadable practice notes.">
-  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/app-live.jpg">
+  <meta property="og:description" content="Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.">
+  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/v2-interview.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#0b1530">
+  <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script>document.documentElement.className = "js";</script>
@@ -19,93 +19,73 @@
   <a class="skip" href="#main">Skip to content</a>
   <header class="nav">
     <div class="wrap">
-      <a class="brand" href="index.html" aria-label="MeetingLens home"><img src="logo.svg" width="32" height="32" alt=""><span>Meeting<em>Lens</em></span></a>
+      <a class="brand" href="index.html" aria-label="MeetingLens home"><img src="logo.svg" width="34" height="34" alt=""><span>Meeting<em>Lens</em></span></a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
       <nav id="site-nav" aria-label="Primary">
         <a href="features.html">Features</a>
+        <a href="technical.html">Technical</a>
+        <a href="whiteboard.html">Whiteboard</a>
+        <a href="discover.html">Discover</a>
         <a href="interview.html" aria-current="page">Interview</a>
-        <a href="video.html">Video</a>
         <a href="privacy.html">Privacy</a>
-        <a href="https://github.com/Bhaktabahadurthapa/meetinglens">GitHub</a>
-        <a class="btn btn-small" href="download.html">Download</a>
+        <a href="video.html">Video</a>
+        <a class="btn btn-primary btn-small" href="download.html">Download</a>
       </nav>
     </div>
   </header>
   <main id="main">
-    <section class="page-hero">
-      <div class="wrap">
-        <p class="eyebrow">Interview</p>
-        <h1>Practice, and answer, like an expert.</h1>
-        <p class="lead">Interview has its own screen. Start it, and each question the interviewer asks is answered as it is asked, in the style you choose.</p>
-      </div>
-    </section>
-    <section>
-      <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Answer styles</p><h2>One question, four ways to answer it.</h2><p class="lead">The sample question is: <em>"Design a multi-tenant CI/CD platform for internal teams. Focus on isolation, security and cost."</em></p></div>
-        <div class="style-demo" data-tabs>
-          <div class="tablist row" role="tablist" aria-label="Answer style">
-            <button type="button" role="tab" id="st-simple" aria-controls="sp-simple" aria-selected="true" tabindex="0"><b>Simple</b><small>Short, clear, everyday words.</small></button>
-            <button type="button" role="tab" id="st-professional" aria-controls="sp-professional" aria-selected="false" tabindex="-1"><b>Professional</b><small>Natural and confident.</small></button>
-            <button type="button" role="tab" id="st-technical" aria-controls="sp-technical" aria-selected="false" tabindex="-1"><b>Technical</b><small>More engineering depth, still plain words.</small></button>
-            <button type="button" role="tab" id="st-star" aria-controls="sp-star" aria-selected="false" tabindex="-1"><b>STAR</b><small>For behavioral questions. Uses only your own notes.</small></button>
-          </div>
-          <div class="answer-card" role="tabpanel" id="sp-simple" aria-labelledby="st-simple"><p class="label">Say it</p><p class="answer">I would give each team its own walled-off space with its own build workers and secrets. Then I would set limits and show each team its bill. It takes more setup, but it is safer and cheaper to run.</p></div>
-          <div class="answer-card" role="tabpanel" id="sp-professional" aria-labelledby="st-professional" hidden><p class="label">Say it</p><p class="answer">I would isolate each team in its own namespace and cloud account, with separate runners and secrets, so one team cannot affect another. I would add per-team quotas and cost reports to keep spending under control. The trade-off is more setup per team, which I accept for the security it buys.</p></div>
-          <div class="answer-card" role="tabpanel" id="sp-technical" aria-labelledby="st-technical" hidden><p class="label">Say it</p><p class="answer">One namespace and one cloud account or subscription per team, with its own roles and short-lived credentials. Build runners are ephemeral and auto-scale, builds are signed, and a policy check gates every deploy. Quotas and a monthly cost report per team cap spend. I would verify isolation with a test that one team&#x27;s runner cannot read another team&#x27;s secrets.</p></div>
-          <div class="answer-card" role="tabpanel" id="sp-star" aria-labelledby="st-star" hidden><p class="label">Say it</p><p class="answer">Situation: [from your notes] Task: [from your notes] Action: [from your notes] Result: [from your notes]. If your notes do not hold the facts, MeetingLens does not invent any. It tells you what to fill in from your real experience.</p></div>
+    <div class="page-head"><div class="wrap"><p class="eyebrow">Interview</p><h1>Practise, and answer, like an expert.</h1><p class="lead">Interview has its own screen. Start it, and each question the interviewer asks is answered as it is asked, in the style you choose.</p></div></div>
+    <section><div class="wrap">
+        <div class="spot reveal">
+          <div class="spot-text"><p class="eyebrow">Interview</p><span class="badge b-now">In the current installer</span><h2>The answer, and the reasoning behind it.</h2><p class="lead">Questions are detected from the other side's audio. Each answer has what to say, how to understand it, the trade-offs, hard words and a likely follow-up.</p><ul><li>Press <b>Start interview</b> and stay on the Interview screen</li><li><b>Ask, Explain, Suggest reply and Recap</b> are at the bottom of the answers (new in 0.1.5)</li><li><b>Notes</b> download as Word, Markdown or text</li><li>Use it for practice and preparation, and follow the rules of your interviewer or employer</li></ul></div>
+          <figure class="shot"><img src="media/v2-interview.jpg" alt="Interview screen with answer controls on the left and Say it and Understand it cards on the right" loading="lazy" width="1800" height="1125"><figcaption>Sample data</figcaption></figure>
         </div>
-        <p class="fine" style="margin-top:14px">These are written examples to show the styles. Real answers are written live by your AI model from your question, notes and documents.</p>
-      </div>
-    </section>
-    <section class="alt">
-      <div class="wrap show">
-        <div class="show-text">
-          <p class="eyebrow">How it works</p>
-          <h2>Start it and keep talking.</h2>
-          <ol class="flow">
-            <li><b>Press Start interview.</b> You stay on the Interview screen.</li>
-            <li><b>The interviewer asks.</b> The question is detected from the other side's audio.</li>
-            <li><b>The answer appears.</b> Say it, Understand it, Trade-offs, Hard words and the likely follow-up.</li>
-            <li><b>Keep notes.</b> Download your practice notes as Word, Markdown or text.</li>
-          </ol>
-          <p class="fine" style="margin-top:16px">Use it for practice and preparation, and follow the rules of your interviewer or employer.</p>
+      </div></section>
+    <section class="alt"><div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Answer styles</p><h2>One question, four ways to answer it.</h2><p class="lead">The sample question: “Design a multi-tenant CI/CD platform for internal teams. Focus on isolation, security and cost.”</p></div>
+      <div data-tabs>
+        <div class="tabs" role="tablist" aria-label="Answer style">
+          <button role="tab" id="tab-simple" aria-selected="true" aria-controls="p-simple">Simple</button>
+          <button role="tab" id="tab-pro" aria-selected="false" aria-controls="p-pro" tabindex="-1">Professional</button>
+          <button role="tab" id="tab-tech" aria-selected="false" aria-controls="p-tech" tabindex="-1">Technical</button>
+          <button role="tab" id="tab-star" aria-selected="false" aria-controls="p-star" tabindex="-1">STAR</button>
         </div>
-        <figure class="shot"><img src="media/app-interview.jpg" loading="lazy" width="1800" height="1125" alt="Interview screen with an answer, trade-offs and hard words."><figcaption>The Interview screen.</figcaption></figure>
+        <div id="p-simple" class="panel card" role="tabpanel" aria-labelledby="tab-simple"><p class="muted">Short, clear, everyday words.</p><h3>Say it</h3><p style="font-size:19px">I would give each team its own walled-off space with its own build workers and secrets. Then I would set limits and show each team its bill. It takes more setup, but it is safer and cheaper to run.</p></div>
+        <div id="p-pro" class="panel card" role="tabpanel" aria-labelledby="tab-pro" hidden><p class="muted">Natural and confident.</p><h3>Say it</h3><p style="font-size:19px">I would isolate each team in its own namespace and cloud account, with separate runners and secrets, so one team cannot affect another. I would add per-team quotas and cost reports to keep spending under control. The trade-off is more setup per team, which I accept for the security it buys.</p></div>
+        <div id="p-tech" class="panel card" role="tabpanel" aria-labelledby="tab-tech" hidden><p class="muted">More engineering depth, still plain words.</p><h3>Say it</h3><p style="font-size:19px">One namespace and one cloud account or subscription per team, with its own roles and short-lived credentials. Build runners are ephemeral and auto-scale, builds are signed, and a policy check gates every deploy. Quotas and a monthly cost report per team cap spend. I would verify isolation with a test that one team's runner cannot read another team's secrets.</p></div>
+        <div id="p-star" class="panel card" role="tabpanel" aria-labelledby="tab-star" hidden><p class="muted">For behavioral questions. Uses only your own notes.</p><h3>Say it</h3><p style="font-size:19px">Situation: [from your notes] Task: [from your notes] Action: [from your notes] Result: [from your notes]. If your notes do not hold the facts, MeetingLens does not invent any. It tells you what to fill in from your real experience.</p></div>
       </div>
-    </section>
-    <section>
-      <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Coaching skills</p><h2>Four areas, each with its own coach.</h2></div>
-        <div class="grid">
-          <article class="card"><h3>Cloud and DevOps</h3><p>Rollouts, CI/CD, Kubernetes, observability, incidents, security and cost.</p></article>
-          <article class="card"><h3>System design</h3><p>Requirements, scale, data, trade-offs and failure modes.</p></article>
-          <article class="card"><h3>AI engineering</h3><p>RAG, evaluation, hallucinations, latency, cost and safety.</p></article>
-          <article class="card"><h3>Coding</h3><p>Approach, complexity, code and tests in Python, Java or C++.</p></article>
-        </div>
-        <div class="grid" style="margin-top:22px">
-          <article class="card"><h3>Mock practice</h3><p>Get a question for your role, write your own answer, then get feedback on correctness, missing points, structure and clarity. Feedback is coaching, not a hiring score.</p></article>
-          <article class="card"><h3>STAR without made-up facts</h3><p>For behavioral questions it uses only your own notes and documents. If they do not hold the facts, it asks you instead of inventing a job, date or result.</p></article>
-          <article class="card"><h3>Read my screen</h3><p>If the interviewer shows a coding problem or command, one shortcut explains it. The screenshot is sent only when you ask.</p></article>
-        </div>
+      <p class="muted" style="margin-top:14px">These are written examples to show the styles. Real answers are written live by the answer engine you connect, from your question, notes and documents.</p>
+    </div></section>
+    <section><div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Coaching skills</p><h2>Four areas, each with its own coach.</h2></div>
+      <div class="grid g4">
+        <article class="card reveal"><span class="ico t-teal"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></span><h3>Cloud &amp; DevOps</h3><p>Rollouts, CI/CD, Kubernetes, observability, incidents, security and cost.</p></article>
+        <article class="card reveal"><span class="ico t-blue"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6v5H4zM14 4h6v5h-6zM9 15h6v5H9zM7 9v3h10V9M12 12v3"/></svg></span><h3>System design</h3><p>Requirements, scale, data, trade-offs and failure modes.</p></article>
+        <article class="card reveal"><span class="ico t-purple"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></span><h3>AI engineering</h3><p>RAG, evaluation, hallucinations, latency, cost and safety.</p></article>
+        <article class="card reveal"><span class="ico t-rose"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v10H9l-5 4zM8 9h8M8 12h5"/></svg></span><h3>Coding</h3><p>Approach, complexity, code and tests in Python, Java or C++.</p></article>
       </div>
-    </section>
-    <section class="cta-band"><div class="wrap"><h2>Practice with it today.</h2><p class="lead">Free for Mac and Windows.</p><a class="btn btn-big" href="download.html">Download MeetingLens</a></div></section>
+      <div class="grid g3" style="margin-top:20px">
+        <article class="card reveal"><span class="ico t-green"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><h3>STAR without made-up facts</h3><p>For behavioral questions it uses only your own notes and documents. If they do not hold the facts, it asks you instead of inventing a job, date or result.</p></article>
+        <article class="card reveal"><span class="ico t-amber"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v12H3zM8 21h8M12 17v4"/></svg></span><h3>Read my screen</h3><p>If the interviewer shows a coding problem or command, one shortcut explains it. The screenshot is sent only when you ask.</p></article>
+        <article class="card reveal"><span class="ico t-blue"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4"/></svg></span><span class="badge b-next">New in 0.1.5</span><h3>Job description analysis</h3><p>Paste a job description and get skills, likely questions and what to prepare, compared with your own documents.</p></article>
+      </div>
+    </div></section>
+    <section><div class="wrap"><div class="cta-band reveal"><h2>Practise with it today.</h2><p class="lead">Download MeetingLens for Mac or Windows. No account, no subscription.</p><a class="btn btn-primary btn-big" href="download.html">Download MeetingLens</a></div></div></section>
   </main>
   <footer>
-    <div class="wrap foot-grid">
-      <div>
-        <p class="foot-brand"><img src="logo.svg" width="28" height="28" alt=""> <b>MeetingLens</b></p>
-        <p>Hear it. Understand it. Answer it.</p>
-        <p>© 2026 Bhakta Thapa. All rights reserved. Built by <b>BKT AI</b></p>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>MeetingLens</b></p>
+          <p>Hear it. Understand it. Visualize it. Keep it.</p>
+          <p>Local-first, free, with no account.</p>
+        </div>
+        <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; learning</a></div>
+        <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
+        <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
-      <div>
-        <p><b>Explore</b></p>
-        <p><a href="features.html">Features</a> · <a href="interview.html">Interview</a> · <a href="video.html">Video</a> · <a href="privacy.html">Privacy</a> · <a href="download.html">Download</a></p>
-      </div>
-      <div>
-        <p><b>Project</b></p>
-        <p><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/LICENSE">License</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/SECURITY.md">Security</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases">Releases</a></p>
-      </div>
+      <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use MeetingLens within the rules of your school, employer and local law on recording.</p>
     </div>
   </footer>
   <script src="site.js"></script>
