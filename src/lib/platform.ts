@@ -37,6 +37,7 @@ export interface RecentSession {
 
 export interface DashboardStats {
   sessions: number; interviews: number; notes: number; diagrams: number; whiteboards: number; charts: number; documents: number; incidents: number;
+  sessions_week: number; notes_week: number; diagrams_week: number; whiteboards_week: number;
   learning_total: number; learning_done: number; learning_doing: number; saved_articles: number;
   recent: RecentSession[];
 }

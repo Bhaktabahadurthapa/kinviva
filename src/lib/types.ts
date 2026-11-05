@@ -105,6 +105,7 @@ export interface Shortcuts {
 
 export interface Settings {
   onboarded: boolean;
+  profile_name: string;
   profile_role: string;
   profile_level: string;
   interests: string[];

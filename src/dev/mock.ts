@@ -4,7 +4,7 @@
 // or inside the real app.
 if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS__" in window) && location.search.includes("mock")) {
   const settings = {
-    onboarded: true, profile_role: "Cloud engineer", profile_level: "intermediate", interests: ["Kubernetes", "AWS"], discover_enabled: true, capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
+    onboarded: true, profile_name: "Bhakta", profile_role: "Cloud engineer", profile_level: "intermediate", interests: ["Kubernetes", "AWS"], discover_enabled: true, capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
     stt_provider: "whisper_native", deepgram_model: "nova-3", deepgram_endpoint: "wss://api.deepgram.com/v1/listen",
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
     llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true, web_search: false,
@@ -28,7 +28,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     interview_run: "mock-request",
     interview_saved_count: 3,
     list_courses: [{ id: "os", name: "Operating Systems", code: "CS350", term: "Fall", created_at: 1, resources: 2 }],
-    dashboard_stats: { sessions: 12, interviews: 7, notes: 5, diagrams: 3, whiteboards: 2, charts: 1, documents: 4, incidents: 0, learning_total: 6, learning_done: 2, learning_doing: 1, saved_articles: 0,
+    dashboard_stats: { sessions: 12, interviews: 7, notes: 5, diagrams: 3, whiteboards: 2, charts: 1, documents: 4, incidents: 0, learning_total: 6, learning_done: 2, learning_doing: 1, saved_articles: 0, sessions_week: 3, notes_week: 2, diagrams_week: 1, whiteboards_week: 1,
       recent: [
         { id: "m1", title: "Platform sync", session_type: "work", started_at: Date.now() - 3600e3, ended_at: Date.now() - 1800e3, segments: 42, notes: 1, diagrams: 1 },
         { id: "m2", title: "Kubernetes lecture", session_type: "class", started_at: Date.now() - 86400e3, ended_at: Date.now() - 82800e3, segments: 120, notes: 2, diagrams: 0 },

@@ -244,16 +244,15 @@ export default function App() {
 
   return (
     <div className={`app ${collapsed ? "rail-collapsed" : ""}`}>
+      <TopBar
+        settings={settings}
+        logo={<Logo />}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed((c) => !c)}
+        onSettings={() => setTab("settings")}
+        onOpenHit={openHit}
+      />
       <nav className="rail" aria-label="Main menu">
-        <div className="brand">
-          <Logo />
-          <span className="brand-name">
-            Meeting<em>Lens</em>
-          </span>
-          <button className="rail-toggle" onClick={() => setCollapsed((c) => !c)} aria-label={collapsed ? "Show the menu" : "Hide the menu"} aria-expanded={!collapsed} title={collapsed ? "Show the menu (Cmd/Ctrl+B)" : "Hide the menu (Cmd/Ctrl+B)"}>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={collapsed ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} /></svg>
-          </button>
-        </div>
         {(["Main", "Workspace"] as const).map((group) => (
           <div key={group} className="rail-group">
             <span className="rail-heading">{group}</span>
@@ -265,6 +264,13 @@ export default function App() {
             ))}
           </div>
         ))}
+        <div className="rail-interests">
+          <span className="rail-heading">My interests</span>
+          <div className="rail-chips">
+            {(settings?.interests ?? []).slice(0, 5).map((t) => <button key={t} className="rail-chip" onClick={() => setTab("discover")}>{t}</button>)}
+            <button className="rail-chip rail-chip-add" onClick={() => setTab("discover")}>+ {settings?.interests?.length ? "Add" : "Add interest"}</button>
+          </div>
+        </div>
         <div className="rail-foot">
           <button title="Settings" className={`rail-btn rail-util ${tab === "settings" ? "active" : ""}`} onClick={() => setTab("settings")}>
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z" /></svg>
@@ -278,11 +284,6 @@ export default function App() {
         </div>
       </nav>
       <main>
-        <TopBar
-          settings={settings}
-          onSettings={() => setTab("settings")}
-          onOpenHit={openHit}
-        />
         {(SESSION_TABS.has(tab) || running || busy) && (
         <header className="console">
           <div className="onair">

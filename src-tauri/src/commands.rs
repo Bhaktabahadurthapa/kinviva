@@ -378,7 +378,7 @@ pub fn quiz_topics(state: State<AppState>) -> R<Vec<crate::store::TopicScore>> {
 
 #[tauri::command]
 pub fn dashboard_stats(state: State<AppState>) -> R<crate::store::Stats> {
-    state.db.stats()
+    state.db.stats(now_ms())
 }
 
 #[tauri::command]

@@ -30,6 +30,7 @@ impl Default for Shortcuts {
 pub struct Settings {
     pub onboarded: bool,
     // Profile (used by Discover and My Learning; stays on this computer)
+    pub profile_name: String,
     pub profile_role: String,
     pub profile_level: String,
     pub interests: Vec<String>,
@@ -80,6 +81,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             onboarded: false,
+            profile_name: String::new(),
             profile_role: String::new(),
             profile_level: "intermediate".into(),
             interests: Vec::new(),

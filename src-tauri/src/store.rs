@@ -99,6 +99,11 @@ pub struct Stats {
     pub learning_done: i64,
     pub learning_doing: i64,
     pub saved_articles: i64,
+    /// Created in the last 7 days.
+    pub sessions_week: i64,
+    pub notes_week: i64,
+    pub diagrams_week: i64,
+    pub whiteboards_week: i64,
     pub recent: Vec<RecentSession>,
 }
 
@@ -267,7 +272,8 @@ impl Db {
     }
 
     /// Every number comes from rows in this database.
-    pub fn stats(&self) -> R<Stats> {
+    pub fn stats(&self, now: i64) -> R<Stats> {
+        let since = now - 7 * 86_400_000;
         let conn = self.conn.lock().unwrap();
         let n = |sql: &str| -> i64 { conn.query_row(sql, [], |r| r.get(0)).unwrap_or(0) };
         let mut stmt = conn
@@ -297,6 +303,10 @@ impl Db {
             learning_done: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill') AND status = 'done'"),
             learning_doing: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill') AND status = 'doing'"),
             saved_articles: n("SELECT COUNT(*) FROM discover_items WHERE saved = 1"),
+            sessions_week: n(&format!("SELECT COUNT(*) FROM meetings WHERE is_demo = 0 AND started_at >= {since}")),
+            notes_week: n(&format!("SELECT COUNT(*) FROM records WHERE kind = 'note' AND created_at >= {since}")),
+            diagrams_week: n(&format!("SELECT COUNT(*) FROM diagrams WHERE created_at >= {since}")),
+            whiteboards_week: n(&format!("SELECT COUNT(*) FROM records WHERE kind = 'board' AND created_at >= {since}")),
             recent,
         })
     }
@@ -406,8 +416,9 @@ mod tests {
         let q = db.quiz_stats().unwrap();
         assert_eq!((q.attempts, q.total, q.correct), (1, 5, 4));
         db.save_record(&rec("n1", "note", "T", ""), 1).unwrap();
-        let s = db.stats().unwrap();
+        let s = db.stats(1_000_000).unwrap();
         assert_eq!((s.notes, s.learning_total, s.learning_done, s.sessions, s.whiteboards), (1, 1, 1, 0, 0));
+        assert_eq!(s.notes_week, 1); // saved at time 1, within 7 days of 1_000_000
     }
 
     #[test]
