@@ -31,6 +31,7 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
   const [trends, setTrends] = useState<Trend[]>([]);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [skill, setSkill] = useState("");
   const [explain, setExplain] = useState<{ id: string; text: string } | null>(null);
   const enabled = !!settings?.discover_enabled;
 
@@ -50,6 +51,20 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
       onError(errorText(e));
     }
   };
+  const addSkill = async () => {
+    const name = skill.replace(/[^\p{L}\p{N} +#./-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 40);
+    if (name.length < 2) return;
+    const have = settings?.interests ?? [];
+    if (have.some((x) => x.toLowerCase() === name.toLowerCase())) return setNote(`“${name}” is already in your interests.`);
+    if (have.length >= 20) return setNote("You can follow up to 20 interests. Remove one first.");
+    setSkill("");
+    await save({ interests: [...have, name] });
+    setNote(`Added “${name}”.${enabled ? " Fetching matching articles and projects…" : " Turn on Discover to see articles and projects for it."}`);
+    if (enabled) void refresh();
+  };
+  const learn = (name: string) =>
+    api.learningSave({ id: newId(), kind: "goal", title: `Learn ${name}`, status: "todo", source: "Discover" }).then(() => (setNote(`Added “Learn ${name}” to My Learning. Open it there and press Make a plan for the steps.`), onChanged())).catch((e) => onError(errorText(e)));
+
   const refresh = async () => {
     setBusy(true);
     setNote("");
@@ -106,8 +121,19 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
         <h2>Your interests</h2>
         <div className="disc-chips" role="group" aria-label="Interests">
           {TOPICS.map((t) => <button key={t} className={`chip ${interests.includes(t) ? "on" : ""}`} aria-pressed={interests.includes(t)} onClick={() => void save({ interests: interests.includes(t) ? interests.filter((x) => x !== t) : [...interests, t] })}>{t}</button>)}
+          {interests.filter((i) => !TOPICS.includes(i)).map((t) => (
+            <span key={t} className="chip on chip-custom">{t}
+              <button className="chip-x" onClick={() => learn(t)} title={`Add “Learn ${t}” to My Learning`}>Learn</button>
+              <button className="chip-x" aria-label={`Remove ${t}`} onClick={() => void save({ interests: interests.filter((x) => x !== t) })}>✕</button>
+            </span>
+          ))}
         </div>
+        <form className="disc-row" onSubmit={(e) => { e.preventDefault(); void addSkill(); }}>
+          <input value={skill} onChange={(e) => setSkill(e.target.value)} placeholder="Add any skill or topic, for example Rust, Terraform, Prompt engineering" aria-label="Add a skill or topic" maxLength={40} />
+          <button className="btn btn-primary" type="submit" disabled={skill.trim().length < 2}>Add skill</button>
+        </form>
         <div className="disc-row">
+          <input value={settings?.profile_name ?? ""} onChange={(e) => settings && onSettings({ ...settings, profile_name: e.target.value })} onBlur={() => void save({})} placeholder="Your name" aria-label="Your name" maxLength={40} style={{ maxWidth: 200 }} />
           <input value={settings?.profile_role ?? ""} onChange={(e) => settings && onSettings({ ...settings, profile_role: e.target.value })} onBlur={() => void save({})} placeholder="Your role, for example Cloud engineer" aria-label="Your role" maxLength={60} />
           <select value={settings?.profile_level ?? "intermediate"} onChange={(e) => void save({ profile_level: e.target.value })} aria-label="Skill level"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select>
           {enabled && <button className="btn btn-ghost btn-sm" onClick={() => void save({ discover_enabled: false })}>Turn off Discover</button>}

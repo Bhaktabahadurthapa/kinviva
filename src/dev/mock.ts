@@ -38,6 +38,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
       { id: "d1", url: "https://kubernetes.io/blog/x", title: "Kubernetes 1.35: what is new for pods", source: "Kubernetes Blog", summary: "A look at the changes in this release.", published_at: Date.now() - 2 * 86400e3, fetched_at: Date.now(), topic: "Kubernetes", kind: "news", stars: null, language: null, is_read: false, saved: false, score: 2 },
       { id: "d2", url: "https://github.com/org/tool", title: "org/tool", source: "GitHub", summary: "A tool for platform teams.", published_at: Date.now() - 86400e3, fetched_at: Date.now(), topic: "Platform Engineering", kind: "repo", stars: 5400, language: "Go", is_read: true, saved: true, score: 1 },
     ], Date.now()],
+    discover_refresh: { added: 2, failed: [] },
     discover_trends: [{ topic: "Kubernetes", recent: 6, previous: 4, sources: 3 }],
     quiz_topics: [{ topic: "Terraform", attempts: 2, total: 10, correct: 5 }],
     learning_save: { id: "g1", kind: "goal", title: "Pass the CKA exam", status: "todo" },

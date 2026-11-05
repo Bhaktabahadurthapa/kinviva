@@ -213,6 +213,21 @@ pub fn classify(title: &str, summary: &str) -> Option<&'static str> {
         .map(|(n, _)| n)
 }
 
+/// The user's own skill or topic that an item is about (case-insensitive, whole words), if any.
+pub fn match_interest(title: &str, summary: &str, interests: &[String]) -> Option<String> {
+    let text = format!(" {} {} ", title.to_lowercase(), summary.to_lowercase());
+    let boundary = |c: Option<char>| !c.is_some_and(|c| c.is_alphanumeric());
+    interests.iter().find(|i| {
+        let w = i.trim().to_lowercase();
+        w.chars().count() >= 2 && text.match_indices(&w).any(|(at, m)| boundary(text[..at].chars().next_back()) && boundary(text[at + m.len()..].chars().next()))
+    }).cloned()
+}
+
+/// Interests as typed by the user, made safe for storage and for a search query: letters, digits and a few separators.
+pub fn clean_interest(s: &str) -> String {
+    s.chars().filter(|c| c.is_alphanumeric() || " +#.-/".contains(*c)).collect::<String>().split_whitespace().collect::<Vec<_>>().join(" ").chars().take(40).collect()
+}
+
 /// Freshness (half-life one week) times source quality, plus a boost for the user's interests and a gentle star bonus for repositories.
 pub fn rank(published_ms: Option<i64>, fetched_ms: i64, now_ms: i64, quality: f64, topic: Option<&str>, interests: &[String], stars: Option<i64>) -> f64 {
     let age_days = ((now_ms - published_ms.unwrap_or(fetched_ms)).max(0) as f64) / 86_400_000.0;
@@ -282,6 +297,12 @@ impl Db {
         let mut items = rows.collect::<Result<Vec<_>, _>>().map_err(e)?;
         for i in &mut items {
             let quality = FEEDS.iter().find(|f| f.name == i.source).map(|f| f.quality).unwrap_or(0.8);
+            // A skill the user added themselves counts even when the fixed topic list does not know it.
+            if i.kind == "news" {
+                if let Some(mine) = match_interest(&i.title, &i.summary, interests) {
+                    i.topic = Some(mine);
+                }
+            }
             i.score = rank(i.published_at, i.fetched_at, now, quality, i.topic.as_deref(), interests, i.stars);
         }
         items.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
@@ -348,6 +369,8 @@ async fn get_text(c: &reqwest::Client, url: &str) -> Result<String, String> {
 
 /// Fetches every feed and the GitHub topics for the user's interests. One failing source never stops the others.
 pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
+    let interests: Vec<String> = interests.iter().map(|i| clean_interest(i)).filter(|i| !i.is_empty()).collect();
+    let interests = interests.as_slice();
     let c = match client() {
         Ok(c) => c,
         Err(m) => return RefreshReport { added: 0, failed: vec![m] },
@@ -358,7 +381,8 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
         match get_text(&c, f.url).await {
             Ok(xml) => {
                 for it in parse_feed(&xml, 25) {
-                    let topic = classify(&it.title, &it.summary);
+                    let mine = match_interest(&it.title, &it.summary, interests);
+                    let topic = mine.as_deref().or_else(|| classify(&it.title, &it.summary));
                     if db.add_discover(&it, f.name, "news", topic, None, None, now).unwrap_or(false) {
                         added += 1;
                     }
@@ -369,9 +393,15 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
     }
     // GitHub: recently updated, well-starred repositories for each interest (at most 4 searches).
     let since = (Utc::now() - chrono::Duration::days(45)).format("%Y-%m-%d").to_string();
-    for topic in interests.iter().take(4) {
+    for topic in interests.iter().take(6) {
         let slug: String = topic.to_lowercase().chars().map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' }).collect();
-        let q = format!("https://api.github.com/search/repositories?q=topic:{slug}+pushed:%3E{since}+stars:%3E200&sort=stars&order=desc&per_page=6");
+        let q = if TOPICS.iter().any(|(t, _)| t.eq_ignore_ascii_case(topic)) {
+            format!("https://api.github.com/search/repositories?q=topic:{slug}+pushed:%3E{since}+stars:%3E200&sort=stars&order=desc&per_page=6")
+        } else {
+            // A skill of the user's own: search names, descriptions and topics for the words.
+            let words: String = clean_interest(topic).split(' ').collect::<Vec<_>>().join("+");
+            format!("https://api.github.com/search/repositories?q={words}+in:name,description,topics+pushed:%3E{since}+stars:%3E100&sort=stars&order=desc&per_page=6")
+        };
         match get_text(&c, &q).await {
             Ok(body) => {
                 for r in parse_repos(&body) {
@@ -491,6 +521,25 @@ mod tests {
         assert_eq!((r[0].0.title.as_str(), r[0].1, r[0].2.as_deref()), ("org/tool", Some(1234), Some("Go")));
         assert_eq!(r[0].0.summary, "A tool");
         assert!(parse_repos("nope").is_empty());
+    }
+
+    #[test]
+    fn a_skill_the_user_adds_matches_whole_words_and_beats_the_fixed_topics() {
+        let mine = vec!["Rust".to_string(), "Terraform".to_string(), "C#".to_string()];
+        assert_eq!(match_interest("Why Rust is popular", "", &mine).as_deref(), Some("Rust"));
+        assert_eq!(match_interest("Trust and safety", "frustrating", &mine), None); // not a whole word
+        assert_eq!(match_interest("New terraform provider", "", &mine).as_deref(), Some("Terraform"));
+        assert_eq!(match_interest("Learning C# records", "", &mine).as_deref(), Some("C#"));
+        assert_eq!(clean_interest("  Rust <script>  & Go!! "), "Rust script Go");
+        let dir = tempfile::tempdir().unwrap();
+        let db = Db::open(&dir.path().join("t.sqlite")).unwrap();
+        let now = 100 * 86_400_000i64;
+        let it = |t: &str, u: &str| Item { title: t.into(), url: u.into(), summary: "s".into(), published_at: Some(now - 86_400_000) };
+        db.add_discover(&it("Rust async deep dive", "https://a.com/r"), "Kubernetes Blog", "news", None, None, None, now).unwrap();
+        db.add_discover(&it("Pods explained", "https://a.com/p"), "Kubernetes Blog", "news", Some("Kubernetes"), None, None, now).unwrap();
+        let list = db.list_discover(Some("news"), false, &["Rust".to_string()], now).unwrap();
+        assert_eq!(list[0].title, "Rust async deep dive");
+        assert_eq!(list[0].topic.as_deref(), Some("Rust"));
     }
 
     /// Needs the internet: every configured feed must parse into dated, linked items. Run with `cargo test -- --ignored`.
