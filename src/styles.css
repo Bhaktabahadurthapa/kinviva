@@ -1174,3 +1174,6 @@ h2, .label, h3, .strip .ch, .route { color: var(--c-text-2); }
 .app .splitter::after { background: var(--c-line); }
 .app .seg { display: inline-flex; width: fit-content; max-width: 100%; }
 .app h1 { font-family: var(--f-ui); font-size: 22px; font-weight: 650; letter-spacing: -0.01em; font-variation-settings: normal; }
+.app .iv-ask-bar { position: sticky; bottom: 0; margin-top: var(--s-3); background: var(--c-bg); padding-top: var(--s-2); }
+.app .iv-ask-bar .actionbar { border: 1px solid var(--c-line); border-radius: 10px; background: var(--c-surface); flex-wrap: wrap; }
+.app .iv-ask-result { margin-bottom: var(--s-3); }

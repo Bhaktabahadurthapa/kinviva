@@ -90,7 +90,7 @@ pub fn start_with(
         let live = state.live.lock().unwrap();
         // Automatic answers send less transcript: the new sentence matters most, and
         // a shorter prompt starts answering sooner.
-        let window = if action == Action::Recap {
+        let window = if action == Action::Recap || action == Action::Ask {
             settings.context_chars * 2
         } else if auto_for.is_some() {
             settings.context_chars.min(AUTO_CONTEXT_CHARS)
@@ -120,10 +120,11 @@ pub fn start_with(
     } else {
         Vec::new()
     };
-    let web_query = web_query_for(action, &transcript, focus.as_deref(), question.as_deref());
+    let about_meeting = action == Action::Ask && question.as_deref().map(prompts::about_conversation).unwrap_or(false);
+    let web_query = if about_meeting { None } else { web_query_for(action, &transcript, focus.as_deref(), question.as_deref()) };
     // Technical questions get the matching bundled expert skill (Suggest and Ask only,
     // so the quick explanations stay fast). Class sessions keep their own instructions.
-    let expert = if matches!(action, Action::Suggest | Action::Ask) && !session.is_class() {
+    let expert = if matches!(action, Action::Suggest | Action::Ask) && !session.is_class() && !about_meeting {
         let probe = question
             .clone()
             .filter(|q| !q.trim().is_empty())

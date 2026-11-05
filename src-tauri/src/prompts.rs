@@ -132,6 +132,29 @@ pub fn about_user(text: &str) -> bool {
     .any(|p| t.contains(p))
 }
 
+/// True when an Ask question is about this conversation itself (what was said,
+/// who said it, what was decided) rather than a general knowledge question.
+pub fn about_conversation(q: &str) -> bool {
+    let t = format!(" {} ", q.to_lowercase().replace(['\u{2019}', '\''], ""));
+    [
+        " said ", " say ", " says ", " mention", " discuss", " decid", " agree", " asked ", " ask me", " told ", " talk",
+        " meeting", " interview", " call ", " conversation", " transcript", " just now", " earlier", " last question",
+        " action item", " next step", " summar", " who ", " when did", " they ", " he ", " she ", " the speaker",
+        " interviewer", " the other person", " my last", " we ",
+    ]
+    .iter()
+    .any(|p| t.contains(p))
+}
+
+/// Ask about the conversation: the transcript is the only source of facts.
+const ASK_CONVERSATION: &str = "The user asks about THIS conversation (what was said, by whom, what was decided or asked). Answer ONLY from the transcript, the user's notes and the document excerpts. Do not use outside knowledge or search for other information.\n\
+Use exactly this layout, with these headings on their own lines:\n\
+YOU COULD SAY\n\
+A direct answer in simple words, 1 to 4 short sentences. Name who said it (Them or Me) and, if the transcript shows it, roughly when. Quote at most a few words.\n\
+EVIDENCE\n\
+One or two lines copied from the transcript that show it, one per line, each starting with Them: or Me:.\n\
+If the transcript does not contain the answer, write only: YOU COULD SAY\nThis was not said in the conversation so far. Then one short line saying what you did find that is closest, or nothing.";
+
 pub struct PromptInput<'a> {
     pub action: Action,
     pub transcript: &'a str,
@@ -190,6 +213,8 @@ pub fn build_with_expert(input: &PromptInput, expert: Option<&str>) -> Vec<ChatM
     let no_context = input.notes.trim().is_empty() && input.passages.is_empty();
     if input.action == Action::Suggest && no_context && about_user(asked) && !input.session.is_class() {
         ctx.push_str(COACH);
+    } else if input.action == Action::Ask && input.question.map(about_conversation).unwrap_or(false) {
+        ctx.push_str(ASK_CONVERSATION);
     } else {
         ctx.push_str(instructions(input.action));
     }
@@ -404,5 +429,21 @@ mod tests {
             let m = build(&PromptInput { action, transcript: "Them: What is a cache?", notes: "", passages: &[], question: Some("What is a cache?"), focus: None, session: &Default::default() });
             assert!(m[1].content.contains(heading), "{action:?} needs a hard-words step");
         }
+    }
+}
+
+#[cfg(test)]
+mod conversation_ask_tests {
+    use super::*;
+
+    #[test]
+    fn questions_about_the_meeting_are_answered_from_the_transcript_only() {
+        assert!(about_conversation("What did they say about the budget?"));
+        assert!(about_conversation("Who owns the export feature?"));
+        assert!(!about_conversation("What is a Kubernetes pod?"));
+        let m = build(&PromptInput { action: Action::Ask, transcript: "Them: budget is 5k", notes: "", passages: &[], question: Some("What did they say about the budget?"), focus: None, session: &Default::default() });
+        assert!(m[1].content.contains("Answer ONLY from the transcript"));
+        let g = build(&PromptInput { action: Action::Ask, transcript: "Them: hi", notes: "", passages: &[], question: Some("What is a Kubernetes pod?"), focus: None, session: &Default::default() });
+        assert!(g[1].content.contains("YOU COULD SAY"));
     }
 }
