@@ -3,11 +3,13 @@ import type {
   AiAction,
   DeviceInfo,
   DocumentInfo,
+  InterviewRequest,
   MeetingDetail,
   MeetingStatus,
   MeetingSummary,
   Passage,
   Settings,
+  SkillInfo,
   Snapshot,
 } from "./types";
 
@@ -37,6 +39,8 @@ export const api = {
   setLiveNotes: (notes: string) => invoke<void>("set_live_notes", { notes }),
   aiRun: (action: AiAction, question?: string) =>
     invoke<string>("ai_run", { action, question: question ?? null }),
+  interviewRun: (request: InterviewRequest) => invoke<string>("interview_run", { request }),
+  interviewSkills: () => invoke<SkillInfo[]>("interview_skills"),
   aiCancel: (requestId: string) => invoke<boolean>("ai_cancel", { requestId }),
   listMeetings: (search?: string) => invoke<MeetingSummary[]>("list_meetings", { search: search || null }),
   getMeeting: (id: string) => invoke<MeetingDetail>("get_meeting", { id }),

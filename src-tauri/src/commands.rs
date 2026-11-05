@@ -125,6 +125,16 @@ pub fn ai_run(app: AppHandle, state: State<AppState>, action: Action, question: 
 }
 
 #[tauri::command]
+pub fn interview_run(app: AppHandle, state: State<AppState>, request: crate::interview::Request) -> R<String> {
+    crate::interview::start(&app, &state, request)
+}
+
+#[tauri::command]
+pub fn interview_skills() -> Vec<crate::interview::SkillInfo> {
+    crate::interview::skill_infos()
+}
+
+#[tauri::command]
 pub fn ai_cancel(state: State<AppState>, request_id: String) -> bool {
     assistant::cancel(&state, &request_id)
 }

@@ -23,6 +23,8 @@ pub struct LlmConfig {
     /// "minimal" | "low" | "medium" | "high": how much a reasoning model thinks
     /// before answering. `None` sends nothing (the provider's default).
     pub reasoning_effort: Option<String>,
+    /// Ask for a JSON object (`response_format`). Dropped and retried if the provider rejects it.
+    pub json_mode: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -183,15 +185,20 @@ pub async fn stream_chat(
         "stream": true,
         "temperature": cfg.temperature,
     });
+    if cfg.json_mode {
+        body["response_format"] = serde_json::json!({ "type": "json_object" });
+    }
     if let Some(effort) = &cfg.reasoning_effort {
         body["reasoning_effort"] = serde_json::json!(effort);
     }
     let mut resp = send_request(cfg, &body, &cancel).await?;
-    // A model that does not know reasoning_effort answers 400; retry without it
-    // rather than failing the whole request.
-    if cfg.reasoning_effort.is_some() && resp.status() == reqwest::StatusCode::BAD_REQUEST {
-        body.as_object_mut().map(|o| o.remove("reasoning_effort"));
-        resp = send_request(cfg, &body, &cancel).await?;
+    // A model that does not know an optional field answers 400; retry without
+    // each one in turn rather than failing the whole request.
+    for optional in ["response_format", "reasoning_effort"] {
+        if resp.status() == reqwest::StatusCode::BAD_REQUEST && body.get(optional).is_some() {
+            body.as_object_mut().map(|o| o.remove(optional));
+            resp = send_request(cfg, &body, &cancel).await?;
+        }
     }
     if !resp.status().is_success() {
         let status = resp.status();
@@ -304,7 +311,7 @@ mod tests {
     const SSE_HEAD: &str = "HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\ntransfer-encoding: chunked\r\n\r\n";
 
     fn cfg(base: String) -> LlmConfig {
-        LlmConfig { base_url: base, model: "test".into(), api_key: Some("sk-secret-123".into()), temperature: 0.2, reasoning_effort: None }
+        LlmConfig { base_url: base, model: "test".into(), api_key: Some("sk-secret-123".into()), temperature: 0.2, reasoning_effort: None, json_mode: false }
     }
 
     fn msgs() -> Vec<ChatMessage> {
@@ -358,6 +365,38 @@ mod tests {
         let out = stream_chat(&c, msgs(), CancellationToken::new(), |_| {}).await;
         assert_eq!(out, Ok("ok".into()));
         assert_eq!(*seen.lock().unwrap(), vec![true, false]);
+    }
+
+    /// `json_mode` sends `response_format`; a provider that rejects it still answers.
+    #[tokio::test]
+    async fn json_mode_is_sent_and_dropped_when_rejected() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let seen = std::sync::Arc::new(std::sync::Mutex::new(Vec::<bool>::new()));
+        let seen2 = seen.clone();
+        tokio::spawn(async move {
+            loop {
+                let (mut sock, _) = listener.accept().await.unwrap();
+                let mut buf = vec![0u8; 16384];
+                let n = sock.read(&mut buf).await.unwrap_or(0);
+                let has = String::from_utf8_lossy(&buf[..n]).contains("\"response_format\"");
+                seen2.lock().unwrap().push(has);
+                if has {
+                    let _ = sock.write_all(b"HTTP/1.1 400 Bad Request\r\ncontent-length: 2\r\nconnection: close\r\n\r\n{}").await;
+                } else {
+                    let body = "data: {\"choices\":[{\"delta\":{\"content\":\"{}\"}}]}\n\ndata: [DONE]\n\n";
+                    let resp = format!("HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}", body.len(), body);
+                    let _ = sock.write_all(resp.as_bytes()).await;
+                }
+            }
+        });
+        let mut c = cfg(format!("http://{addr}/v1"));
+        c.json_mode = true;
+        c.reasoning_effort = Some("low".into());
+        let out = stream_chat(&c, msgs(), CancellationToken::new(), |_| {}).await;
+        assert_eq!(out, Ok("{}".into()));
+        assert!(seen.lock().unwrap()[0]);
+        assert!(!*seen.lock().unwrap().last().unwrap());
     }
 
     #[tokio::test]

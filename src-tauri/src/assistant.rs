@@ -59,7 +59,7 @@ pub fn llm_config(state: &AppState) -> Result<LlmConfig, String> {
         None
     };
     let reasoning_effort = s.reasoning_effort();
-    Ok(LlmConfig { base_url: s.llm_base_url, model: s.llm_model, api_key, temperature: s.llm_temperature, reasoning_effort })
+    Ok(LlmConfig { base_url: s.llm_base_url, model: s.llm_model, api_key, temperature: s.llm_temperature, reasoning_effort, json_mode: false })
 }
 
 pub fn start(app: &AppHandle, state: &AppState, action: Action, question: Option<String>) -> Result<String, String> {

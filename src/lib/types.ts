@@ -145,3 +145,48 @@ export interface DeviceInfo {
   name: string;
   is_default: boolean;
 }
+
+// ---- Interview Practice ----
+export type InterviewCategory = "cloud_devops" | "system_design" | "ai_engineering" | "coding";
+export type InterviewMode = "explain" | "practice";
+export type InterviewLanguage = "python" | "java" | "cpp";
+
+export interface InterviewRequest {
+  category: InterviewCategory;
+  mode: InterviewMode;
+  question: string;
+  answer?: string | null;
+  language?: InterviewLanguage | null;
+}
+
+export type InterviewParsed =
+  | { kind: "answer"; say_it: string; understand_it: string; code: string | null; tradeoffs: string[]; follow_up: string }
+  | {
+      kind: "feedback";
+      correctness: string;
+      missing_points: string[];
+      structure: string;
+      clarity: string;
+      coaching_score: number | null;
+      improved_say_it: string;
+      follow_up: string;
+    };
+
+export interface InterviewEvent {
+  request_id: string;
+  category: InterviewCategory;
+  mode: InterviewMode;
+  skill: string;
+  state: "streaming" | "done" | "error" | "cancelled";
+  received_chars: number;
+  result: InterviewParsed | null;
+  fallback_text: string | null;
+  error: string | null;
+}
+
+export interface SkillInfo {
+  category: InterviewCategory;
+  name: string;
+  description: string | null;
+  error: string | null;
+}

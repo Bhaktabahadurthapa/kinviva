@@ -413,3 +413,7 @@ SOFTWARE.
 
 - whisper.cpp `whisper-cli` (MIT) and ggml Whisper models (MIT, OpenAI Whisper weights): installed and downloaded by the user for the optional local speech provider.
 - Ollama (MIT) and any local model (each model has its own license, e.g. Llama 3.2 Community License): installed by the user for the optional local AI provider.
+
+## Interview skills
+
+The bundled interview skills (`src-tauri/skills/`) are original to MeetingLens. They follow the Agent Skills file layout (a `SKILL.md` with `name` and `description` frontmatter) described in https://github.com/anthropics/skills; no text or code from that repository is included.

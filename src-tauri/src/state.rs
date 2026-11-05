@@ -113,6 +113,8 @@ pub struct AppState {
     pub auto_inflight: Mutex<Vec<(String, String)>>,
     pub questions: Arc<Mutex<QuestionDetector>>,
     pub auto: crate::auto_assist::AutoAssist,
+    /// The Interview Practice request in flight, if any.
+    pub interview: Mutex<crate::interview::Registry>,
 }
 
 impl AppState {

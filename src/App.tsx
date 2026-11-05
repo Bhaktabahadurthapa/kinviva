@@ -5,11 +5,12 @@ import { api, errorText, inTauri } from "./lib/api";
 import { useLive } from "./lib/useLive";
 import type { Settings } from "./lib/types";
 import { DocumentsView } from "./views/DocumentsView";
+import { InterviewView } from "./views/InterviewView";
 import { HistoryView } from "./views/HistoryView";
 import { LiveView } from "./views/LiveView";
 import { SettingsView } from "./views/SettingsView";
 
-type Tab = "live" | "history" | "documents" | "settings";
+type Tab = "live" | "interview" | "history" | "documents" | "settings";
 
 function Logo() {
   return (
@@ -113,6 +114,7 @@ export default function App() {
         {(
           [
             ["live", "Live"],
+            ["interview", "Interview"],
             ["history", "History"],
             ["documents", "Documents"],
             ["settings", settings?.onboarded === false ? "Setup" : "Settings"],
@@ -187,6 +189,7 @@ export default function App() {
               }}
             />
           )}
+          {tab === "interview" && <InterviewView live={live} onError={setError} />}
           {tab === "history" && <HistoryView onError={setError} onOpenLive={() => setTab("live")} refreshKey={historyKey} />}
           {tab === "documents" && <DocumentsView onError={setError} />}
           {tab === "settings" && <SettingsView onError={setError} onSaved={setSettings} />}

@@ -18,6 +18,13 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     list_input_devices: [],
     speech_engines: { native_available: true },
     list_models: ["models/gemini-3.8-flash", "models/gemini-3.5-flash-lite"],
+    interview_skills: [
+      { category: "cloud_devops", name: "cloud-devops-interview", description: "Coach answers to Cloud and DevOps interview questions.", error: null },
+      { category: "system_design", name: "system-design-interview", description: "Coach system design answers.", error: null },
+      { category: "ai_engineering", name: "ai-engineering-interview", description: "Coach AI engineering answers.", error: null },
+      { category: "coding", name: "coding-interview", description: "Coach coding answers in Python, Java or C++.", error: null },
+    ],
+    interview_run: "mock-request",
     list_meetings: [],
     list_documents: [],
     app_info: { version: "dev", data_dir: "(mock)", os: "macos", schema_version: 1 },

@@ -8,12 +8,14 @@ pub mod db;
 pub mod demo;
 pub mod docs;
 pub mod export;
+pub mod interview;
 pub mod llm;
 pub mod meeting;
 pub mod prompts;
 pub mod question;
 pub mod secrets;
 pub mod settings;
+pub mod skills;
 pub mod shortcuts;
 pub mod state;
 pub mod stt;
@@ -70,6 +72,7 @@ pub fn run() {
                 auto_inflight: Mutex::new(Vec::new()),
                 questions: Arc::new(Mutex::new(question::QuestionDetector::new(20))),
                 auto: Default::default(),
+                interview: Default::default(),
             };
             let settings = state.settings();
             app.manage(state);
@@ -98,6 +101,8 @@ pub fn run() {
             commands::set_live_notes,
             commands::ai_run,
             commands::ai_cancel,
+            commands::interview_run,
+            commands::interview_skills,
             commands::list_meetings,
             commands::get_meeting,
             commands::rename_meeting,

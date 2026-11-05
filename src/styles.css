@@ -923,3 +923,35 @@ cite { display: block; font-style: normal; font-family: var(--f-mono); font-size
 @media (max-width: 900px) {
   .live-stack { grid-template-columns: 1fr; grid-template-rows: minmax(120px, 0.6fr) minmax(0, 2fr); }
 }
+
+/* ---- Interview practice ---- */
+.interview { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.4fr); gap: var(--s-4); padding: var(--s-4) var(--s-5); height: 100%; min-height: 0; }
+.iv-input { min-height: 0; overflow: auto; }
+.iv-body { padding: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
+.iv-row { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.iv-row label, .iv-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+.iv-body label > span { font-family: var(--f-mono); font-size: var(--t-2xs); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-text-3); }
+.iv-body textarea { resize: vertical; font-size: var(--t-base); line-height: 1.5; }
+.iv-skill { margin: 0; font-size: var(--t-xs); color: var(--c-text-3); line-height: 1.45; }
+.iv-skill code { font-family: var(--f-code); color: var(--c-text-2); }
+.iv-actions { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.iv-note { font-size: var(--t-xs); color: var(--c-text-3); }
+.iv-output { overflow: auto; min-height: 0; padding-right: 2px; }
+.iv-results { display: flex; flex-direction: column; gap: var(--s-3); }
+.iv-results.is-stale { opacity: 0.6; }
+.iv-card { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--r-lg); padding: var(--s-4) var(--s-5); }
+.iv-card h3 { margin: 0 0 var(--s-2); font-family: var(--f-mono); font-size: var(--t-2xs); font-weight: 500; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-text-3); }
+.iv-card p, .iv-card li { margin: 0 0 var(--s-2); font-size: var(--t-md); line-height: 1.55; }
+.iv-card ul { margin: 0; padding-left: 20px; }
+.iv-card li::marker { color: var(--c-signal); }
+.iv-say p { font-size: var(--t-xl); line-height: 1.5; }
+.iv-say { color: var(--c-text); }
+.iv-card.iv-say { border-color: color-mix(in srgb, var(--c-signal) 45%, var(--c-line)); }
+.iv-card.iv-say h3 { color: var(--c-signal); }
+.iv-card.iv-warn { border-color: color-mix(in srgb, var(--c-warn) 50%, var(--c-line)); }
+.iv-card.iv-warn h3 { color: var(--c-warn); }
+.iv-code { margin: var(--s-3) 0 0; padding: var(--s-3) var(--s-4); background: var(--c-sunken); border: 1px solid var(--c-line); border-radius: var(--r-md); overflow: auto; font-family: var(--f-code); font-size: var(--t-sm); line-height: 1.5; white-space: pre; }
+.iv-disclaimer { margin: 0; font-size: var(--t-sm); color: var(--c-text-2); }
+.iv-wait { color: var(--c-text-3); font-family: var(--f-mono); font-size: var(--t-xs); letter-spacing: 0.06em; }
+.iv-wait span { margin-left: 8px; }
+@media (max-width: 900px) { .interview { grid-template-columns: 1fr; overflow: auto; } }

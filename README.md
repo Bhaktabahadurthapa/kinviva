@@ -215,6 +215,7 @@ Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 
 ## Docs
 
+- [Interview practice](docs/INTERVIEW.md): skills, modes, limitations
 - [Architecture](docs/ARCHITECTURE.md) · [Languages and why](docs/LANGUAGES.md)
 - [Design system](docs/DESIGN_SYSTEM.md)
 - [Test results & limitations](docs/TESTING.md)
