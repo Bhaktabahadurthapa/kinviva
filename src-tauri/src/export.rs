@@ -208,7 +208,7 @@ pub fn interview_doc(entries: &[InterviewEntry]) -> Doc {
     if let (Some(a), Some(b)) = (entries.first(), entries.last()) {
         meta.push(format!("From {} to {}", fmt_ts(a.created_at), fmt_ts(b.created_at)));
     }
-    meta.push("AI-generated coaching, not verified facts. Scores are coaching feedback, not a hiring assessment.".into());
+    meta.push("Generated coaching, not verified facts. Scores are coaching feedback, not a hiring assessment.".into());
     meta.push("Exported from MeetingLens".into());
     let mut sections = Vec::new();
     for (i, e) in entries.iter().enumerate() {

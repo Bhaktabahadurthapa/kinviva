@@ -151,7 +151,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
   const applyOps = async (ops: BoardOp[]) => {
     const a = apiRef.current;
     if (!a) return;
-    await snapshot("Before an AI edit");
+    await snapshot("Before an automatic edit");
     let els: El[] = a.getSceneElements();
     const created: Record<string, string> = {};
     let n = 0;
@@ -246,7 +246,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
               <input className="notes-title" value={cur.title} onChange={(e) => void rename(e.target.value)} aria-label="Board name" maxLength={200} />
               <span className="hint" role="status">{status}</span>
               <button className="btn btn-sm" onClick={() => setFull((f) => !f)} aria-pressed={full} title={full ? "Back to the app (Esc)" : "Full screen: hides the menu so the board fills the window"}>{full ? "Exit full screen" : "Full screen"}</button>
-              <button className="btn btn-primary btn-sm" onClick={() => setPanel(panel === "ai" ? "" : "ai")} aria-pressed={panel === "ai"}>{panel === "ai" ? "Hide AI panel" : "Generate or edit with AI"}</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setPanel(panel === "ai" ? "" : "ai")} aria-pressed={panel === "ai"}>{panel === "ai" ? "Hide tools" : "Generate or edit diagram"}</button>
               <button className="btn btn-sm" onClick={() => void snapshot("Saved version").then(() => setStatus("Version saved"))}>Save version</button>
               <button className="btn btn-sm" onClick={() => setPanel(panel === "versions" ? "" : "versions")} aria-pressed={panel === "versions"}>Versions</button>
               <div className="wb-export">
@@ -270,7 +270,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
             </div>
           </>
         ) : (
-          <div className="notes-empty"><h3>Whiteboard</h3><p>Draw freely, or let MeetingLens turn a conversation, your notes or a saved architecture into an editable diagram. Your own drawings are never overwritten by AI changes.</p></div>
+          <div className="notes-empty"><h3>Whiteboard</h3><p>Draw freely, or let MeetingLens turn a conversation, your notes or a saved architecture into an editable diagram. Your own drawings are never overwritten by automatic changes.</p></div>
         )}
       </section>
     </div>
@@ -291,7 +291,7 @@ function VersionsPanel({ boardId, onRestore }: { boardId: string; onRestore: (r:
   return (
     <aside className="wb-panel">
       <h3>Versions</h3>
-      {list.length === 0 ? <p className="hint">Versions are saved when you press Save version and before every AI change.</p> : (
+      {list.length === 0 ? <p className="hint">Versions are saved when you press Save version and before every automatic change.</p> : (
         <ul>{list.map((r) => <li key={r.id}><span>{r.title}<br /><span className="hint">{new Date(r.updated_at ?? 0).toLocaleString()}</span></span><button className="btn btn-sm" onClick={() => onRestore(r)}>Restore</button></li>)}</ul>
       )}
     </aside>
@@ -370,7 +370,7 @@ function AiPanel({ seed, getNodes, onInsert, onApply, onError }: { seed: { id: n
   const desc = ops ? describeOps(ops, getNodes()) : null;
   return (
     <aside className="wb-panel">
-      <h3>Generate a diagram with AI</h3>
+      <h3>Generate a diagram</h3>
       <label className="tc-label" htmlFor="wb-src">From</label>
       <select id="wb-src" value={source} onChange={(e) => { setSource(e.target.value as typeof source); setPick(""); }}>
         <option value="conversation">The current conversation</option>

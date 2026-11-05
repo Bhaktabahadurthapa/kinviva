@@ -347,7 +347,7 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
             />
           </label>
           <div className="iv-actions">
-            <button className="btn btn-ghost btn-sm" disabled={!fromMeeting} onClick={() => change(setQuestion)(fromMeeting)} title="Copies the newest question heard from the other side in the live meeting. Nothing is sent to the AI until you ask.">
+            <button className="btn btn-ghost btn-sm" disabled={!fromMeeting} onClick={() => change(setQuestion)(fromMeeting)} title="Copies the newest question heard from the other side in the live meeting. Nothing is sent to your answer engine until you ask.">
               Use the latest question from the meeting
             </button>
             <span className="iv-note">Editable. Nothing is sent until you press the button below.</span>

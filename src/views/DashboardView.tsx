@@ -188,7 +188,7 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
 
       <aside className="d-right">
         <section className="d-card d-assistant">
-          <header><h2>✦ AI Assistant</h2></header>
+          <header><h2>✦ Assistant</h2></header>
           <div className="d-tabs" role="tablist" aria-label="Assistant mode">{MODES.map((m) => <button key={m} role="tab" aria-selected={mode === m} className={mode === m ? "active" : ""} onClick={() => setMode(m)}>{m}</button>)}</div>
           <form className="d-ask" onSubmit={(e) => { e.preventDefault(); void ask(); }}>
             <textarea value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder={mode === "Code" ? "Describe the code you need…" : "Ask about your documents, or anything technical…"} aria-label="Assistant request" maxLength={2000} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void ask(); } }} />
