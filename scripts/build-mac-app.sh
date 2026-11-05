@@ -43,6 +43,12 @@ if [ -n "${MEETINGLENS_SIGN_IDENTITY:-}" ]; then
   codesign --force --options runtime --timestamp --sign "$MEETINGLENS_SIGN_IDENTITY" "$ENGINE"
   codesign --force --options runtime --timestamp --deep --sign "$MEETINGLENS_SIGN_IDENTITY" \
     --entitlements src-tauri/entitlements.plist --identifier app.meetinglens.desktop "$APP"
+elif LOCAL_ID=$(security find-identity -p codesigning 2>/dev/null | awk '/"MeetingLens Dev"/ {print $2; exit}') && [ -n "$LOCAL_ID" ]; then
+  # A local self-signed certificate ("MeetingLens Dev" in Keychain Access) gives
+  # every build the same designated requirement, so macOS keeps the Screen
+  # Recording, Microphone and Keychain permissions across rebuilds.
+  # (Ad-hoc signing changes the identity on every build and resets them.)
+  codesign --force --deep --sign "$LOCAL_ID" --identifier app.meetinglens.desktop "$APP"
 else
   codesign --force --deep --sign - --identifier app.meetinglens.desktop "$APP"
 fi

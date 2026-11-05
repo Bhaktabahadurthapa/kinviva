@@ -4,7 +4,7 @@ import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
 
 /** Minimum time between new explanations appearing, so each can be read. */
-const REVEAL_GAP_MS = 1500;
+const REVEAL_GAP_MS = 300;
 /** If the speaker races ahead, skip older waiting notes instead of flooding. */
 const MAX_WAITING = 1;
 
@@ -13,7 +13,11 @@ function fmt(ms: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
-const isDone = (n?: SideNote["meaning"]) => n?.state === "done" && !!n.text.trim();
+/** Text worth showing: complete, or still arriving (shown as it is written, not after). */
+const isDone = (n?: SideNote["meaning"]) => (n?.state === "done" || n?.state === "streaming") && !!n.text.trim();
+const isFinished = (n?: SideNote["meaning"]) => n?.state === "done";
+/** While streaming, "NO_ANSWER" arrives in pieces: hide any start of it. */
+const maybeNoAnswer = (t: string) => "NO_ANSWER".startsWith(t.trim().toUpperCase()) || isNoAnswer(t);
 
 /**
  * The reading pane: what the other side said, in simple words. Notes appear
@@ -27,10 +31,10 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
   const [shown, setShown] = useState<number[]>([]);
 
   // A line is worth showing once its key points or its answer is complete.
-  const hasAnswer = (n?: SideNote) => isDone(n?.answer) && !isNoAnswer(n!.answer!.text);
+  const hasAnswer = (n?: SideNote) => isDone(n?.answer) && !maybeNoAnswer(n!.answer!.text);
   const ready = finals.filter((s) => s.source === "system" && (isDone(side[s.id]?.meaning) || hasAnswer(side[s.id]))).map((s) => s.id);
   const writing = finals.some(
-    (s) => s.source === "system" && (side[s.id]?.meaning?.state === "streaming" || side[s.id]?.answer?.state === "streaming"),
+    (s) => s.source === "system" && (side[s.id]?.meaning?.state === "streaming" || side[s.id]?.answer?.state === "streaming") && !ready.includes(s.id),
   );
 
   // Reveal ready notes one at a time, at a readable pace.
@@ -99,17 +103,17 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
             </div>
             {note.meaning && (
               <div className="simple-meaning">
-                <AiText text={note.meaning.text} />
+                <AiText text={note.meaning.text} streaming={!isFinished(note.meaning)} />
               </div>
             )}
-            {answer && isDone(answer) && !isNoAnswer(answer.text) && (
+            {answer && hasAnswer(note) && (
               <div className={`simple-answer${note.meaning ? "" : " is-primary"}`}>
                 <div className="script-head">
                   <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : (note.meaning ? "Your script — you could say" : "Answer — you could say")}</span>
                   <CopyButton text={answer.text} />
                 </div>
-                <AiText text={answer.text} />
-                <SourceLine sources={answer.sources} />
+                <AiText text={answer.text} streaming={!isFinished(answer)} />
+                {isFinished(answer) && <SourceLine sources={answer.sources} />}
               </div>
             )}
           </article>
