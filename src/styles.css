@@ -1757,3 +1757,24 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 :root[data-theme="dark"] .app .rail-foot { background: #11142a; }
 .topbar .rail-toggle { color: var(--c-text-2); }
 .topbar .rail-toggle:hover { background: var(--c-bg); color: var(--c-text); }
+
+/* Sidebar: a softer, lighter indigo (still light text) */
+.app .rail { background: linear-gradient(180deg, #4a5190 0%, #3c4380 100%); border-right: 1px solid #343a70; }
+.app .rail-foot { background: #3f4684; }
+.app .rail-btn:hover { background: rgba(255, 255, 255, 0.12); }
+.app .rail-btn.active { background: rgba(255, 255, 255, 0.20); box-shadow: inset 3px 0 0 #ffffff; }
+.app .rail-heading, .app .rail-interests .rail-heading, .app .rail-tag { color: #cdd3f2; }
+.app .rail-interests, .app .rail-foot { border-top-color: rgba(255, 255, 255, 0.18); }
+.rail-chip { background: rgba(255, 255, 255, 0.18); color: #ffffff; }
+.rail-chip-add { border-color: rgba(255, 255, 255, 0.40); color: #eceffd; }
+.rail .nav-ico.tone-purple { background: rgba(255, 255, 255, 0.20); color: #ffffff; }
+.rail .nav-ico.tone-blue { background: rgba(125, 190, 255, 0.28); color: #d4eaff; }
+.rail .nav-ico.tone-green { background: rgba(110, 224, 160, 0.26); color: #d3f8e3; }
+.rail .nav-ico.tone-amber { background: rgba(255, 207, 90, 0.28); color: #fff0c6; }
+.rail .nav-ico.tone-rose { background: rgba(255, 130, 165, 0.28); color: #ffe0ea; }
+.rail .nav-ico.tone-teal { background: rgba(90, 226, 208, 0.26); color: #d1faf4; }
+.rail .nav-ico.tone-gray { background: rgba(255, 255, 255, 0.16); color: #eceffd; }
+.app.rail-collapsed .rail-btn.active { background: rgba(255, 255, 255, 0.24); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .app .rail { background: linear-gradient(180deg, #2c3160 0%, #232749 100%); border-right-color: #1b1e3a; } :root:not([data-theme="light"]) .app .rail-foot { background: #272b52; } }
+:root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #2c3160 0%, #232749 100%); border-right-color: #1b1e3a; }
+:root[data-theme="dark"] .app .rail-foot { background: #272b52; }
