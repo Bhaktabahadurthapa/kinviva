@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { saveToNotes } from "../lib/notes";
 import { AiText } from "../components/AiText";
 import { api, errorText } from "../lib/api";
 import type { Tab } from "../lib/nav";
@@ -17,6 +18,7 @@ export function DashboardView({
   onNavigate,
   onOpenSession,
   onError,
+  onSaved,
 }: {
   settings: Settings | null;
   running: boolean;
@@ -24,6 +26,7 @@ export function DashboardView({
   onNavigate: (t: Tab) => void;
   onOpenSession: (id: string) => void;
   onError: (m: string) => void;
+  onSaved: () => void;
 }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [mode, setMode] = useState<(typeof MODES)[number]>("Ask");
@@ -131,7 +134,7 @@ export function DashboardView({
             <button className="btn btn-primary" type="submit" disabled={!q.trim() || busy}>{busy ? "Thinking…" : mode}</button>
           </form>
           <p className="hint">Uses your Documents when they help and names the file. Nothing from your sessions is sent unless you open it.</p>
-          {answer && <div className="dash-answer"><AiText text={answer} /></div>}
+          {answer && <div className="dash-answer"><AiText text={answer} /><button className="btn btn-ghost btn-sm" onClick={() => void saveToNotes(answer, { title: q.trim().slice(0, 80) }).then(() => onSaved())}>Save to notes</button></div>}
         </section>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { NAV, SESSION_TABS, type Tab } from "./lib/nav";
+import { NotesView } from "./views/NotesView";
+import { KnowledgeView } from "./views/KnowledgeView";
 import { DashboardView } from "./views/DashboardView";
 import { TopBar, HIT_TAB } from "./components/TopBar";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -98,6 +100,10 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const [archSeen, setArchSeen] = useState(false);
   const [searchSeed, setSearchSeed] = useState("");
+  const openHit = (h: { kind: string; title: string }) => {
+    setSearchSeed(h.kind === "session" || h.kind === "transcript" ? h.title : "");
+    setTab(HIT_TAB[h.kind] ?? "dashboard");
+  };
   useEffect(() => {
     if (tab === "architecture") setArchSeen(true);
   }, [tab]);
@@ -223,10 +229,7 @@ export default function App() {
         <TopBar
           settings={settings}
           onSettings={() => setTab("settings")}
-          onOpenHit={(h) => {
-            setSearchSeed(h.kind === "session" || h.kind === "transcript" ? h.title : "");
-            setTab(HIT_TAB[h.kind] ?? "dashboard");
-          }}
+          onOpenHit={openHit}
         />
         {(SESSION_TABS.has(tab) || running || busy) && (
         <header className="console">
@@ -336,8 +339,11 @@ export default function App() {
               onNavigate={setTab}
               onOpenSession={(id) => { void api.getMeeting(id).then((d) => setSearchSeed(d.meeting.title)).catch(() => {}); setTab("sessions"); }}
               onError={setError}
+              onSaved={() => setHistoryKey((k) => k + 1)}
             />
           )}
+          {tab === "notes" && <NotesView onError={setError} refreshKey={historyKey} onChanged={() => setHistoryKey((k) => k + 1)} />}
+          {tab === "knowledge" && <KnowledgeView onError={setError} onOpenHit={openHit} />}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
           {archSeen && (
             <div hidden={tab !== "architecture"} className="arch-host">

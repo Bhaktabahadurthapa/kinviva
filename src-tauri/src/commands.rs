@@ -333,7 +333,14 @@ pub fn dashboard_stats(state: State<AppState>) -> R<crate::store::Stats> {
 
 #[tauri::command]
 pub fn global_search(state: State<AppState>, query: String) -> R<Vec<crate::store::SearchHit>> {
-    state.db.global_search(&query, 6)
+    let mut hits = state.db.global_search(&query, 6)?;
+    // Inside the text of the user's documents (the existing full-text index).
+    let fts = crate::docs::fts_query(&query, 8);
+    for p in state.db.search_passages(&fts, 4).unwrap_or_default() {
+        let text: String = p.text.split_whitespace().collect::<Vec<_>>().join(" ").chars().take(160).collect();
+        hits.push(crate::store::SearchHit { kind: "document".into(), id: p.document.clone(), title: match p.page { Some(n) => format!("{} (page {n})", p.document), None => p.document.clone() }, snippet: text, when: 0 });
+    }
+    Ok(hits)
 }
 
 #[tauri::command]
