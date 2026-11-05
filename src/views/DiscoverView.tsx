@@ -70,7 +70,7 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
     setNote("");
     try {
       const r = await api.discoverRefresh();
-      setNote(`${r.added} new item${r.added === 1 ? "" : "s"}.${r.failed.length ? ` Could not reach: ${r.failed.join("; ")}` : ""}`);
+      setNote(`${r.added} new item${r.added === 1 ? "" : "s"}${r.pictures != null ? `, ${r.pictures} picture${r.pictures === 1 ? "" : "s"} saved` : ""}.${r.failed.length ? ` Could not reach: ${r.failed.join("; ")}` : ""}`);
       load();
     } catch (e) {
       onError(errorText(e));

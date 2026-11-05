@@ -1807,3 +1807,12 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .undo-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 18px; background: var(--c-text); color: var(--c-surface); border-radius: 12px; box-shadow: 0 14px 40px -14px rgba(0, 0, 0, 0.5); }
 .undo-toast .btn { background: var(--c-surface); color: var(--c-text); }
 .undo-toast .btn-ghost { background: none; color: inherit; border-color: transparent; }
+
+/* Discover cards: a picture only when there is one; otherwise name and summary */
+.d-article { background: var(--c-bg); border-radius: 12px; padding: 12px; gap: 8px; }
+.d-article .d-thumb { margin: -12px -12px 4px; width: calc(100% + 24px); border-radius: 12px 12px 0 0; }
+.d-title { text-align: left; background: none; border: none; padding: 0; cursor: pointer; font: 650 15px var(--f-ui); line-height: 1.35; color: var(--c-text); }
+.d-title:hover { color: var(--c-signal); text-decoration: underline; }
+.d-summary { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--c-text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.d-tag-inline { align-self: flex-start; font: 650 11.5px var(--f-ui); padding: 2px 9px; border-radius: 999px; background: var(--c-signal-soft); color: var(--c-signal); }
+.d-text-only { justify-content: flex-start; }

@@ -446,6 +446,8 @@ impl Db {
 #[derive(Debug, Clone, Serialize)]
 pub struct RefreshReport {
     pub added: usize,
+    /// Pictures downloaded and saved during this refresh.
+    pub pictures: usize,
     pub failed: Vec<String>,
 }
 
@@ -484,9 +486,10 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
     let interests = interests.as_slice();
     let c = match client() {
         Ok(c) => c,
-        Err(m) => return RefreshReport { added: 0, failed: vec![m] },
+        Err(m) => return RefreshReport { added: 0, pictures: 0, failed: vec![m] },
     };
     let mut added = 0;
+    let mut pictures = 0;
     let mut failed = Vec::new();
     for f in FEEDS {
         match get_text(&c, f.url).await {
@@ -500,11 +503,13 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
                         added += 1;
                     }
                     // New items get a picture, and older items saved before pictures existed are filled in.
-                    if let (Some(img), true) = (&it.image_url, fetched < 10) {
+                    if let (Some(img), true) = (&it.image_url, fetched < 15) {
                         if is_new || db.discover_needs_image(&it.url).unwrap_or(false) {
                             fetched += 1;
                             if let Some(data) = fetch_image(&c, img).await {
-                                let _ = db.set_discover_image(&it.url, &data);
+                                if db.set_discover_image(&it.url, &data).is_ok() {
+                                    pictures += 1;
+                                }
                             }
                         }
                     }
@@ -531,7 +536,9 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
                         added += 1;
                         if let Some(img) = &r.0.image_url {
                             if let Some(data) = fetch_image(&c, img).await {
-                                let _ = db.set_discover_image(&r.0.url, &data);
+                                if db.set_discover_image(&r.0.url, &data).is_ok() {
+                                    pictures += 1;
+                                }
                             }
                         }
                     }
@@ -540,7 +547,7 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
             Err(m) => failed.push(format!("GitHub ({topic}): {m}")),
         }
     }
-    RefreshReport { added, failed }
+    RefreshReport { added, pictures, failed }
 }
 
 type Repo = (Item, Option<i64>, Option<String>);

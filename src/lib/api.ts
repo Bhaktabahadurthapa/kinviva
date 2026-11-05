@@ -74,7 +74,7 @@ export const api = {
   quizStats: () => invoke<{ attempts: number; total: number; correct: number }>("quiz_stats"),
   dashboardStats: () => invoke<DashboardStats>("dashboard_stats"),
   globalSearch: (query: string) => invoke<SearchHit[]>("global_search", { query }),
-  discoverRefresh: () => invoke<{ added: number; failed: string[] }>("discover_refresh"),
+  discoverRefresh: () => invoke<{ added: number; pictures?: number; failed: string[] }>("discover_refresh"),
   discoverList: (kind?: string, savedOnly = false) => invoke<[DiscoverItem[], number | null]>("discover_list", { kind: kind ?? null, savedOnly }),
   discoverMark: (id: string, field: "read" | "saved", value: boolean) => invoke<void>("discover_mark", { id, field, value }),
   discoverTrends: () => invoke<Trend[]>("discover_trends"),

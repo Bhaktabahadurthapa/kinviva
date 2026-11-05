@@ -19,7 +19,6 @@ const TYPE: Record<string, { label: string; tab: Tab; icon: string; tone: string
   work: { label: "Meeting", tab: "meeting", icon: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3", tone: "blue" },
   general: { label: "Meeting", tab: "meeting", icon: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3", tone: "blue" },
 };
-const TOPIC_TONE = ["purple", "blue", "teal", "amber", "green", "rose"];
 
 function Icon({ d, size = 20 }: { d: string; size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={d} /></svg>;
@@ -229,13 +228,17 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
               <div className="d-tabs" role="tablist" aria-label="Discover sections">{([["for_you", "For you"], ["news", "Latest news"], ["repos", "GitHub projects"], ["learn", "Learning paths"]] as const).map(([k, l]) => <button key={k} role="tab" aria-selected={dTab === k} className={dTab === k ? "active" : ""} onClick={() => setDTab(k)}>{l}</button>)}</div>
               {dTab === "learn" ? <p className="hint">Official learning paths and certification pages are listed in Discover.</p> : shown.length === 0 ? <p className="hint">Nothing yet. Open Discover and press Refresh.</p> : (
                 <div className="d-cards">
-                  {shown.map((d, i) => (
-                    <article key={d.id} className="d-article">
-                      <button className={`d-thumb tone-${TOPIC_TONE[(d.topic?.length ?? i) % TOPIC_TONE.length]}`} onClick={() => api.openExternal(d.url).catch((e) => onError(errorText(e)))} aria-label={`Open ${d.title}`}>
-                        {d.image ? <img src={d.image} alt="" loading="lazy" className={d.kind === "repo" ? "d-avatar" : ""} /> : <span className="d-thumb-mark">{d.kind === "repo" ? "{ }" : d.source.replace(/ .*/, "")}</span>}
-                        {d.topic && <span className="d-tag">{d.topic}</span>}
-                      </button>
-                      <strong>{d.title}</strong>
+                  {shown.map((d) => (
+                    <article key={d.id} className={`d-article ${d.image ? "" : "d-text-only"}`}>
+                      {d.image && (
+                        <button className="d-thumb" onClick={() => api.openExternal(d.url).catch((e) => onError(errorText(e)))} aria-label={`Open ${d.title}`}>
+                          <img src={d.image} alt="" loading="lazy" className={d.kind === "repo" ? "d-avatar" : ""} />
+                          {d.topic && <span className="d-tag">{d.topic}</span>}
+                        </button>
+                      )}
+                      {!d.image && d.topic && <span className="d-tag-inline">{d.topic}</span>}
+                      <button className="d-title" onClick={() => api.openExternal(d.url).catch((e) => onError(errorText(e)))}>{d.title}</button>
+                      {d.summary && <p className="d-summary">{d.summary}</p>}
                       <span className="d-src">{d.source} · {ago(d.published_at)}{d.stars != null ? ` · ★ ${d.stars.toLocaleString()}` : ""}</span>
                     </article>
                   ))}
