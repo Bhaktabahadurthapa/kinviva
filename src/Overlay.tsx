@@ -107,7 +107,7 @@ export default function Overlay() {
                 emptyHint={running ? "Listening…" : "No meeting running."}
               />
             </div>
-            <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Explain shows the latest point in plain English." />
+            <AiPanel title="Plain-English meaning" voice="serif" slot={live.ai.meaning} placeholder="Explain shows the latest point in plain English." />
             <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Suggest reply drafts a short answer to review." />
           </>
         )}

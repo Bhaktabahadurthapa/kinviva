@@ -6,7 +6,7 @@ import type { MeetingDetail, MeetingSummary } from "../lib/types";
 
 const fmtDate = (ms: number) => new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 const dur = (m: MeetingSummary) => (m.ended_at ? `${Math.max(1, Math.round((m.ended_at - m.started_at) / 60000))} min` : "in progress");
-const actionLabel: Record<string, string> = { explain: "Simple meaning", suggest: "Suggested reply", recap: "Recap", ask: "Answer" };
+const actionLabel: Record<string, string> = { explain: "Plain-English meaning", suggest: "Suggested reply", recap: "Recap", ask: "Answer" };
 
 export function HistoryView({ onError, onOpenLive, refreshKey }: { onError: (m: string) => void; onOpenLive: () => void; refreshKey: number }) {
   const [search, setSearch] = useState("");

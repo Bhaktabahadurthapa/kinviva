@@ -90,7 +90,7 @@ export function LiveView({
       <div ref={grid} className={autoMode === "off" ? "live-grid" : "live-stack"} style={{ ["--split" as string]: `minmax(0, ${split}fr) 16px minmax(0, ${100 - split}fr)` }}>
         <section className="panel transcript-panel">
           <header>
-            <h2>{autoMode === "off" ? "Live transcript" : "Captured audio"}</h2>
+            <h2>{autoMode === "off" ? "Live transcript" : "Live transcript"}</h2>
             <div className="panel-tools">
               <div className="seg" role="group" aria-label="Automatic help">
                 <span className="seg-label">Auto</span>
@@ -141,15 +141,15 @@ export function LiveView({
         <Splitter value={split} onChange={setSplit} container={grid} />
         {autoMode === "off" ? (
           <div className="side">
-            <AiPanel title="Simple meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
+            <AiPanel title="Plain-English meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
             <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
           </div>
         ) : (
           // Reading view: what they said (top) becomes simple words (bottom), hands-free.
           <section className="panel simple-panel">
             <header>
-              <h2>In simple words</h2>
-              <span className="auto-tag">automatic</span>
+              <h2>Live insights</h2>
+              <span className="auto-tag">Auto-assist</span>
             </header>
             <ManualAnswers live={live} />
             <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />

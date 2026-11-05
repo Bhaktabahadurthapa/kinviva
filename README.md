@@ -42,7 +42,7 @@ model. The video is built with Remotion from [`demo-video/`](demo-video/).
 |---|---|
 | 🎧 **Two channels** | Other participants ("Them", system audio) and you ("Me", microphone), each with status, a level meter and clear errors. Switch microphones mid-meeting. |
 | 📝 **Live transcript** | Partial text appears as people talk and settles into timecoded final lines. |
-| ⚡ **Hands-free reading view** | **Auto-assist** (on by default): the screen splits into *Captured audio* on top and *In simple words* below. When someone else finishes a sentence, its meaning appears below in large, plain language, and questions get a draft answer — no clicks. Switch to *Explain only* or *Off* any time. |
+| ⚡ **Hands-free reading view** | **Auto-assist** (on by default): the screen splits into *Live transcript* on one side and *Live insights* on the other. When someone else finishes a sentence, its meaning appears below in large, plain language, and questions get a draft answer — no clicks. Switch to *Explain only* or *Off* any time. |
 | 💬 **Explain** | The latest point in short, plain-English sentences that keep the speaker's meaning and flag what the transcript left unclear. |
 | ✍️ **Suggest reply** | A short, editable draft grounded in the transcript, your notes and your documents. It never invents your experience, and nothing is sent into the meeting. |
 | 🧭 **Recap and Ask** | Bullet recap of the meeting so far, or a direct question answered from what was said. |

@@ -5,7 +5,7 @@ import { AiText } from "./AiText";
 import { citationText, displayText } from "../lib/citations";
 
 const actionLabel: Record<string, string> = {
-  explain: "Simple meaning",
+  explain: "Plain-English meaning",
   recap: "Recap",
   ask: "Answer",
   suggest: "Suggested reply",
@@ -43,7 +43,7 @@ export function AiPanel({
       <header>
         <h2>
           {slot?.action && slot.action !== "suggest" ? actionLabel[slot.action] : title}
-          {slot?.auto && <span className="auto-tag">auto</span>}
+          {slot?.auto && <span className="auto-tag">Auto-assist</span>}
         </h2>
         <div className="panel-tools">
           {streaming && (

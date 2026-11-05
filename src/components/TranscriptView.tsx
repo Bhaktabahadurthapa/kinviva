@@ -41,7 +41,7 @@ function Side({ note }: { note?: SideNote }) {
   if (!note?.meaning && !note?.answer) return <div className="side-note empty-note" />;
   return (
     <div className="side-note">
-      {note.meaning && <NotePart label="In simple words" slot={note.meaning} />}
+      {note.meaning && <NotePart label="Insight" slot={note.meaning} />}
       {note.answer && <NotePart label="You could say" slot={note.answer} />}
     </div>
   );
@@ -84,7 +84,7 @@ export function TranscriptView({
       {parallel && finals.length > 0 && (
         <div className="pair pair-head">
           <span className="label">What was said</span>
-          <span className="label">In simple words · automatic</span>
+          <span className="label">Live insight · Auto-assist</span>
         </div>
       )}
       {finals.length === 0 && (searching || partials.length === 0) && <div className="empty">{searching ? "No line matches your search." : emptyHint ?? "Transcript will appear here."}</div>}
