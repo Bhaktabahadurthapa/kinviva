@@ -4,6 +4,7 @@ import { NotesView } from "./views/NotesView";
 import { KnowledgeView } from "./views/KnowledgeView";
 import { DashboardView } from "./views/DashboardView";
 import { TopBar, HIT_TAB } from "./components/TopBar";
+import { lazy, Suspense } from "react";
 import { TechnicalView, type TechSub } from "./views/TechnicalView";
 import { useEffect, useRef, useState } from "react";
 import { PrivacyPills, SourceErrors, SourcePill } from "./components/StatusBar";
@@ -94,10 +95,22 @@ function LiveTitle({ id, initial, onError }: { id: string | null; initial: strin
   );
 }
 
+const WhiteboardView = lazy(() => {
+  (window as unknown as Record<string, string>).EXCALIDRAW_ASSET_PATH = "/excalidraw-assets/";
+  return import("./views/WhiteboardView");
+});
+
+const VisualsView = lazy(() => import("./views/VisualsView"));
+
 export default function App() {
   const { state: live, dispatch } = useLive();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [techSeen, setTechSeen] = useState(false);
+  const [wbSeen, setWbSeen] = useState(false);
+  const [boardOpen, setBoardOpen] = useState<string | null>(null);
+  useEffect(() => {
+    if (tab === "whiteboard") setWbSeen(true);
+  }, [tab]);
   const [techSub, setTechSub] = useState<TechSub>("explain");
   useEffect(() => {
     if (tab === "technical") setTechSeen(true);
@@ -351,6 +364,18 @@ export default function App() {
           {tab === "notes" && <NotesView onError={setError} refreshKey={historyKey} onChanged={() => setHistoryKey((k) => k + 1)} />}
           {tab === "knowledge" && <KnowledgeView onError={setError} onOpenHit={openHit} />}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
+          {tab === "visuals" && (
+            <Suspense fallback={<p className="hint arch-loading">Loading…</p>}>
+              <VisualsView onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onOpenBoard={(id) => { setBoardOpen(id); setTab("whiteboard"); }} onOpenDiagram={() => go("architecture")} />
+            </Suspense>
+          )}
+          {wbSeen && (
+            <div hidden={tab !== "whiteboard"} className="wb-host">
+              <Suspense fallback={<p className="hint arch-loading">Loading the whiteboard…</p>}>
+                <WhiteboardView onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} initialBoard={boardOpen} />
+              </Suspense>
+            </div>
+          )}
           {techSeen && (
             <div hidden={tab !== "technical"} className="tc-host">
               <TechnicalView live={live} onError={setError} sub={techSub} onSub={setTechSub} onChanged={() => setHistoryKey((k) => k + 1)} />

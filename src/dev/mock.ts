@@ -35,6 +35,12 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
       ] },
     global_search: [{ kind: "note", id: "n1", title: "Postgres backups", snippet: "We take nightly snapshots.", when: Date.now() }],
     record_list: [],
+    record_get: { id: "b1", kind: "board", title: "Untitled board", body: "{\"elements\":[]}", updated_at: 1 },
+    studio_generate: (a: { kind?: string }) => a?.kind === "chart"
+      ? JSON.stringify({ title: "Revenue by month", type: "bar", unit: "USD", illustrative: false, series: [{ name: "2025", points: [{ label: "Mar", value: 5000, quote: "Revenue was 5,000 in March", verified: true, edited: false }, { label: "Apr", value: 7500, quote: "7500 in April", verified: true, edited: false }, { label: "May", value: 9000, quote: "", verified: false, edited: false }] }] })
+      : a?.kind === "board_ops"
+      ? JSON.stringify({ ops: [{ op: "add_node", label: "Redis cache", near: "" }] })
+      : JSON.stringify({ title: "Request flow", kind: "flowchart", nodes: [{ id: "n1", label: "Client" }, { id: "n2", label: "API gateway" }, { id: "n3", label: "Orders service" }, { id: "n4", label: "PostgreSQL" }], edges: [{ from: "n1", to: "n2", label: "HTTPS" }, { from: "n2", to: "n3", label: "" }, { from: "n3", to: "n4", label: "SQL" }], references: [] }),
     record_save: { id: "n1", kind: "note", title: "Untitled note", body: "", updated_at: 1 },
     record_delete: null,
     learning_list: [],
@@ -100,7 +106,8 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
         listeners.set(args.event, [...(listeners.get(args.event) ?? []), args.handler]);
         return args.handler;
       }
-      return cmd in answers ? answers[cmd] : null;
+      const a = answers[cmd];
+      return cmd in answers ? (typeof a === "function" ? (a as (x: unknown) => unknown)(args) : a) : null;
     },
   };
   const params = new URLSearchParams(location.search);

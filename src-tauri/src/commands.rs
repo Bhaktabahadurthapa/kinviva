@@ -262,7 +262,11 @@ pub async fn studio_generate(state: State<'_, AppState>, request_id: String, kin
     let result = crate::llm::stream_chat(&cfg, messages, cancel, |_| {}).await;
     state.ai_tasks.lock().unwrap().remove(&request_id);
     match result {
-        Ok(text) => crate::studio::post(kind, &text, &transcript),
+        Ok(text) => {
+            // Quotes and numbers are checked against everything the model was shown.
+            let evidence = format!("{transcript}\n{notes}\n{input}\n{}", passages.iter().map(|p| p.text.as_str()).collect::<Vec<_>>().join("\n"));
+            crate::studio::post(kind, &text, &evidence)
+        }
         Err(crate::llm::LlmError::Cancelled) => Err("Cancelled.".into()),
         Err(crate::llm::LlmError::Failed(m)) => Err(m),
     }

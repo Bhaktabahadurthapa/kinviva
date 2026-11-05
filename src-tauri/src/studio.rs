@@ -27,6 +27,9 @@ pub enum Kind {
     LearningPlan,
     ExplainItem,
     Assistant,
+    BoardDiagram,
+    BoardOps,
+    Chart,
 }
 
 impl Kind {
@@ -46,11 +49,14 @@ impl Kind {
             "learning_plan" => Kind::LearningPlan,
             "explain_item" => Kind::ExplainItem,
             "assistant" => Kind::Assistant,
+            "board_diagram" => Kind::BoardDiagram,
+            "board_ops" => Kind::BoardOps,
+            "chart" => Kind::Chart,
             _ => return None,
         })
     }
     pub fn is_json(self) -> bool {
-        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan)
+        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart)
     }
     /// Kinds that need conversation text to work from.
     pub fn needs_transcript(self) -> bool {
@@ -75,6 +81,9 @@ fn instructions(kind: Kind) -> &'static str {
         Kind::RehearsalFeedback => "The presenter practised: their spoken text is in <input>. Give feedback with headings on their own lines: CLARITY, STRUCTURE, PACE AND LENGTH, WORDS TO SIMPLIFY (list with replacements), STRONGEST PART, ONE THING TO FIX FIRST. Be specific and kind. Quote short pieces of their text.",
         Kind::JobAnalysis => "Analyse the job description in <input> for an interview candidate. Headings on their own lines: ROLE IN ONE SENTENCE, SKILLS THEY WANT (bullets, most important first), LIKELY QUESTIONS (8), WHAT TO PREPARE, GAPS TO CHECK. Compare with <documents> (the candidate's own files) only when they exist; say \"no documents provided\" otherwise. Never claim the candidate has experience that the documents do not show.",
         Kind::LearningPlan => "Create a practical learning plan for the goal in <input>. Return ONE JSON object only: {\"goal\": string, \"steps\": [{\"title\": string, \"detail\": one or two sentences, \"kind\": \"lesson\" or \"drill\"}]} with 5 to 10 steps in a sensible order, each small enough for one sitting. No invented course names or links.",
+        Kind::BoardDiagram => "Turn the material into a diagram the user can edit on a whiteboard. The wanted style is in <input> (flowchart, concept map, decision tree, timeline or sequence) with optional extra wishes. Return ONE JSON object only: {\"title\": string, \"kind\": \"flowchart\"|\"concept_map\"|\"decision_tree\"|\"timeline\"|\"sequence\", \"nodes\": [{\"id\": string, \"label\": max 6 words, \"detail\": optional one short sentence}] (3 to 20 nodes), \"edges\": [{\"from\": id, \"to\": id, \"label\": max 4 words or empty}], \"references\": [exact short quotes from the material that support the diagram] (max 4)}. Use only what the material says; never invent components, steps or facts. For a timeline list nodes in time order and connect each to the next.",
+        Kind::BoardOps => "The user wants to edit a whiteboard diagram. The current objects are listed in <input> as lines \"id: label\", followed by the user's request after a line \"REQUEST:\". Return ONE JSON object only: {\"ops\": [ ... ]} with at most 8 operations, each one of: {\"op\":\"add_node\",\"label\":string,\"near\":id or \"\"}, {\"op\":\"rename\",\"id\":id,\"label\":string}, {\"op\":\"remove\",\"id\":id}, {\"op\":\"connect\",\"from\":id,\"to\":id,\"label\":string}, {\"op\":\"highlight\",\"id\":id,\"reason\":string}, {\"op\":\"explain\",\"id\":id,\"text\":one to three simple sentences}. Use only ids from the list (for a new node use the id \"new1\", \"new2\" and so on in connect operations that follow). Do exactly what was asked and nothing more.",
+        Kind::Chart => "Build a chart ONLY from numbers that really appear in the material (<transcript>, <documents>, <notes> or <input>). Return ONE JSON object only: {\"title\": string, \"type\": \"bar\"|\"line\"|\"pie\", \"unit\": string or \"\", \"series\": [{\"name\": string, \"points\": [{\"label\": string, \"value\": number, \"quote\": the exact words from the material that contain the number}]}]} with at most 4 series and 24 points each. Never estimate or invent a number. If the material has no usable numbers, return {\"series\": []}.",
         Kind::Assistant => "The user's request is in <input>, starting with a mode in square brackets: [Ask], [Explain], [Summarize], [Plan] or [Code]. Do what the mode says. Ask: answer the question. Explain: explain it in simple words, then one deeper paragraph. Summarize: a short summary in bullets. Plan: a numbered plan of small steps. Code: a short, correct code example in a fenced block with a one-line note on how to run it. Use <documents> (the user's own files) when they are relevant and name the file in square brackets; say \"Not in your documents\" when you rely on general knowledge. Wrap the 1 to 3 most important words per paragraph in **double asterisks**.",
         Kind::ExplainItem => "Help the reader with the article or project described in <input>. Use only the title and summary given plus general knowledge; say plainly if the summary is too short to know more. Layout, headings on their own lines: IN SIMPLE WORDS, WHY IT MATTERS, TRY IT (one practical step), HARD WORDS (up to 5 lines \"term: meaning\"). Wrap key terms in **double asterisks**.",
     }
@@ -166,6 +175,22 @@ pub fn is_read_only(cmd: &str) -> bool {
     }
 }
 
+/// True when `token` appears as a whole number in `text` (so 50 does not match 500).
+fn number_in(text: &str, token: &str) -> bool {
+    let mut from = 0;
+    while let Some(i) = text[from..].find(token) {
+        let start = from + i;
+        let end = start + token.len();
+        let before = text[..start].chars().next_back();
+        let after = text[end..].chars().next();
+        if !before.is_some_and(|c| c.is_ascii_digit() || c == '.') && !after.is_some_and(|c| c.is_ascii_digit()) {
+            return true;
+        }
+        from = start + 1;
+    }
+    false
+}
+
 /// Rebuilds a model result into something safe to show. `transcript` is used to check quotes and owners.
 pub fn post(kind: Kind, raw: &str, transcript: &str) -> Result<String, String> {
     if !kind.is_json() {
@@ -237,6 +262,84 @@ pub fn post(kind: Kind, raw: &str, transcript: &str) -> Result<String, String> {
                 return Err("The plan could not be built. Please try again with a clearer goal.".into());
             }
             json!({"goal": clean(v.get("goal").and_then(Value::as_str).unwrap_or(""), 160), "steps": steps})
+        }
+        Kind::BoardDiagram => {
+            let mut ids: Vec<(String, String)> = Vec::new();
+            let mut nodes = Vec::new();
+            for n in v.get("nodes").and_then(Value::as_array).into_iter().flatten().take(30) {
+                let label = crate::architecture::safe_text(n.get("label").and_then(Value::as_str).unwrap_or(""), 60);
+                if label.is_empty() {
+                    continue;
+                }
+                let id = format!("n{}", nodes.len() + 1);
+                ids.push((n.get("id").and_then(Value::as_str).unwrap_or("").trim().to_string(), id.clone()));
+                ids.push((norm(&label), id.clone()));
+                nodes.push(json!({"id": id, "label": label, "detail": crate::architecture::safe_text(n.get("detail").and_then(Value::as_str).unwrap_or(""), 120)}));
+            }
+            if nodes.len() < 2 {
+                return Err("There is not enough in the material to draw a diagram. Add a little more detail.".into());
+            }
+            let find = |x: &str| ids.iter().find(|(k, _)| k == x.trim() || *k == norm(x)).map(|(_, i)| i.clone());
+            let mut edges = Vec::new();
+            for e in v.get("edges").and_then(Value::as_array).into_iter().flatten().take(60) {
+                if let (Some(f), Some(t)) = (e.get("from").and_then(Value::as_str).and_then(find), e.get("to").and_then(Value::as_str).and_then(find)) {
+                    if f != t && edges.len() < 50 {
+                        edges.push(json!({"from": f, "to": t, "label": crate::architecture::safe_text(e.get("label").and_then(Value::as_str).unwrap_or(""), 28)}));
+                    }
+                }
+            }
+            let t = norm(transcript);
+            let refs: Vec<String> = strs(&v, "references", 4, 160).into_iter().filter(|q| q.len() >= 8 && t.contains(&norm(q))).collect();
+            let kind = pick(&v, "kind", &["flowchart", "concept_map", "decision_tree", "timeline", "sequence"], "flowchart");
+            json!({"title": crate::architecture::safe_text(v.get("title").and_then(Value::as_str).unwrap_or("Diagram"), 60), "kind": kind, "nodes": nodes, "edges": edges, "references": refs})
+        }
+        Kind::BoardOps => {
+            let id_ok = |s: &str| !s.is_empty() && s.len() <= 64 && s.chars().all(|c| c.is_ascii_alphanumeric() || "-_:.".contains(c));
+            let sid = |o: &Value, k: &str| o.get(k).and_then(Value::as_str).map(str::trim).filter(|s| id_ok(s)).map(String::from);
+            let txt = |o: &Value, k: &str, m: usize| crate::architecture::safe_text(o.get(k).and_then(Value::as_str).unwrap_or(""), m);
+            let mut ops = Vec::new();
+            for o in v.get("ops").and_then(Value::as_array).into_iter().flatten().take(8) {
+                match o.get("op").and_then(Value::as_str).unwrap_or("") {
+                    "add_node" if !txt(o, "label", 60).is_empty() => ops.push(json!({"op": "add_node", "label": txt(o, "label", 60), "near": sid(o, "near").unwrap_or_default()})),
+                    "rename" if sid(o, "id").is_some() && !txt(o, "label", 60).is_empty() => ops.push(json!({"op": "rename", "id": sid(o, "id"), "label": txt(o, "label", 60)})),
+                    "remove" if sid(o, "id").is_some() => ops.push(json!({"op": "remove", "id": sid(o, "id")})),
+                    "connect" if sid(o, "from").is_some() && sid(o, "to").is_some() => ops.push(json!({"op": "connect", "from": sid(o, "from"), "to": sid(o, "to"), "label": txt(o, "label", 28)})),
+                    "highlight" if sid(o, "id").is_some() => ops.push(json!({"op": "highlight", "id": sid(o, "id"), "reason": txt(o, "reason", 160)})),
+                    "explain" if sid(o, "id").is_some() => ops.push(json!({"op": "explain", "id": sid(o, "id"), "text": txt(o, "text", 400)})),
+                    _ => {}
+                }
+            }
+            if ops.is_empty() {
+                return Err("MeetingLens could not turn that into a change. Try describing it differently, for example: add a cache between the API and the database.".into());
+            }
+            json!({"ops": ops})
+        }
+        Kind::Chart => {
+            let evidence = transcript.replace(',', "");
+            let mut verified_any = false;
+            let mut series = Vec::new();
+            for sr in v.get("series").and_then(Value::as_array).into_iter().flatten().take(4) {
+                let mut points = Vec::new();
+                for p in sr.get("points").and_then(Value::as_array).into_iter().flatten().take(24) {
+                    let (Some(value), label) = (p.get("value").and_then(Value::as_f64).filter(|x| x.is_finite()), clean(p.get("label").and_then(Value::as_str).unwrap_or(""), 40)) else { continue };
+                    if label.is_empty() {
+                        continue;
+                    }
+                    let quote = clean(p.get("quote").and_then(Value::as_str).unwrap_or(""), 200);
+                    // A number counts as sourced only when it appears in the material.
+                    let token = if value.fract() == 0.0 { format!("{}", value as i64) } else { format!("{value}") };
+                    let verified = number_in(&evidence, &token) && (quote.is_empty() || norm(transcript).replace(',', "").contains(&norm(&quote).replace(',', "")));
+                    verified_any |= verified;
+                    points.push(json!({"label": label, "value": value, "quote": if verified { quote } else { String::new() }, "verified": verified, "edited": false}));
+                }
+                if !points.is_empty() {
+                    series.push(json!({"name": clean(sr.get("name").and_then(Value::as_str).unwrap_or("Series"), 40), "points": points}));
+                }
+            }
+            if series.is_empty() {
+                return Err("There are no numbers in the material to chart. Add the figures to a note or the conversation first.".into());
+            }
+            json!({"title": clean(v.get("title").and_then(Value::as_str).unwrap_or("Chart"), 80), "type": pick(&v, "type", &["bar", "line", "pie"], "bar"), "unit": clean(v.get("unit").and_then(Value::as_str).unwrap_or(""), 20), "series": series, "illustrative": !verified_any})
         }
         _ => unreachable!(),
     };
@@ -325,5 +428,37 @@ mod tests {
         assert_eq!(Kind::parse("quiz"), Some(Kind::Quiz));
         assert_eq!(Kind::parse("assistant"), Some(Kind::Assistant));
         assert_eq!(Kind::parse("nope"), None);
+    }
+
+    #[test]
+    fn board_diagrams_are_rebuilt_and_ops_are_limited_to_known_operations() {
+        let raw = json!({"title": "<b>Flow</b>", "kind": "flowchart", "nodes": [{"id": "a", "label": "Client [x]"}, {"id": "b", "label": "API"}, {"id": "c", "label": ""}],
+            "edges": [{"from": "a", "to": "b", "label": "HTTPS"}, {"from": "a", "to": "zzz"}, {"from": "b", "to": "b"}], "references": ["client calls the api", "never said"]}).to_string();
+        let out: Value = serde_json::from_str(&post(Kind::BoardDiagram, &raw, "The client calls the API over HTTPS").unwrap()).unwrap();
+        assert_eq!(out["nodes"].as_array().unwrap().len(), 2);
+        assert_eq!(out["edges"].as_array().unwrap().len(), 1);
+        assert_eq!(out["references"].as_array().unwrap().len(), 1);
+        assert!(!out["title"].as_str().unwrap().contains('<'));
+        assert!(post(Kind::BoardDiagram, r#"{"nodes":[{"label":"Only"}]}"#, "").is_err());
+        let ops = json!({"ops": [{"op": "add_node", "label": "Redis cache", "near": "n2"}, {"op": "delete_everything"}, {"op": "remove", "id": "bad id!"}, {"op": "connect", "from": "n1", "to": "n2", "label": "reads"}, {"op": "rename", "id": "n3", "label": ""}]}).to_string();
+        let o: Value = serde_json::from_str(&post(Kind::BoardOps, &ops, "").unwrap()).unwrap();
+        assert_eq!(o["ops"].as_array().unwrap().len(), 2);
+        assert!(post(Kind::BoardOps, r#"{"ops":[{"op":"format_disk"}]}"#, "").is_err());
+    }
+
+    #[test]
+    fn chart_numbers_must_come_from_the_material() {
+        let material = "Revenue was 5,000 in March and 7500 in April. Only 50 people came.";
+        let raw = json!({"title": "Revenue", "type": "line", "unit": "USD", "series": [{"name": "Revenue", "points": [
+            {"label": "March", "value": 5000, "quote": "Revenue was 5,000 in March"}, {"label": "April", "value": 7500, "quote": "7500 in April"},
+            {"label": "May", "value": 9000, "quote": "9000 in May"}, {"label": "Fifty", "value": 500, "quote": ""}]}]}).to_string();
+        let out: Value = serde_json::from_str(&post(Kind::Chart, &raw, material).unwrap()).unwrap();
+        let pts = out["series"][0]["points"].as_array().unwrap();
+        assert_eq!(pts.iter().map(|p| p["verified"].as_bool().unwrap()).collect::<Vec<_>>(), vec![true, true, false, false]);
+        assert_eq!(out["illustrative"], false);
+        let none: Value = serde_json::from_str(&post(Kind::Chart, r#"{"series":[{"name":"x","points":[{"label":"a","value":42}]}]}"#, "no numbers here").unwrap()).unwrap();
+        assert_eq!(none["illustrative"], true);
+        assert!(post(Kind::Chart, r#"{"series":[]}"#, material).unwrap_err().contains("no numbers"));
+        assert!(number_in("50 people", "50") && !number_in("500 people", "50") && !number_in("1.50", "50"));
     }
 }
