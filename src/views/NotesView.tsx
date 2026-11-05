@@ -10,6 +10,13 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
   const [search, setSearch] = useState("");
   const [sel, setSel] = useState<AppRecord | null>(null);
   const [state, setState] = useState<"saved" | "saving" | "">("");
+  const [full, setFull] = useState(false);
+  useEffect(() => {
+    if (!full) return;
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [full]);
   const timer = useRef<number>();
   const dirty = useRef(false);
 
@@ -71,7 +78,7 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
   };
 
   return (
-    <div className="notes">
+    <div className={`notes ${full ? "notes-full" : ""}`}>
       <aside className="notes-list">
         <div className="notes-list-head">
           <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search notes" aria-label="Search notes" />
@@ -98,6 +105,7 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
             <div className="notes-editor-head">
               <input className="notes-title" value={sel.title} onChange={(e) => edit({ title: e.target.value })} onBlur={flush} aria-label="Note title" maxLength={200} />
               <span className="hint" role="status">{state === "saving" ? "Saving…" : state === "saved" ? "Saved" : ""}</span>
+              <button className="btn btn-sm" onClick={() => setFull((f) => !f)} aria-pressed={full} title={full ? "Back to the app (Esc)" : "Full screen: hides the menu so you can write"}>{full ? "Exit full screen" : "Full screen"}</button>
               <button className="btn btn-ghost btn-sm" onClick={() => void remove()}>Delete</button>
             </div>
             <textarea value={sel.body} onChange={(e) => edit({ body: e.target.value })} onBlur={flush} placeholder="Write your note…" aria-label="Note text" />

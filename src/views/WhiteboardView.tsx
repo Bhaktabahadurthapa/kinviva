@@ -39,6 +39,13 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
   const [status, setStatus] = useState("");
   const [panel, setPanel] = useState<"" | "ai" | "versions">("ai");
   const [exportOpen, setExportOpen] = useState(false);
+  const [full, setFull] = useState(false);
+  useEffect(() => {
+    if (!full) return;
+    const key = (e: KeyboardEvent) => e.key === "Escape" && !e.defaultPrevented && setFull(false);
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [full]);
   const apiRef = useRef<Api>(null);
   const inbox = useSyncExternalStore(subscribeInbox, peekInbox);
   const handled = useRef(0);
@@ -226,7 +233,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
   };
 
   return (
-    <div className="wb">
+    <div className={`wb ${full ? "wb-full" : ""}`}>
       <aside className="wb-list">
         <button className="btn btn-primary btn-sm" onClick={() => void create()}>New whiteboard</button>
         <ul>{boards.map((b) => <li key={b.id} className={cur?.id === b.id ? "active" : ""}><button onClick={() => void open(b.id)}>{b.title}</button></li>)}</ul>
@@ -238,6 +245,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
             <div className="wb-bar">
               <input className="notes-title" value={cur.title} onChange={(e) => void rename(e.target.value)} aria-label="Board name" maxLength={200} />
               <span className="hint" role="status">{status}</span>
+              <button className="btn btn-sm" onClick={() => setFull((f) => !f)} aria-pressed={full} title={full ? "Back to the app (Esc)" : "Full screen: hides the menu so the board fills the window"}>{full ? "Exit full screen" : "Full screen"}</button>
               <button className="btn btn-primary btn-sm" onClick={() => setPanel(panel === "ai" ? "" : "ai")} aria-pressed={panel === "ai"}>{panel === "ai" ? "Hide AI panel" : "Generate or edit with AI"}</button>
               <button className="btn btn-sm" onClick={() => void snapshot("Saved version").then(() => setStatus("Version saved"))}>Save version</button>
               <button className="btn btn-sm" onClick={() => setPanel(panel === "versions" ? "" : "versions")} aria-pressed={panel === "versions"}>Versions</button>
