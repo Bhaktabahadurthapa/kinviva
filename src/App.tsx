@@ -1,4 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
+import { NAV, SESSION_TABS, type Tab } from "./lib/nav";
+import { DashboardView } from "./views/DashboardView";
+import { TopBar, HIT_TAB } from "./components/TopBar";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PrivacyPills, SourceErrors, SourcePill } from "./components/StatusBar";
 import { api, errorText, inTauri } from "./lib/api";
@@ -15,7 +18,6 @@ import type { Course } from "./lib/types";
 /** The two primary areas. Settings is a utility button, not a primary item. */
 const ArchitecturePanel = lazy(() => import("./components/architecture/ArchitecturePanel").then((m) => ({ default: m.ArchitecturePanel })));
 
-type Tab = "meeting" | "interview" | "architecture" | "sessions" | "knowledge" | "settings";
 
 function Logo() {
   // The app icon mark: a lens with a voice waveform inside.
@@ -93,12 +95,13 @@ function LiveTitle({ id, initial, onError }: { id: string | null; initial: strin
 
 export default function App() {
   const { state: live, dispatch } = useLive();
-  const [tab, setTab] = useState<Tab>("meeting");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const [archSeen, setArchSeen] = useState(false);
+  const [searchSeed, setSearchSeed] = useState("");
   useEffect(() => {
     if (tab === "architecture") setArchSeen(true);
   }, [tab]);
-  const meetingTab: MeetingTab = tab === "sessions" ? "history" : tab === "knowledge" ? "resources" : "live";
+  const meetingTab: MeetingTab = tab === "sessions" ? "history" : tab === "documents" ? "resources" : "live";
   const [session, setSessionState] = useState<SessionChoice>(loadSession);
   const [courses, setCourses] = useState<Course[]>([]);
   const setSession = (s: SessionChoice) => {
@@ -195,19 +198,16 @@ export default function App() {
             Meeting<em>Lens</em>
           </span>
         </div>
-        {(
-          [
-            ["meeting", "Meeting"],
-            ["interview", "Interview"],
-            ["architecture", "Architecture"],
-            ["sessions", "Sessions"],
-            ["knowledge", "Knowledge"],
-          ] as [Tab, string][]
-        ).map(([t, label], i) => (
-          // The index is drawn by CSS so the button's text stays just its label.
-          <button key={t} className={`rail-btn ${tab === t ? "active" : ""}`} data-idx={String(i + 1).padStart(2, "0")} onClick={() => setTab(t)}>
-            {label}
-          </button>
+        {(["Main", "Workspace"] as const).map((group) => (
+          <div key={group} className="rail-group">
+            <span className="rail-heading">{group}</span>
+            {NAV.filter((n) => n.group === group && n.ready).map((n) => (
+              <button key={n.id} className={`rail-btn ${tab === n.id ? "active" : ""}`} aria-current={tab === n.id ? "page" : undefined} onClick={() => setTab(n.id)}>
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={n.icon} /></svg>
+                {n.label}
+              </button>
+            ))}
+          </div>
         ))}
         <div className="rail-foot">
           <button className={`rail-btn rail-util ${tab === "settings" ? "active" : ""}`} onClick={() => setTab("settings")}>
@@ -220,6 +220,15 @@ export default function App() {
         </div>
       </nav>
       <main>
+        <TopBar
+          settings={settings}
+          onSettings={() => setTab("settings")}
+          onOpenHit={(h) => {
+            setSearchSeed(h.kind === "session" || h.kind === "transcript" ? h.title : "");
+            setTab(HIT_TAB[h.kind] ?? "dashboard");
+          }}
+        />
+        {(SESSION_TABS.has(tab) || running || busy) && (
         <header className="console">
           <div className="onair">
             <span className={`lamp ${running ? "is-live" : ""}`}>
@@ -264,6 +273,7 @@ export default function App() {
           </button>
           </div>
         </header>
+        )}
         {error && (
           <div className="banner banner-bad toast" role="alert">
             <span>{error}</span>
@@ -295,10 +305,10 @@ export default function App() {
           />
         )}
         <div className="content">
-          {(tab === "meeting" || tab === "sessions" || tab === "knowledge") && (
+          {(tab === "meeting" || tab === "sessions" || tab === "documents") && (
             <MeetingView
               tab={meetingTab}
-              onTab={(t) => setTab(t === "history" ? "sessions" : t === "resources" ? "knowledge" : "meeting")}
+              onTab={(t) => setTab(t === "history" ? "sessions" : t === "resources" ? "documents" : "meeting")}
               live={live}
               dispatch={dispatch}
               onError={setError}
@@ -315,6 +325,17 @@ export default function App() {
               onCoursesChanged={loadCourses}
               running={!!running}
               historyKey={historyKey}
+              searchSeed={searchSeed}
+            />
+          )}
+          {tab === "dashboard" && (
+            <DashboardView
+              settings={settings}
+              running={!!running}
+              refreshKey={historyKey}
+              onNavigate={setTab}
+              onOpenSession={(id) => { void api.getMeeting(id).then((d) => setSearchSeed(d.meeting.title)).catch(() => {}); setTab("sessions"); }}
+              onError={setError}
             />
           )}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}

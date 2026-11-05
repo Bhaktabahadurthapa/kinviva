@@ -15,6 +15,7 @@ import type {
   Snapshot,
 } from "./types";
 import type { ArchModel, DiagramRecord } from "./architecture";
+import type { AppRecord, DashboardStats, LearningItem, SearchHit } from "./platform";
 
 /** True when running inside the Tauri shell (not a plain browser preview). */
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -57,6 +58,22 @@ export const api = {
   architectureList: (meetingId?: string | null) => invoke<DiagramRecord[]>("architecture_list", { meetingId: meetingId ?? null }),
   architectureDelete: (id: string) => invoke<void>("architecture_delete", { id }),
   architectureWriteFile: (path: string, dataBase64: string) => invoke<void>("architecture_write_file", { path, dataBase64 }),
+  studioGenerate: (requestId: string, kind: string, input?: string, meetingId?: string | null) =>
+    invoke<string>("studio_generate", { requestId, kind, input: input ?? null, meetingId: meetingId ?? null }),
+  recordSave: (record: AppRecord) => invoke<AppRecord>("record_save", { record }),
+  recordList: (kind: string, search?: string, meetingId?: string | null, withBody = true) =>
+    invoke<AppRecord[]>("record_list", { kind, search: search || null, meetingId: meetingId ?? null, withBody }),
+  recordGet: (id: string) => invoke<AppRecord | null>("record_get", { id }),
+  recordDelete: (id: string) => invoke<void>("record_delete", { id }),
+  boardSnapshot: (boardId: string, label: string, scene: string) => invoke<void>("board_snapshot", { boardId, label, scene }),
+  boardRevisions: (boardId: string) => invoke<AppRecord[]>("board_revisions", { boardId }),
+  learningList: () => invoke<LearningItem[]>("learning_list"),
+  learningSave: (item: LearningItem) => invoke<LearningItem>("learning_save", { item }),
+  learningDelete: (id: string) => invoke<void>("learning_delete", { id }),
+  quizRecord: (topic: string, total: number, correct: number) => invoke<void>("quiz_record", { topic, total, correct }),
+  quizStats: () => invoke<{ attempts: number; total: number; correct: number }>("quiz_stats"),
+  dashboardStats: () => invoke<DashboardStats>("dashboard_stats"),
+  globalSearch: (query: string) => invoke<SearchHit[]>("global_search", { query }),
   interviewSkills: () => invoke<SkillInfo[]>("interview_skills"),
   aiCancel: (requestId: string) => invoke<boolean>("ai_cancel", { requestId }),
   listMeetings: (search?: string) => invoke<MeetingSummary[]>("list_meetings", { search: search || null }),

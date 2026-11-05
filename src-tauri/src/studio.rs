@@ -26,6 +26,7 @@ pub enum Kind {
     JobAnalysis,
     LearningPlan,
     ExplainItem,
+    Assistant,
 }
 
 impl Kind {
@@ -44,6 +45,7 @@ impl Kind {
             "job_analysis" => Kind::JobAnalysis,
             "learning_plan" => Kind::LearningPlan,
             "explain_item" => Kind::ExplainItem,
+            "assistant" => Kind::Assistant,
             _ => return None,
         })
     }
@@ -73,6 +75,7 @@ fn instructions(kind: Kind) -> &'static str {
         Kind::RehearsalFeedback => "The presenter practised: their spoken text is in <input>. Give feedback with headings on their own lines: CLARITY, STRUCTURE, PACE AND LENGTH, WORDS TO SIMPLIFY (list with replacements), STRONGEST PART, ONE THING TO FIX FIRST. Be specific and kind. Quote short pieces of their text.",
         Kind::JobAnalysis => "Analyse the job description in <input> for an interview candidate. Headings on their own lines: ROLE IN ONE SENTENCE, SKILLS THEY WANT (bullets, most important first), LIKELY QUESTIONS (8), WHAT TO PREPARE, GAPS TO CHECK. Compare with <documents> (the candidate's own files) only when they exist; say \"no documents provided\" otherwise. Never claim the candidate has experience that the documents do not show.",
         Kind::LearningPlan => "Create a practical learning plan for the goal in <input>. Return ONE JSON object only: {\"goal\": string, \"steps\": [{\"title\": string, \"detail\": one or two sentences, \"kind\": \"lesson\" or \"drill\"}]} with 5 to 10 steps in a sensible order, each small enough for one sitting. No invented course names or links.",
+        Kind::Assistant => "The user's request is in <input>, starting with a mode in square brackets: [Ask], [Explain], [Summarize], [Plan] or [Code]. Do what the mode says. Ask: answer the question. Explain: explain it in simple words, then one deeper paragraph. Summarize: a short summary in bullets. Plan: a numbered plan of small steps. Code: a short, correct code example in a fenced block with a one-line note on how to run it. Use <documents> (the user's own files) when they are relevant and name the file in square brackets; say \"Not in your documents\" when you rely on general knowledge. Wrap the 1 to 3 most important words per paragraph in **double asterisks**.",
         Kind::ExplainItem => "Help the reader with the article or project described in <input>. Use only the title and summary given plus general knowledge; say plainly if the summary is too short to know more. Layout, headings on their own lines: IN SIMPLE WORDS, WHY IT MATTERS, TRY IT (one practical step), HARD WORDS (up to 5 lines \"term: meaning\"). Wrap key terms in **double asterisks**.",
     }
 }
@@ -320,6 +323,7 @@ mod tests {
         assert_eq!(post(Kind::TechnicalExplain, "  hello  ", "").unwrap(), "hello");
         assert!(post(Kind::StudyGuide, "  ", "").is_err());
         assert_eq!(Kind::parse("quiz"), Some(Kind::Quiz));
+        assert_eq!(Kind::parse("assistant"), Some(Kind::Assistant));
         assert_eq!(Kind::parse("nope"), None);
     }
 }

@@ -105,6 +105,10 @@ export interface Shortcuts {
 
 export interface Settings {
   onboarded: boolean;
+  profile_role: string;
+  profile_level: string;
+  interests: string[];
+  discover_enabled: boolean;
   capture_mic: boolean;
   capture_system: boolean;
   mic_device: string | null;

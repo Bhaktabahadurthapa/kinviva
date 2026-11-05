@@ -8,8 +8,9 @@ const fmtDate = (ms: number) => new Date(ms).toLocaleString(undefined, { dateSty
 const dur = (m: MeetingSummary) => (m.ended_at ? `${Math.max(1, Math.round((m.ended_at - m.started_at) / 60000))} min` : "in progress");
 const actionLabel: Record<string, string> = { explain: "Plain-English meaning", suggest: "Suggested reply", recap: "Recap", ask: "Answer" };
 
-export function HistoryView({ onError, onOpenLive, refreshKey }: { onError: (m: string) => void; onOpenLive: () => void; refreshKey: number }) {
-  const [search, setSearch] = useState("");
+export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: { onError: (m: string) => void; onOpenLive: () => void; refreshKey: number; initialSearch?: string }) {
+  const [search, setSearch] = useState(initialSearch ?? "");
+  useEffect(() => setSearch(initialSearch ?? ""), [initialSearch]);
   const [list, setList] = useState<MeetingSummary[]>([]);
   const [sel, setSel] = useState<MeetingDetail | null>(null);
   const [title, setTitle] = useState("");

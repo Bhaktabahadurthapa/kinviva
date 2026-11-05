@@ -25,6 +25,7 @@ export function MeetingView({
   onCoursesChanged,
   running,
   historyKey,
+  searchSeed,
 }: {
   tab: MeetingTab;
   onTab: (t: MeetingTab) => void;
@@ -39,6 +40,7 @@ export function MeetingView({
   onCoursesChanged: () => void;
   running: boolean;
   historyKey: number;
+  searchSeed?: string;
 }) {
   const active = running ? live.status?.session : undefined;
   return (
@@ -56,7 +58,7 @@ export function MeetingView({
       )}
       <div className="meeting-body">
         {tab === "live" && <LiveView live={live} dispatch={dispatch} onError={onError} autoMode={autoMode} onAutoChange={onAutoChange} />}
-        {tab === "history" && <HistoryView onError={onError} onOpenLive={() => onTab("live")} refreshKey={historyKey} />}
+        {tab === "history" && <HistoryView onError={onError} onOpenLive={() => onTab("live")} refreshKey={historyKey} initialSearch={searchSeed} />}
         {tab === "resources" && <ResourcesView courses={courses} onCoursesChanged={onCoursesChanged} onError={onError} />}
       </div>
     </div>
