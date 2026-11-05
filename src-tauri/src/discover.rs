@@ -56,10 +56,19 @@ pub struct Item {
     pub url: String,
     pub summary: String,
     pub published_at: Option<i64>,
+    /// A picture the source offers for the article (never fetched or shown unless it passes the checks below).
+    pub image_url: Option<String>,
 }
 
 fn local(name: &[u8]) -> &[u8] {
     name.rsplit(|b| *b == b':').next().unwrap_or(name)
+}
+
+fn media_url(t: &quick_xml::events::BytesStart) -> Option<String> {
+    let attr = |k: &[u8]| t.attributes().flatten().find(|a| a.key.as_ref() == k).and_then(|a| a.unescape_value().ok().map(|v| v.into_owned()));
+    let kind = attr(b"type").or_else(|| attr(b"medium")).unwrap_or_default();
+    // An enclosure or media item may be audio or video; only pictures (or untyped items) count.
+    (kind.is_empty() || kind.starts_with("image")).then(|| attr(b"url")).flatten()
 }
 
 fn parse_date(s: &str) -> Option<i64> {
@@ -107,19 +116,89 @@ pub fn canonical_url(u: &str) -> Option<String> {
     Some(url.to_string().trim_end_matches('/').to_string())
 }
 
+/// The first `<img src>` in a piece of HTML.
+pub fn first_img(html: &str) -> Option<String> {
+    let lower = html.to_lowercase();
+    let mut from = 0;
+    while let Some(i) = lower[from..].find("<img") {
+        let tag_start = from + i;
+        let tag_end = lower[tag_start..].find('>').map(|e| tag_start + e)?;
+        let tag = &html[tag_start..tag_end];
+        let lt = &lower[tag_start..tag_end];
+        if let Some(at) = lt.find(" src=") {
+            let rest = &tag[at + 5..];
+            let quote = rest.chars().next()?;
+            if quote == '"' || quote == '\'' {
+                if let Some(end) = rest[1..].find(quote) {
+                    return Some(rest[1..1 + end].to_string());
+                }
+            }
+        }
+        from = tag_end;
+    }
+    None
+}
+
+/// Only https pictures from public hosts are considered.
+pub fn usable_image_url(u: &str) -> Option<String> {
+    let url = url::Url::parse(u.trim()).ok()?;
+    if url.scheme() != "https" {
+        return None;
+    }
+    let host = url.host_str()?.to_lowercase();
+    let private = host == "localhost" || host.ends_with(".local") || host.ends_with(".internal") || host.parse::<std::net::IpAddr>().is_ok();
+    (!private).then(|| url.to_string())
+}
+
+/// A data URL for a small picture: JPEG, PNG, WebP or GIF (checked by the file itself, SVG never accepted),
+/// scaled down to 480 pixels wide and re-encoded as JPEG so it stays light and sharp. `None` if it is not a real picture.
+pub fn image_data_url(bytes: &[u8], max_download: usize) -> Option<String> {
+    use base64::Engine;
+    use image::{codecs::jpeg::JpegEncoder, ImageReader};
+    if bytes.len() < 16 || bytes.len() > max_download {
+        return None;
+    }
+    let mut reader = ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().ok()?;
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(8000);
+    limits.max_image_height = Some(8000);
+    limits.max_alloc = Some(128 * 1024 * 1024);
+    reader.limits(limits);
+    let img = reader.decode().ok()?;
+    let (w, h) = (img.width(), img.height());
+    if w < 40 || h < 40 {
+        return None;
+    }
+    let thumb = if w > 480 { img.resize(480, 480 * 4, image::imageops::FilterType::Triangle) } else { img };
+    let rgb = thumb.to_rgb8();
+    let mut out = Vec::new();
+    JpegEncoder::new_with_quality(&mut out, 82).encode(rgb.as_raw(), rgb.width(), rgb.height(), image::ExtendedColorType::Rgb8).ok()?;
+    Some(format!("data:image/jpeg;base64,{}", base64::engine::general_purpose::STANDARD.encode(&out)))
+}
+
 /// Items from an RSS 2.0 or Atom document (first `limit` only).
 pub fn parse_feed(xml: &str, limit: usize) -> Vec<Item> {
     let mut reader = Reader::from_str(xml);
     let mut items = Vec::new();
     let mut cur: Option<(String, String, String, Option<i64>)> = None;
+    let mut media: Option<String> = None;
+    let mut html = String::new();
     let mut field: Option<&'static str> = None;
     let mut text = String::new();
     loop {
         match reader.read_event() {
             Ok(Event::Start(t)) => {
                 let name = local(t.name().as_ref()).to_vec();
+                if cur.is_some() && media.is_none() && matches!(name.as_slice(), b"content" | b"thumbnail" | b"enclosure") {
+                    media = media_url(&t);
+                }
                 match name.as_slice() {
-                    b"item" | b"entry" => cur = Some((String::new(), String::new(), String::new(), None)),
+                    b"item" | b"entry" => {
+                        cur = Some((String::new(), String::new(), String::new(), None));
+                        media = None;
+                        html.clear();
+                    }
+                    b"encoded" | b"content" if cur.is_some() && t.attributes().flatten().all(|a| a.key.as_ref() != b"url") => (field, text) = (Some("html"), String::new()),
                     b"title" if cur.is_some() => (field, text) = (Some("title"), String::new()),
                     b"link" if cur.is_some() => {
                         // Atom: <link href="..."/> (rel alternate or none); RSS: text content.
@@ -139,6 +218,9 @@ pub fn parse_feed(xml: &str, limit: usize) -> Vec<Item> {
                 }
             }
             Ok(Event::Empty(t)) => {
+                if cur.is_some() && media.is_none() && matches!(local(t.name().as_ref()), b"content" | b"thumbnail" | b"enclosure") {
+                    media = media_url(&t);
+                }
                 if local(t.name().as_ref()) == b"link" {
                     let href = t.attributes().flatten().find(|a| a.key.as_ref() == b"href").and_then(|a| a.unescape_value().ok().map(|v| v.into_owned()));
                     let rel = t.attributes().flatten().find(|a| a.key.as_ref() == b"rel").and_then(|a| a.unescape_value().ok().map(|v| v.into_owned()));
@@ -175,19 +257,24 @@ pub fn parse_feed(xml: &str, limit: usize) -> Vec<Item> {
                     match (f, name.as_slice()) {
                         ("title", b"title") => c.0 = clean_text(&text, 200),
                         ("link", b"link") if c.1.is_empty() => c.1 = text.trim().to_string(),
-                        ("summary", b"description") | ("summary", b"summary") => c.2 = clean_text(&text, 320),
+                        ("summary", b"description") | ("summary", b"summary") => {
+                            html.push_str(&text);
+                            c.2 = clean_text(&text, 320);
+                        }
+                        ("html", _) => html.push_str(&text),
                         ("date", b"pubDate") | ("date", b"published") | ("date", b"date") => c.3 = parse_date(&text),
                         ("date", b"updated") if c.3.is_none() => c.3 = parse_date(&text),
                         _ => {}
                     }
-                    if matches!(name.as_slice(), b"title" | b"link" | b"description" | b"summary" | b"pubDate" | b"published" | b"updated" | b"date") {
+                    if matches!(name.as_slice(), b"title" | b"link" | b"description" | b"summary" | b"pubDate" | b"published" | b"updated" | b"date" | b"encoded" | b"content") {
                         field = None;
                     }
                 }
                 if matches!(name.as_slice(), b"item" | b"entry") {
                     if let Some((title, link, summary, date)) = cur.take() {
                         if let (false, Some(url)) = (title.is_empty(), canonical_url(&link)) {
-                            items.push(Item { title, url, summary, published_at: date });
+                            let image_url = media.take().or_else(|| first_img(&html)).and_then(|u| usable_image_url(&u));
+                            items.push(Item { title, url, summary, published_at: date, image_url });
                         }
                     }
                     if items.len() >= limit {
@@ -253,6 +340,8 @@ pub struct DiscoverItem {
     pub is_read: bool,
     pub saved: bool,
     pub score: f64,
+    /// A small picture as a data URL (only for the best-ranked items).
+    pub image: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -287,11 +376,11 @@ impl Db {
     pub fn list_discover(&self, kind: Option<&str>, saved_only: bool, interests: &[String], now: i64) -> R<Vec<DiscoverItem>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn
-            .prepare("SELECT id, url, title, source, summary, published_at, fetched_at, topic, kind, stars, language, is_read, saved FROM discover_items WHERE (?1 IS NULL OR kind = ?1) AND (?2 = 0 OR saved = 1)")
+            .prepare("SELECT id, url, title, source, summary, published_at, fetched_at, topic, kind, stars, language, is_read, saved, image FROM discover_items WHERE (?1 IS NULL OR kind = ?1) AND (?2 = 0 OR saved = 1)")
             .map_err(e)?;
         let rows = stmt
             .query_map(params![kind, saved_only as i64], |r| {
-                Ok(DiscoverItem { id: r.get(0)?, url: r.get(1)?, title: r.get(2)?, source: r.get(3)?, summary: r.get::<_, Option<String>>(4)?.unwrap_or_default(), published_at: r.get(5)?, fetched_at: r.get(6)?, topic: r.get(7)?, kind: r.get(8)?, stars: r.get(9)?, language: r.get(10)?, is_read: r.get::<_, i64>(11)? != 0, saved: r.get::<_, i64>(12)? != 0, score: 0.0 })
+                Ok(DiscoverItem { id: r.get(0)?, url: r.get(1)?, title: r.get(2)?, source: r.get(3)?, summary: r.get::<_, Option<String>>(4)?.unwrap_or_default(), published_at: r.get(5)?, fetched_at: r.get(6)?, topic: r.get(7)?, kind: r.get(8)?, stars: r.get(9)?, language: r.get(10)?, is_read: r.get::<_, i64>(11)? != 0, saved: r.get::<_, i64>(12)? != 0, score: 0.0, image: r.get(13)? })
             })
             .map_err(e)?;
         let mut items = rows.collect::<Result<Vec<_>, _>>().map_err(e)?;
@@ -307,7 +396,19 @@ impl Db {
         }
         items.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
         items.truncate(80);
+        // Pictures are kept for the 30 best-ranked items so the list stays light.
+        for i in items.iter_mut().skip(30) {
+            i.image = None;
+        }
         Ok(items)
+    }
+
+    pub fn discover_needs_image(&self, url: &str) -> R<bool> {
+        self.conn.lock().unwrap().query_row("SELECT COUNT(*) FROM discover_items WHERE url = ?1 AND image IS NULL", [url], |r| r.get::<_, i64>(0)).map(|n| n > 0).map_err(e)
+    }
+
+    pub fn set_discover_image(&self, url: &str, image: &str) -> R<()> {
+        self.conn.lock().unwrap().execute("UPDATE discover_items SET image = ?2 WHERE url = ?1", params![url, image]).map(|_| ()).map_err(e)
     }
 
     pub fn mark_discover(&self, id: &str, field: &str, value: bool) -> R<()> {
@@ -367,6 +468,16 @@ async fn get_text(c: &reqwest::Client, url: &str) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&bytes).into_owned())
 }
 
+/// Downloads one picture (at most 3 MB) and turns it into a small thumbnail.
+async fn fetch_image(c: &reqwest::Client, url: &str) -> Option<String> {
+    let r = tokio::time::timeout(std::time::Duration::from_secs(6), c.get(url).send()).await.ok()?.ok()?;
+    if !r.status().is_success() || r.content_length().is_some_and(|n| n > 3_000_000) {
+        return None;
+    }
+    let bytes = tokio::time::timeout(std::time::Duration::from_secs(6), r.bytes()).await.ok()?.ok()?;
+    image_data_url(&bytes, 3_000_000)
+}
+
 /// Fetches every feed and the GitHub topics for the user's interests. One failing source never stops the others.
 pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
     let interests: Vec<String> = interests.iter().map(|i| clean_interest(i)).filter(|i| !i.is_empty()).collect();
@@ -380,11 +491,22 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
     for f in FEEDS {
         match get_text(&c, f.url).await {
             Ok(xml) => {
+                let mut fetched = 0;
                 for it in parse_feed(&xml, 25) {
                     let mine = match_interest(&it.title, &it.summary, interests);
                     let topic = mine.as_deref().or_else(|| classify(&it.title, &it.summary));
-                    if db.add_discover(&it, f.name, "news", topic, None, None, now).unwrap_or(false) {
+                    let is_new = db.add_discover(&it, f.name, "news", topic, None, None, now).unwrap_or(false);
+                    if is_new {
                         added += 1;
+                    }
+                    // New items get a picture, and older items saved before pictures existed are filled in.
+                    if let (Some(img), true) = (&it.image_url, fetched < 10) {
+                        if is_new || db.discover_needs_image(&it.url).unwrap_or(false) {
+                            fetched += 1;
+                            if let Some(data) = fetch_image(&c, img).await {
+                                let _ = db.set_discover_image(&it.url, &data);
+                            }
+                        }
                     }
                 }
             }
@@ -407,6 +529,11 @@ pub async fn refresh(db: &Db, interests: &[String], now: i64) -> RefreshReport {
                 for r in parse_repos(&body) {
                     if db.add_discover(&r.0, "GitHub", "repo", Some(topic.as_str()), r.1, r.2.as_deref(), now).unwrap_or(false) {
                         added += 1;
+                        if let Some(img) = &r.0.image_url {
+                            if let Some(data) = fetch_image(&c, img).await {
+                                let _ = db.set_discover_image(&r.0.url, &data);
+                            }
+                        }
                     }
                 }
             }
@@ -429,7 +556,8 @@ pub fn parse_repos(body: &str) -> Vec<Repo> {
             let name = r.get("full_name")?.as_str()?.to_string();
             let desc = clean_text(r.get("description").and_then(|d| d.as_str()).unwrap_or(""), 240);
             let pushed = r.get("pushed_at").and_then(|d| d.as_str()).and_then(parse_date);
-            Some((Item { title: name, url, summary: desc, published_at: pushed }, r.get("stargazers_count").and_then(|s| s.as_i64()), r.get("language").and_then(|l| l.as_str()).map(String::from)))
+            let avatar = r.get("owner").and_then(|o| o.get("avatar_url")).and_then(|a| a.as_str()).map(|a| format!("{a}{}s=200", if a.contains('?') { "&" } else { "?" })).and_then(|a| usable_image_url(&a));
+            Some((Item { title: name, url, summary: desc, published_at: pushed, image_url: avatar }, r.get("stargazers_count").and_then(|s| s.as_i64()), r.get("language").and_then(|l| l.as_str()).map(String::from)))
         })
         .collect()
 }
@@ -492,7 +620,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let db = Db::open(&dir.path().join("t.sqlite")).unwrap();
         let now = 200 * 86_400_000i64;
-        let mk = |t: &str, u: &str, days: i64| Item { title: t.into(), url: u.into(), summary: "s".into(), published_at: Some(now - days * 86_400_000) };
+        let mk = |t: &str, u: &str, days: i64| Item { title: t.into(), url: u.into(), summary: "s".into(), published_at: Some(now - days * 86_400_000), image_url: None };
         assert!(db.add_discover(&mk("Pods explained", "https://a.com/1", 2), "Kubernetes Blog", "news", Some("Kubernetes"), None, None, now).unwrap());
         assert!(!db.add_discover(&mk("Pods explained", "https://a.com/other", 2), "Kubernetes Blog", "news", Some("Kubernetes"), None, None, now).unwrap()); // same title, same source
         assert!(!db.add_discover(&mk("Different", "https://a.com/1", 2), "CNCF", "news", Some("Kubernetes"), None, None, now).unwrap()); // same URL
@@ -534,12 +662,46 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let db = Db::open(&dir.path().join("t.sqlite")).unwrap();
         let now = 100 * 86_400_000i64;
-        let it = |t: &str, u: &str| Item { title: t.into(), url: u.into(), summary: "s".into(), published_at: Some(now - 86_400_000) };
+        let it = |t: &str, u: &str| Item { title: t.into(), url: u.into(), summary: "s".into(), published_at: Some(now - 86_400_000), image_url: None };
         db.add_discover(&it("Rust async deep dive", "https://a.com/r"), "Kubernetes Blog", "news", None, None, None, now).unwrap();
         db.add_discover(&it("Pods explained", "https://a.com/p"), "Kubernetes Blog", "news", Some("Kubernetes"), None, None, now).unwrap();
         let list = db.list_discover(Some("news"), false, &["Rust".to_string()], now).unwrap();
         assert_eq!(list[0].title, "Rust async deep dive");
         assert_eq!(list[0].topic.as_deref(), Some("Rust"));
+    }
+
+    #[test]
+    fn pictures_come_from_media_tags_enclosures_or_the_first_image_and_only_safe_ones_are_kept() {
+        let xml = r#"<rss xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel>
+          <item><title>One</title><link>https://a.com/1</link><media:content url="https://cdn.a.com/one.jpg" medium="image"/></item>
+          <item><title>Two</title><link>https://a.com/2</link><enclosure url="https://cdn.a.com/two.png" type="image/png" length="1"/></item>
+          <item><title>Three</title><link>https://a.com/3</link><enclosure url="https://cdn.a.com/pod.mp3" type="audio/mpeg"/><description><![CDATA[<p>Hi</p><img alt="x" src="https://cdn.a.com/three.webp" width="10">]]></description></item>
+          <item><title>Four</title><link>https://a.com/4</link><content:encoded><![CDATA[<img src='https://cdn.a.com/four.jpg'>]]></content:encoded></item>
+          <item><title>Five</title><link>https://a.com/5</link><media:thumbnail url="http://insecure.com/a.jpg"/></item>
+          <item><title>Six</title><link>https://a.com/6</link><media:thumbnail url="https://localhost/a.jpg"/></item></channel></rss>"#;
+        let imgs: Vec<Option<String>> = parse_feed(xml, 10).into_iter().map(|i| i.image_url).collect();
+        assert_eq!(imgs, vec![
+            Some("https://cdn.a.com/one.jpg".into()), Some("https://cdn.a.com/two.png".into()), Some("https://cdn.a.com/three.webp".into()),
+            Some("https://cdn.a.com/four.jpg".into()), None, None]);
+        assert_eq!(first_img("<p>no pictures</p>"), None);
+        assert_eq!(usable_image_url("https://10.0.0.5/x.png"), None);
+    }
+
+    #[test]
+    fn only_real_pictures_become_small_jpeg_thumbnails() {
+        let mut png = Vec::new();
+        let img = image::RgbImage::from_fn(1200, 800, |x, y| image::Rgb([(x % 255) as u8, (y % 255) as u8, 90]));
+        image::DynamicImage::ImageRgb8(img).write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
+        let url = image_data_url(&png, 5_000_000).unwrap();
+        assert!(url.starts_with("data:image/jpeg;base64,"));
+        assert!(url.len() < 150_000, "thumbnail is {} bytes", url.len());
+        assert_eq!(image_data_url(&png, 1000), None); // download too large
+        assert_eq!(image_data_url(b"<svg xmlns='http://www.w3.org/2000/svg'><script>alert(1)</script></svg>", 1000), None);
+        assert_eq!(image_data_url(b"<html>not an image at all</html>", 1000), None);
+        let tiny = image::DynamicImage::ImageRgb8(image::RgbImage::new(8, 8));
+        let mut t = Vec::new();
+        tiny.write_to(&mut std::io::Cursor::new(&mut t), image::ImageFormat::Png).unwrap();
+        assert_eq!(image_data_url(&t, 100_000), None); // too small to be a picture
     }
 
     /// Needs the internet: every configured feed must parse into dated, linked items. Run with `cargo test -- --ignored`.
@@ -555,7 +717,10 @@ mod tests {
                 assert!(items.len() >= 5, "{} gave {} items", f.name, items.len());
                 assert!(items.iter().all(|i| i.url.starts_with("https://") && !i.title.is_empty()), "{}", f.name);
                 assert!(items.iter().filter(|i| i.published_at.is_some()).count() >= items.len() / 2, "{} has few dates", f.name);
-                eprintln!("{}: {} items, first: {}", f.name, items.len(), items[0].title);
+                let with = items.iter().filter(|i| i.image_url.is_some()).count();
+                let first = items.iter().find_map(|i| i.image_url.clone());
+                let ok = match &first { Some(u) => fetch_image(&c, u).await.is_some(), None => false };
+                eprintln!("{}: {} items, {} with a picture, first picture downloads: {}", f.name, items.len(), with, ok);
             }
             let body = get_text(&c, "https://api.github.com/search/repositories?q=topic:kubernetes+stars:%3E1000&sort=stars&per_page=3").await.unwrap();
             assert!(!parse_repos(&body).is_empty());

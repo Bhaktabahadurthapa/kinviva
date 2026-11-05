@@ -156,6 +156,7 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
         <ul className="disc-list">
           {shown.map((it) => (
             <li key={it.id} className={`disc-item ${it.is_read ? "read" : ""}`}>
+              {it.image && <button className="disc-pic" onClick={() => open(it)} aria-label={`Open ${it.title}`}><img src={it.image} alt="" loading="lazy" className={it.kind === "repo" ? "d-avatar" : ""} /></button>}
               <div className="disc-meta"><span className="search-kind">{it.kind === "repo" ? "Repository" : "News"}</span><span>{it.source}</span>{it.topic && <span className="tc-chip">{it.topic}</span>}<span>{ago(it.published_at)}</span>{it.stars != null && <span>★ {it.stars.toLocaleString()}</span>}{it.language && <span>{it.language}</span>}{!it.is_read && <span className="dot-new" title="Unread" />}</div>
               <button className="disc-title" onClick={() => open(it)}>{it.title}</button>
               {it.summary && <p>{it.summary}</p>}

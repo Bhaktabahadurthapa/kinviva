@@ -1709,3 +1709,14 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .app .rail-heading { padding: 8px 12px 4px; }
 @media (max-height: 940px) { .app .rail-interests { display: none; } }
 @media (max-height: 820px) { .app .rail-btn { padding: 2px 10px; } .nav-ico { width: 26px; height: 26px; } .app .rail-heading { padding: 6px 12px 2px; } .app .rail-foot .rail-btn { padding: 2px 10px; } .app .rail-tag { display: none; } }
+
+/* Discover pictures */
+.d-thumb { height: 150px; overflow: hidden; background: var(--c-sunken); }
+.d-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.d-thumb img.d-avatar { object-fit: contain; padding: 18px; background: #fff; }
+.d-thumb .d-tag { z-index: 1; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); }
+.d-cards { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.disc-item { position: relative; }
+.disc-pic { align-self: flex-start; width: 100%; max-width: 320px; height: 150px; padding: 0; border: 1px solid var(--c-line); border-radius: 12px; overflow: hidden; cursor: pointer; background: var(--c-sunken); }
+.disc-pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.disc-pic img.d-avatar { object-fit: contain; padding: 14px; background: #fff; }

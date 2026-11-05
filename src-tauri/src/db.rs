@@ -167,6 +167,10 @@ const MIGRATIONS: &[&str] = &[
     );
     CREATE INDEX discover_time ON discover_items(published_at);
     "#,
+    // 7: a small picture for each Discover item (stored locally so the app never loads remote images)
+    r#"
+    ALTER TABLE discover_items ADD COLUMN image TEXT;
+    "#,
 ];
 
 #[derive(Debug, Clone, Serialize, serde::Deserialize, PartialEq)]

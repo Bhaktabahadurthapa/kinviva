@@ -218,7 +218,7 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
 
       <section className="d-card d-discover">
         <header>
-          <h2>◎ Discover{settings?.interests?.length ? ` — ${settings.interests.slice(0, 3).join(", ")}${settings.interests.length > 3 ? " & more" : ""}` : ""}</h2>
+          <h2>◎ Discover{settings?.interests?.length ? ` — ${settings.interests.slice(0, 3).join(", ")}${settings.interests.length >= 3 ? " & more" : ""}` : ""}</h2>
           <button className="d-link" onClick={() => onNavigate("discover")}>{settings?.interests?.length ? "Manage interests →" : "Choose interests →"}</button>
         </header>
         {!enabled ? (
@@ -232,8 +232,8 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
                   {shown.map((d, i) => (
                     <article key={d.id} className="d-article">
                       <button className={`d-thumb tone-${TOPIC_TONE[(d.topic?.length ?? i) % TOPIC_TONE.length]}`} onClick={() => api.openExternal(d.url).catch((e) => onError(errorText(e)))} aria-label={`Open ${d.title}`}>
+                        {d.image ? <img src={d.image} alt="" loading="lazy" className={d.kind === "repo" ? "d-avatar" : ""} /> : <span className="d-thumb-mark">{d.kind === "repo" ? "{ }" : d.source.replace(/ .*/, "")}</span>}
                         {d.topic && <span className="d-tag">{d.topic}</span>}
-                        <span className="d-thumb-mark">{d.kind === "repo" ? "{ }" : d.source.replace(/ .*/, "")}</span>
                       </button>
                       <strong>{d.title}</strong>
                       <span className="d-src">{d.source} · {ago(d.published_at)}{d.stars != null ? ` · ★ ${d.stars.toLocaleString()}` : ""}</span>

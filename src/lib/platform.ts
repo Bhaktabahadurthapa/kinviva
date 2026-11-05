@@ -52,7 +52,7 @@ export const percent = (done: number, total: number) => (total > 0 ? Math.round(
 
 export interface DiscoverItem {
   id: string; url: string; title: string; source: string; summary: string; published_at: number | null; fetched_at: number;
-  topic: string | null; kind: "news" | "repo"; stars: number | null; language: string | null; is_read: boolean; saved: boolean; score: number;
+  topic: string | null; kind: "news" | "repo"; stars: number | null; language: string | null; is_read: boolean; saved: boolean; score: number; image?: string | null;
 }
 export interface Trend { topic: string; recent: number; previous: number; sources: number }
 export interface TopicScore { topic: string; attempts: number; total: number; correct: number }

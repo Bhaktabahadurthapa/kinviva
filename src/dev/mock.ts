@@ -35,7 +35,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
       ] },
     global_search: [{ kind: "note", id: "n1", title: "Postgres backups", snippet: "We take nightly snapshots.", when: Date.now() }],
     discover_list: [[
-      { id: "d1", url: "https://kubernetes.io/blog/x", title: "Kubernetes 1.35: what is new for pods", source: "Kubernetes Blog", summary: "A look at the changes in this release.", published_at: Date.now() - 2 * 86400e3, fetched_at: Date.now(), topic: "Kubernetes", kind: "news", stars: null, language: null, is_read: false, saved: false, score: 2 },
+      { id: "d1", url: "https://kubernetes.io/blog/x", title: "Kubernetes 1.35: what is new for pods", source: "Kubernetes Blog", summary: "A look at the changes in this release.", published_at: Date.now() - 2 * 86400e3, fetched_at: Date.now(), topic: "Kubernetes", kind: "news", stars: null, language: null, is_read: false, saved: false, score: 2, image: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='480' height='270'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23326ce5'/><stop offset='1' stop-color='%235b3fd6'/></linearGradient></defs><rect width='480' height='270' fill='url(%23g)'/><circle cx='240' cy='135' r='60' fill='none' stroke='white' stroke-width='10'/></svg>" },
       { id: "d2", url: "https://github.com/org/tool", title: "org/tool", source: "GitHub", summary: "A tool for platform teams.", published_at: Date.now() - 86400e3, fetched_at: Date.now(), topic: "Platform Engineering", kind: "repo", stars: 5400, language: "Go", is_read: true, saved: true, score: 1 },
     ], Date.now()],
     discover_refresh: { added: 2, failed: [] },
