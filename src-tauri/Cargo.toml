@@ -36,6 +36,7 @@ log = "0.4"
 hound = "3.5"
 url = "2"
 zip = { version = "2", default-features = false, features = ["deflate"] }
+quick-xml = "0.38"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 screencapturekit = "1"

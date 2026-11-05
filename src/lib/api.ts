@@ -15,7 +15,7 @@ import type {
   Snapshot,
 } from "./types";
 import type { ArchModel, DiagramRecord } from "./architecture";
-import type { AppRecord, DashboardStats, LearningItem, SearchHit } from "./platform";
+import type { AppRecord, DashboardStats, DiscoverItem, LearningItem, SearchHit, TopicScore, Trend } from "./platform";
 
 /** True when running inside the Tauri shell (not a plain browser preview). */
 export const inTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -74,6 +74,12 @@ export const api = {
   quizStats: () => invoke<{ attempts: number; total: number; correct: number }>("quiz_stats"),
   dashboardStats: () => invoke<DashboardStats>("dashboard_stats"),
   globalSearch: (query: string) => invoke<SearchHit[]>("global_search", { query }),
+  discoverRefresh: () => invoke<{ added: number; failed: string[] }>("discover_refresh"),
+  discoverList: (kind?: string, savedOnly = false) => invoke<[DiscoverItem[], number | null]>("discover_list", { kind: kind ?? null, savedOnly }),
+  discoverMark: (id: string, field: "read" | "saved", value: boolean) => invoke<void>("discover_mark", { id, field, value }),
+  discoverTrends: () => invoke<Trend[]>("discover_trends"),
+  openExternal: (url: string) => invoke<void>("open_external", { url }),
+  quizTopics: () => invoke<TopicScore[]>("quiz_topics"),
   interviewSkills: () => invoke<SkillInfo[]>("interview_skills"),
   aiCancel: (requestId: string) => invoke<boolean>("ai_cancel", { requestId }),
   listMeetings: (search?: string) => invoke<MeetingSummary[]>("list_meetings", { search: search || null }),

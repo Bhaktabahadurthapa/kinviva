@@ -18,3 +18,6 @@
 - Added `mermaid` 12.3.0 (lazy-loaded), dev-only `jsdom` for tests; notices updated.
 - DB migration 5 (`diagrams`). Existing data untouched.
 
+## Platform transformation (local, not pushed)
+Milestones, each committed locally: storage and generator (migration 6, `store.rs`, `studio.rs`); Dashboard, grouped sidebar, purple light theme, global search; Notes and Knowledge Base; Technical Copilot (explain, troubleshoot, incidents, architecture); Whiteboard (Excalidraw) and charts (Recharts); Classroom, Presentation, decisions and actions, job analysis; Discover and My Learning. See `docs/architecture/platform-overview.md`.
+

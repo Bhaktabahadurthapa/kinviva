@@ -102,6 +102,8 @@ const WhiteboardView = lazy(() => {
   return import("./views/WhiteboardView");
 });
 
+const DiscoverView = lazy(() => import("./views/DiscoverView"));
+const LearningView = lazy(() => import("./views/LearningView"));
 const VisualsView = lazy(() => import("./views/VisualsView"));
 
 export default function App() {
@@ -368,6 +370,16 @@ export default function App() {
           {tab === "notes" && <NotesView onError={setError} refreshKey={historyKey} onChanged={() => setHistoryKey((k) => k + 1)} />}
           {tab === "knowledge" && <KnowledgeView onError={setError} onOpenHit={openHit} />}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}
+          {tab === "discover" && (
+            <Suspense fallback={<p className="hint arch-loading">Loading…</p>}>
+              <DiscoverView settings={settings} onSettings={setSettings} onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onBoard={() => setTab("whiteboard")} />
+            </Suspense>
+          )}
+          {tab === "learning" && (
+            <Suspense fallback={<p className="hint arch-loading">Loading…</p>}>
+              <LearningView onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onNavigate={go} />
+            </Suspense>
+          )}
           {tab === "visuals" && (
             <Suspense fallback={<p className="hint arch-loading">Loading…</p>}>
               <VisualsView onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onOpenBoard={(id) => { setBoardOpen(id); setTab("whiteboard"); }} onOpenDiagram={() => go("architecture")} />

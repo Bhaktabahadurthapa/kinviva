@@ -4,7 +4,7 @@
 // or inside the real app.
 if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS__" in window) && location.search.includes("mock")) {
   const settings = {
-    onboarded: true, profile_role: "Cloud engineer", profile_level: "intermediate", interests: ["Kubernetes", "AWS"], discover_enabled: false, capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
+    onboarded: true, profile_role: "Cloud engineer", profile_level: "intermediate", interests: ["Kubernetes", "AWS"], discover_enabled: true, capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
     stt_provider: "whisper_native", deepgram_model: "nova-3", deepgram_endpoint: "wss://api.deepgram.com/v1/listen",
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
     llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true, web_search: false,
@@ -34,6 +34,13 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
         { id: "m2", title: "Kubernetes lecture", session_type: "class", started_at: Date.now() - 86400e3, ended_at: Date.now() - 82800e3, segments: 120, notes: 2, diagrams: 0 },
       ] },
     global_search: [{ kind: "note", id: "n1", title: "Postgres backups", snippet: "We take nightly snapshots.", when: Date.now() }],
+    discover_list: [[
+      { id: "d1", url: "https://kubernetes.io/blog/x", title: "Kubernetes 1.35: what is new for pods", source: "Kubernetes Blog", summary: "A look at the changes in this release.", published_at: Date.now() - 2 * 86400e3, fetched_at: Date.now(), topic: "Kubernetes", kind: "news", stars: null, language: null, is_read: false, saved: false, score: 2 },
+      { id: "d2", url: "https://github.com/org/tool", title: "org/tool", source: "GitHub", summary: "A tool for platform teams.", published_at: Date.now() - 86400e3, fetched_at: Date.now(), topic: "Platform Engineering", kind: "repo", stars: 5400, language: "Go", is_read: true, saved: true, score: 1 },
+    ], Date.now()],
+    discover_trends: [{ topic: "Kubernetes", recent: 6, previous: 4, sources: 3 }],
+    quiz_topics: [{ topic: "Terraform", attempts: 2, total: 10, correct: 5 }],
+    learning_save: { id: "g1", kind: "goal", title: "Pass the CKA exam", status: "todo" },
     record_list: [],
     record_get: { id: "b1", kind: "board", title: "Untitled board", body: "{\"elements\":[]}", updated_at: 1 },
     studio_generate: (a: { kind?: string }) => a?.kind === "chart"

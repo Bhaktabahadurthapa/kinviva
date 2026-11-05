@@ -14,7 +14,7 @@ Principles: extend, never replace. Each increment ships on its own, keeps all ex
 | 7 | **Interview extras.** Job-description analysis, "verified experience" records from the user's documents, adaptive follow-ups, feedback history. | Builds on notes and documents | none | no |
 | 8 | **My Learning.** Goals, paths, lessons, drills, quizzes, progress from real activity only. | Needs Interview, Classroom, Notes | none | no |
 | 9 | **Discover.** Local collectors in Rust (RSS, GitHub API, official docs), deduplication, freshness and source-quality ranking, interest matching, saved and read state, refresh time. Trends come from counted data with a source and time window, not from the model. Off until the user opts in; each source is listed in Settings. | Largest new surface and the only one that needs the internet by default | none (reqwest exists) | no (runs locally) |
-| 10 | **Community / Pro, accounts, Stripe.** Only when a feature truly needs a server (sync, paid entitlements). | Needs product and legal decisions | server stack | **yes**: a single modular monolith with PostgreSQL |
+| 10 | ~~**Community / Pro, accounts, Stripe.**~~ Removed from scope by the owner. Only when a feature truly needs a server (sync, paid entitlements). | Needs product and legal decisions | server stack | **yes**: a single modular monolith with PostgreSQL |
 
 ## Cross-cutting work in every increment
 - Shared engine gaps (once, in step 1 to 3): intent classification, per-mode context permissions, session recovery after a crash, explicit cloud-processing consent screen.

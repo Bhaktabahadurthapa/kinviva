@@ -21,6 +21,8 @@ export const NAV: NavItem[] = [
   { id: "classroom", label: "Classroom", group: "Main", icon: "M3 8l9-5 9 5-9 5zM7 10.5V16c0 1 2.2 3 5 3s5-2 5-3v-5.5", ready: true, session: true },
   { id: "technical", label: "Technical Copilot", group: "Main", icon: "M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14", ready: true, session: true },
   { id: "presentation", label: "Presentation", group: "Main", icon: "M3 4h18v11H3zM12 15v5M8 20h8", ready: true, session: true },
+  { id: "discover", label: "Discover", group: "Main", icon: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z", ready: true },
+  { id: "learning", label: "My Learning", group: "Main", icon: "M3 18V6a2 2 0 0 1 2-2h14v14H5a2 2 0 0 0-2 2zM8 8h7M8 12h5", ready: true },
   { id: "whiteboard", label: "Whiteboard", group: "Main", icon: "M3 5h18v12H3zM8 21h8M12 17v4M7 12l3-3 3 3 3-4", ready: true },
   { id: "knowledge", label: "Knowledge Base", group: "Workspace", icon: "M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM8 7h6M8 11h6", ready: true },
   { id: "notes", label: "All Notes", group: "Workspace", icon: "M5 3h14v18H5zM9 8h6M9 12h6M9 16h3", ready: true },

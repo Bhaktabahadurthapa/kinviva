@@ -3,16 +3,17 @@ import { saveToNotes } from "../lib/notes";
 import { AiText } from "../components/AiText";
 import { api, errorText } from "../lib/api";
 import type { Tab } from "../lib/nav";
-import { greeting, minutes, percent, type DashboardStats } from "../lib/platform";
+import { sendToBoard } from "../lib/boardInbox";
+import { greeting, minutes, percent, type DashboardStats, type DiscoverItem, type LearningItem } from "../lib/platform";
 import type { Settings } from "../lib/types";
 
-const MODES = ["Ask", "Explain", "Summarize", "Plan", "Code"] as const;
+const MODES = ["Ask", "Explain", "Summarize", "Visualize", "Plan", "Code"] as const;
 const when = (ms: number) => new Date(ms).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 const TYPE: Record<string, string> = { class: "Class", work: "Work", general: "General" };
 
 /** Home screen: numbers come from the local database only. */
 export function DashboardView({
-  settings: _settings,
+  settings,
   running,
   refreshKey,
   onNavigate,
@@ -34,13 +35,24 @@ export function DashboardView({
   const [answer, setAnswer] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const rid = useRef<string | null>(null);
+  const [learning, setLearning] = useState<LearningItem[]>([]);
+  const [disc, setDisc] = useState<DiscoverItem[]>([]);
 
   useEffect(() => {
     api.dashboardStats().then(setStats).catch((e) => onError(errorText(e)));
   }, [refreshKey, onError]);
 
+  useEffect(() => {
+    api.learningList().then(setLearning).catch(() => {});
+    if (settings?.discover_enabled) api.discoverList(undefined, false).then(([l]) => setDisc(l.slice(0, 3))).catch(() => {});
+  }, [refreshKey, settings?.discover_enabled]);
+
   const ask = async () => {
     if (!q.trim() || busy) return;
+    if (mode === "Visualize") {
+      sendToBoard(q.trim());
+      return onNavigate("whiteboard");
+    }
     const id = crypto.randomUUID();
     rid.current = id;
     setBusy(true);
@@ -113,6 +125,18 @@ export function DashboardView({
         </section>
 
         <section className="dash-card">
+          <header><h2>Continue learning</h2><button className="btn btn-ghost btn-sm" onClick={() => onNavigate("learning")}>My Learning</button></header>
+          {(() => {
+            const steps = learning.filter((i) => i.kind === "lesson" || i.kind === "drill");
+            const next = steps.find((i) => i.status === "doing") ?? steps.find((i) => i.status === "todo");
+            const p = percent(steps.filter((i) => i.status === "done").length, steps.length);
+            return next ? (
+              <div className="dash-list-main"><strong>{next.title}</strong><span>{p}% of your steps are done</span><button className="btn btn-sm" style={{ alignSelf: "flex-start", marginTop: 6 }} onClick={() => onNavigate("learning")}>Continue</button></div>
+            ) : <p className="hint">{steps.length ? "All your steps are done." : "No learning goals yet. Set one in My Learning."}</p>;
+          })()}
+        </section>
+
+        <section className="dash-card">
           <header><h2>Quick create</h2></header>
           <div className="dash-quick">
             <button className="btn" onClick={() => onNavigate("meeting")}>Record a meeting</button>
@@ -121,6 +145,13 @@ export function DashboardView({
             <button className="btn" onClick={() => onNavigate("documents")}>Import a document</button>
           </div>
         </section>
+
+        {settings?.discover_enabled && disc.length > 0 && (
+          <section className="dash-card">
+            <header><h2>From Discover</h2><button className="btn btn-ghost btn-sm" onClick={() => onNavigate("discover")}>See all</button></header>
+            <ul className="dash-list">{disc.map((d) => <li key={d.id}><div className="dash-list-main"><strong>{d.title}</strong><span>{d.source}{d.topic ? ` · ${d.topic}` : ""}</span></div></li>)}</ul>
+          </section>
+        )}
 
         <section className="dash-card dash-assistant">
           <header><h2>AI assistant</h2></header>
@@ -131,7 +162,7 @@ export function DashboardView({
           </div>
           <form className="dash-ask" onSubmit={(e) => { e.preventDefault(); void ask(); }}>
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={mode === "Code" ? "Describe the code you need…" : "What would you like to know?"} aria-label="Assistant request" maxLength={2000} />
-            <button className="btn btn-primary" type="submit" disabled={!q.trim() || busy}>{busy ? "Thinking…" : mode}</button>
+            <button className="btn btn-primary" type="submit" disabled={!q.trim() || busy}>{busy ? "Thinking…" : mode === "Visualize" ? "Draw it" : mode}</button>
           </form>
           <p className="hint">Uses your Documents when they help and names the file. Nothing from your sessions is sent unless you open it.</p>
           {answer && <div className="dash-answer"><AiText text={answer} /><button className="btn btn-ghost btn-sm" onClick={() => void saveToNotes(answer, { title: q.trim().slice(0, 80) }).then(() => onSaved())}>Save to notes</button></div>}

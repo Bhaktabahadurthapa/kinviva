@@ -7,6 +7,7 @@ pub mod audio;
 pub mod commands;
 pub mod db;
 pub mod demo;
+pub mod discover;
 pub mod docs;
 pub mod export;
 pub mod interview;
@@ -198,6 +199,12 @@ pub fn run() {
             commands::quiz_record,
             commands::quiz_stats,
             commands::dashboard_stats,
+            commands::discover_refresh,
+            commands::discover_list,
+            commands::discover_mark,
+            commands::discover_trends,
+            commands::open_external,
+            commands::quiz_topics,
             commands::global_search,
             commands::architecture_save,
             commands::architecture_list,

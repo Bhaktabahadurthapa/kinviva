@@ -330,6 +330,52 @@ pub fn quiz_stats(state: State<AppState>) -> R<crate::store::QuizStats> {
     state.db.quiz_stats()
 }
 
+/// Downloads the followed feeds and repositories. Only runs when the user turned Discover on.
+#[tauri::command]
+pub async fn discover_refresh(state: State<'_, AppState>) -> R<crate::discover::RefreshReport> {
+    let settings = state.settings();
+    if !settings.discover_enabled {
+        return Err("Turn Discover on first. It contacts the sources listed on this page.".into());
+    }
+    Ok(crate::discover::refresh(&state.db, &settings.interests, now_ms()).await)
+}
+
+#[tauri::command]
+pub fn discover_list(state: State<AppState>, kind: Option<String>, saved_only: Option<bool>) -> R<(Vec<crate::discover::DiscoverItem>, Option<i64>)> {
+    let items = state.db.list_discover(kind.as_deref(), saved_only.unwrap_or(false), &state.settings().interests, now_ms())?;
+    Ok((items, state.db.last_discover_fetch()?))
+}
+
+#[tauri::command]
+pub fn discover_mark(state: State<AppState>, id: String, field: String, value: bool) -> R<()> {
+    state.db.mark_discover(&id, &field, value)
+}
+
+#[tauri::command]
+pub fn discover_trends(state: State<AppState>) -> R<Vec<crate::discover::Trend>> {
+    state.db.discover_trends(now_ms())
+}
+
+/// Opens a link from Discover in the default browser. Only links that are stored in Discover can be opened.
+#[tauri::command]
+pub fn open_external(state: State<AppState>, url: String) -> R<()> {
+    if !url.starts_with("https://") || !state.db.discover_has_url(&url)? {
+        return Err("That link cannot be opened from here.".into());
+    }
+    #[cfg(target_os = "macos")]
+    let mut cmd = std::process::Command::new("open");
+    #[cfg(target_os = "windows")]
+    let mut cmd = { let mut c = std::process::Command::new("cmd"); c.args(["/C", "start", ""]); c };
+    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
+    let mut cmd = std::process::Command::new("xdg-open");
+    cmd.arg(&url).spawn().map(|_| ()).map_err(|e| format!("Could not open the link: {e}"))
+}
+
+#[tauri::command]
+pub fn quiz_topics(state: State<AppState>) -> R<Vec<crate::store::TopicScore>> {
+    state.db.quiz_topics()
+}
+
 #[tauri::command]
 pub fn dashboard_stats(state: State<AppState>) -> R<crate::store::Stats> {
     state.db.stats()

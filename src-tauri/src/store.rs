@@ -66,6 +66,14 @@ pub struct QuizStats {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct TopicScore {
+    pub topic: String,
+    pub attempts: i64,
+    pub total: i64,
+    pub correct: i64,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct RecentSession {
     pub id: String,
     pub title: String,
@@ -248,6 +256,16 @@ impl Db {
             .map_err(e)
     }
 
+    /// Quiz results per topic (lowest accuracy first), used for knowledge-gap suggestions.
+    pub fn quiz_topics(&self) -> R<Vec<TopicScore>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT topic, COUNT(*), SUM(total), SUM(correct) FROM quiz_attempts GROUP BY lower(topic) ORDER BY CAST(SUM(correct) AS REAL) / SUM(total)")
+            .map_err(e)?;
+        let rows = stmt.query_map([], |r| Ok(TopicScore { topic: r.get(0)?, attempts: r.get(1)?, total: r.get(2)?, correct: r.get(3)? })).map_err(e)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(e)
+    }
+
     /// Every number comes from rows in this database.
     pub fn stats(&self) -> R<Stats> {
         let conn = self.conn.lock().unwrap();
@@ -275,9 +293,9 @@ impl Db {
             charts: n("SELECT COUNT(*) FROM records WHERE kind = 'chart'"),
             documents: n("SELECT COUNT(*) FROM documents"),
             incidents: n("SELECT COUNT(*) FROM records WHERE kind = 'incident'"),
-            learning_total: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill','goal')"),
-            learning_done: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill','goal') AND status = 'done'"),
-            learning_doing: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill','goal') AND status = 'doing'"),
+            learning_total: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill')"),
+            learning_done: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill') AND status = 'done'"),
+            learning_doing: n("SELECT COUNT(*) FROM learning_items WHERE kind IN ('lesson','drill') AND status = 'doing'"),
             saved_articles: n("SELECT COUNT(*) FROM discover_items WHERE saved = 1"),
             recent,
         })

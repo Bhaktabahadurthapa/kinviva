@@ -51,3 +51,17 @@ Not run: microphone-permission-denied (would require changing system permissions
 
 Not tested: the Architecture screen inside the real Tauri window (UI automation was refused: macOS Accessibility permission is not granted to the tool), a live model call from the app, real meetings with speech, SVG/PNG saving through the native save dialog, long sessions.
 
+## Platform transformation run
+| Check | Result |
+|---|---|
+| `cargo test` | 166 passed, 2 ignored (network). New: store (4), studio (9: read-only command guard with 21 allowed and 26 rejected examples, hypotheses, decisions quotes, quiz, plan, board diagram and ops, chart provenance), discover (6) |
+| `cargo test -- --ignored the_real_feeds_parse` | passed against the internet: all 8 feeds parse (10 to 25 items each, with dates) and the GitHub search returns repositories |
+| `cargo clippy --all-targets -- -D warnings` | clean |
+| `npx tsc --noEmit` | clean |
+| `npx vitest run` | 74 passed (18 files): board layout and edit commands, charts provenance, incident rules, notes, platform helpers, plus the earlier suites |
+| `npm run build` | succeeds; dist 14 MB (whiteboard and charts are lazy chunks) |
+| Real Chrome, mock backend | Dashboard, search, Notes (create), Knowledge Base search, Technical (explain tab, architecture generate), Whiteboard (create, AI generate and add, edit-with-words preview and apply, fonts load locally), charts (build, table), Classroom tool, Discover list, Learning goal creation |
+| CSP check (production build, app CSP) | Excalidraw rendered and exported SVG, PNG and JSON with no violations except blocked attempts to reach its CDN font fallback |
+
+Not tested: any screen in the real Tauri window, real model output for the new tools, native save dialogs for board and chart export, Discover refresh from inside the app (the parsing was tested with live data in Rust), Windows.
+

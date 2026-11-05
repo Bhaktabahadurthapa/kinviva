@@ -48,3 +48,14 @@ export const greeting = (hour: number) => (hour < 12 ? "Good morning" : hour < 1
 export const minutes = (start: number, end: number | null) => (end ? Math.max(1, Math.round((end - start) / 60000)) : null);
 /** Percent complete from real counts; null when there is nothing to measure. */
 export const percent = (done: number, total: number) => (total > 0 ? Math.round((done / total) * 100) : null);
+
+export interface DiscoverItem {
+  id: string; url: string; title: string; source: string; summary: string; published_at: number | null; fetched_at: number;
+  topic: string | null; kind: "news" | "repo"; stars: number | null; language: string | null; is_read: boolean; saved: boolean; score: number;
+}
+export interface Trend { topic: string; recent: number; previous: number; sources: number }
+export interface TopicScore { topic: string; attempts: number; total: number; correct: number }
+export const TOPICS = ["Kubernetes", "AWS", "Azure", "Cloud DevOps", "AI Engineering", "AI Agents", "MCP", "Platform Engineering", "Cloud Security", "Cybersecurity", "Data Engineering", "Software Engineering"];
+export const SOURCES = ["kubernetes.io", "cncf.io", "aws.amazon.com", "azure.microsoft.com", "hashicorp.com", "github.blog", "blog.cloudflare.com", "docker.com", "api.github.com"];
+/** Topics where quiz accuracy is below 70% after at least five answers: real knowledge gaps. */
+export const gaps = (t: TopicScore[]) => t.filter((x) => x.total >= 5 && x.correct / x.total < 0.7);
