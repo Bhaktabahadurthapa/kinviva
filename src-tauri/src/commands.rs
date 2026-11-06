@@ -462,15 +462,64 @@ pub fn video_address(input: &str) -> Result<String, String> {
     }
 }
 
+/// The YouTube video id inside a normalised watch address.
+fn youtube_id(address: &str) -> Option<String> {
+    address.strip_prefix("https://www.youtube.com/watch?v=").map(str::to_string)
+}
+
+/// A tiny local page (127.0.0.1 only) that shows just the YouTube player, with no recommendations or comments around it.
+fn player_port() -> Result<u16, String> {
+    use std::io::{Read, Write};
+    static PORT: std::sync::Mutex<Option<u16>> = std::sync::Mutex::new(None);
+    let mut guard = PORT.lock().unwrap();
+    if let Some(p) = *guard {
+        return Ok(p);
+    }
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").map_err(|e| format!("Could not start the player: {e}"))?;
+    let port = listener.local_addr().map_err(|e| e.to_string())?.port();
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            let mut stream = stream;
+            let _ = stream.set_read_timeout(Some(std::time::Duration::from_secs(2)));
+            let mut buf = [0u8; 2048];
+            let n = stream.read(&mut buf).unwrap_or(0);
+            let req = String::from_utf8_lossy(&buf[..n]);
+            let id = req
+                .lines()
+                .next()
+                .and_then(|l| l.strip_prefix("GET /p?v="))
+                .and_then(|r| r.split_whitespace().next())
+                .filter(|i| !i.is_empty() && i.len() <= 20 && i.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'));
+            let (status, body) = match id {
+                Some(id) => (
+                    "200 OK",
+                    format!(
+                        "<!doctype html><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>Video</title><style>html,body{{margin:0;height:100%;background:#000;overflow:hidden}}iframe{{border:0;width:100%;height:100%}}</style><iframe src=\"https://www.youtube-nocookie.com/embed/{id}?autoplay=1&rel=0&playsinline=1&origin=http://127.0.0.1:{port}\" allow=\"autoplay; encrypted-media; picture-in-picture; fullscreen\" allowfullscreen referrerpolicy=\"strict-origin-when-cross-origin\"></iframe>"
+                    ),
+                ),
+                None => ("404 Not Found", "Not found".to_string()),
+            };
+            let _ = write!(stream, "HTTP/1.1 {status}\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n{body}", body.len());
+        }
+    });
+    *guard = Some(port);
+    Ok(port)
+}
+
 fn video_rect(x: f64, y: f64, w: f64, h: f64) -> (tauri::LogicalPosition<f64>, tauri::LogicalSize<f64>) {
     (tauri::LogicalPosition::new(x.max(0.0), y.max(0.0)), tauri::LogicalSize::new(w.max(80.0), h.max(60.0)))
 }
 
 /// Opens (or changes) the video page in a pane laid over the given area of the main window.
 #[tauri::command]
-pub fn video_open(app: AppHandle, url: String, x: f64, y: f64, w: f64, h: f64) -> R<String> {
+pub fn video_open(app: AppHandle, url: String, full_page: bool, x: f64, y: f64, w: f64, h: f64) -> R<String> {
     let address = video_address(&url)?;
-    let parsed: url::Url = address.parse().map_err(|_| "That does not look like a web address.".to_string())?;
+    // By default a YouTube link opens in a clean player; "full page" shows the whole YouTube page instead.
+    let shown = match youtube_id(&address).filter(|_| !full_page) {
+        Some(id) => format!("http://127.0.0.1:{}/p?v={id}", player_port()?),
+        None => address.clone(),
+    };
+    let parsed: url::Url = shown.parse().map_err(|_| "That does not look like a web address.".to_string())?;
     let (pos, size) = video_rect(x, y, w, h);
     if let Some(v) = app.get_webview(VIDEO_LABEL) {
         v.navigate(parsed).map_err(|e| e.to_string())?;

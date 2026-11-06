@@ -28,6 +28,8 @@ const ICON: Record<string, string> = {
   browser: "M14 4h6v6M20 4l-9 9M18 14v5H5V6h5",
   close: "M6 6l12 12M18 6L6 18",
   file: "M12 16V4M7 9l5-5 5 5M5 20h14",
+  player: "M4 5h16v14H4zM10 9l5 3-5 3z",
+  page: "M4 4h16v16H4zM4 9h16M9 9v11",
   full: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
   exit: "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5",
 };
@@ -41,7 +43,7 @@ function RailBtn({ id, label, onClick, on, disabled }: { id: keyof typeof ICON; 
 }
 
 /** A theatre for videos: watch an online video or a file next to the live transcript and answers. Its sound is heard by MeetingLens like any other sound on this computer. */
-export function WatchStage({ caption, onAction }: { caption: { who: string; text: string } | null; onAction: (a: AiAction) => void }) {
+export function WatchStage({ caption, lines, onAction }: { caption: { who: string; text: string } | null; lines: { who: string; text: string }[]; onAction: (a: AiAction) => void }) {
   const [mode, setMode] = useState<"online" | "file">(() => {
     try {
       return localStorage.getItem("ml.videoMode") === "file" ? "file" : "online";
@@ -71,6 +73,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
       if (isFocus()) void setFocus(false);
     };
   }, []);
+  const [fullPage, setFullPage] = useState(() => flag("ml.videoFullPage", false));
   const [cc, setCc] = useState(() => flag("ml.watchCc", true));
   const toggleCc = () => setCc((v) => {
     try { localStorage.setItem("ml.watchCc", v ? "off" : "on"); } catch { /* not essential */ }
@@ -94,7 +97,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     const r = rect();
     if (!r || !raw.trim()) return;
     try {
-      const address = await api.videoOpen(raw.trim(), ...r);
+      const address = await api.videoOpen(raw.trim(), fullPage, ...r);
       setLive(address);
       setLink(address);
       const next = [address, ...recent.filter((x) => x !== address)].slice(0, 5);
@@ -107,6 +110,13 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     } catch (e) {
       setOnlineErr(errorText(e));
     }
+  };
+  const toggleFullPage = () => {
+    const next = !fullPage;
+    setFullPage(next);
+    try { localStorage.setItem("ml.videoFullPage", next ? "on" : "off"); } catch { /* not essential */ }
+    // Reopen the same video in the other view, after the layout has settled.
+    if (live) window.setTimeout(() => { const r = rect(); if (r) api.videoOpen(live, next, ...r).catch((e) => setOnlineErr(errorText(e))); }, 80);
   };
   const stopOnline = () => {
     setLive(null);
@@ -198,6 +208,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
         <RailBtn id="recap" label="Recap" onClick={() => onAction("recap")} />
         <span className="ws-rsep" />
         <RailBtn id="captions" label="Captions" on={cc} onClick={toggleCc} />
+        {mode === "online" && <RailBtn id={fullPage ? "player" : "page"} label={fullPage ? "Player only" : "Full page"} on={fullPage} onClick={toggleFullPage} />}
         {mode === "online" && <RailBtn id="browser" label="Browser" disabled={!live && !link.trim()} onClick={() => void api.videoInBrowser(live ?? link).catch((e) => setOnlineErr(errorText(e)))} />}
         {mode === "file" && <RailBtn id="file" label="Change" onClick={() => input.current?.click()} />}
         <RailBtn id={full ? "exit" : "full"} label={full ? "Exit full" : "Full screen"} on={full} onClick={() => toggleFull(!full)} />
@@ -226,7 +237,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
                 <div className="ws-title" title={info?.title || live}>{info?.title || live.replace(/^https:\/\//, "")}</div>
               </div>
             )}
-            <div className="ws-frame ws-slotframe">
+            <div className={`ws-frame ws-slotframe ${fullPage ? "is-page" : "is-player"}`}>
               <div ref={slot} className="ws-slot" />
               {!live && (
                 <div className="ws-empty">
@@ -255,7 +266,12 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
             </div>
           </>
         )}
-        {mode === "online" && live && cc && caption && <div className="ws-capstrip" aria-live="polite"><span>{caption.who}</span>{caption.text}</div>}
+        {(mode === "online" ? !!live : !!src) && cc && !fullPage && (
+          <div className="ws-live" aria-live="polite">
+            <div className="ws-live-head">Being said now</div>
+            {lines.length === 0 ? <p className="ws-live-empty">Words appear here as they are spoken.</p> : lines.map((l, i) => <p key={i} className={i === lines.length - 1 ? "now" : ""}><span>{l.who}</span>{l.text}</p>)}
+          </div>
+        )}
       </div>
     </section>
   );

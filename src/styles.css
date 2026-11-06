@@ -2381,3 +2381,30 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .is-mac .topbar-brand .rail-toggle { flex: none; width: 28px; height: 28px; }
 .is-mac .topbar-brand .brand-name { font-size: 15px; white-space: nowrap; }
 .is-mac .topbar-brand svg:not(.rail-toggle svg) { width: 26px; height: 26px; }
+
+/* Watch: clean player at 16:9, and a "being said now" panel fills the space below it. */
+.ws-slotframe.is-player { flex: none; aspect-ratio: 16 / 9; width: 100%; max-height: 56vh; min-height: 0; }
+.ws-slotframe.is-page { flex: 1; aspect-ratio: auto; min-height: 320px; }
+.ws-live { flex: 1; min-height: 0; overflow: auto; padding: 10px 14px; border-radius: 14px; background: #0b1735; color: #e2e8f0; }
+.ws-live-head { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #93c5fd; margin-bottom: 6px; }
+.ws-live p { margin: 0 0 6px; font-size: 15px; line-height: 1.45; color: #aebcf0; }
+.ws-live p.now { color: #fff; font-size: 17px; font-weight: 600; }
+.ws-live p span { margin-right: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #93c5fd; }
+.ws-live-empty { color: #8ea0cf !important; }
+.ws-capstrip { display: none; }
+
+/* Now / Earlier reading pane */
+.simple-wrap > .simple-stream::after { display: none; }
+.simple-wrap > .simple-stream { scroll-behavior: auto; }
+.step.is-newest .step-said { font-size: 15.5px; }
+.earlier { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.earlier h3 { margin: 6px 2px 0; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-text-2); }
+.earlier h3 span { margin-left: 6px; padding: 0 7px; border-radius: 999px; background: var(--c-sunken); font-size: 11px; }
+.step-earlier { padding: 8px 12px; animation: none; }
+.step-earlier summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; }
+.step-earlier summary::-webkit-details-marker { display: none; }
+.step-earlier .step-n { width: 22px; height: 22px; font-size: 11px; flex: none; }
+.step-earlier .step-line { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-text-2); font-style: italic; font-size: 14px; }
+.step-earlier[open] .step-line { white-space: normal; }
+.step-earlier[open] { border-color: var(--c-line-strong); }
+.step-earlier > :not(summary) { margin-top: 8px; }

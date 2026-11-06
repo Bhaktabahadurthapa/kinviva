@@ -135,7 +135,7 @@ export function LiveView({
       </div>
       {layout === "watch" ? (
         <div ref={watchGrid} className="live-watch" style={{ ["--wsplit" as string]: `minmax(0, ${wsplit}fr) 16px minmax(0, ${100 - wsplit}fr)` }}>
-          <WatchStage caption={caption} onAction={(a) => void act(a)} />
+          <WatchStage caption={caption} lines={live.transcript.finals.slice(-6).map((f) => ({ who: f.source === "system" ? "Them" : "Me", text: f.text }))} onAction={(a) => void act(a)} />
           <Splitter value={wsplit} onChange={setWsplit} container={watchGrid} reset={52} onStart={() => dragVideo(true)} onEnd={() => dragVideo(false)} />
           <div className="live-watch-side">
         {autoMode === "off" ? (
@@ -152,7 +152,7 @@ export function LiveView({
               <span className="auto-tag">Auto-assist</span>
             </header>
             <AnswerStyle onError={onError} />
-            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} extraKey={`${live.ai.meaning?.request_id ?? ""}:${live.ai.reply?.request_id ?? ""}`}>
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running}>
               <ManualAnswers live={live} />
             </SimpleStream>
           </section>
@@ -282,7 +282,7 @@ export function LiveView({
               <span className="auto-tag">Auto-assist</span>
             </header>
             <AnswerStyle onError={onError} />
-            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} extraKey={`${live.ai.meaning?.request_id ?? ""}:${live.ai.reply?.request_id ?? ""}`}>
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running}>
               <ManualAnswers live={live} />
             </SimpleStream>
           </section>
