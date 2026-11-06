@@ -112,12 +112,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
     const s = steps.filter((x) => x.parent_id === g.id);
     return { g, p: percent(s.filter((x) => x.status === "done").length, s.length), next: s.find((x) => x.status === "doing") ?? s.find((x) => x.status === "todo") };
   });
-  const metric = (label: string, value: number, week: number, tab: Tab, icon: string, tone: string) => (
-    <button key={label} className="d-metric" onClick={() => onNavigate(tab)}>
-      <span className={`d-ico tone-${tone}`}><Icon d={icon} /></span>
-      <span className="d-metric-body"><span className="d-metric-value">{value}</span><span className="d-metric-label">{label}</span><span className={`d-week ${week > 0 ? "up" : ""}`}>{week > 0 ? `+${week} this week` : "0 this week"}</span></span>
-    </button>
-  );
   const done = tasks.filter((t) => t.done).length;
   const shown = disc.filter((d) => (dTab === "news" ? d.kind === "news" : dTab === "repos" ? d.kind === "repo" : true)).slice(0, 4);
   const enabled = !!settings?.discover_enabled;
@@ -125,35 +119,52 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
   return (
     <div className="dash2">
       <section className="d-hello">
-        <div>
-          <h1>{greeting(new Date().getHours())}{name ? `, ${name}` : ""}</h1>
-          <p>Your meeting, learning and technical workspace. Everything stays on this computer.</p>
+        <div className="d-hero">
+          <p className="d-greet">{greeting(new Date().getHours())}{name ? `, ${name}` : ""}</p>
+          <h1>Understand more.<br /><span className="d-grad">Keep it private.</span></h1>
+          <p className="d-sub">Your meeting assistant for interviews, meetings, classes and technical discussions, all on your computer.</p>
+          <div className="d-new">
+            <button className="btn btn-primary btn-lg d-new-main" onClick={() => onNavigate("meeting")}>{running ? "Open running session" : "+ New session"}</button>
+            <button className="btn btn-primary btn-lg d-new-more" aria-label="Choose a session type" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>▾</button>
+            {menu && (
+              <div className="d-menu" role="menu" onMouseLeave={() => setMenu(false)}>
+                {([["meeting", "Meeting"], ["interview", "Interview practice"], ["classroom", "Classroom lecture"], ["presentation", "Presentation"], ["technical", "Technical discussion"]] as [Tab, string][]).map(([t, l]) => <button key={t} role="menuitem" onClick={() => { setMenu(false); onNavigate(t); }}>{l}</button>)}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="d-new">
-          <button className="btn btn-primary btn-lg d-new-main" onClick={() => onNavigate("meeting")}>{running ? "Open running session" : "+ New session"}</button>
-          <button className="btn btn-primary btn-lg d-new-more" aria-label="Choose a session type" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>▾</button>
-          {menu && (
-            <div className="d-menu" role="menu" onMouseLeave={() => setMenu(false)}>
-              {([["meeting", "Meeting"], ["interview", "Interview practice"], ["classroom", "Classroom lecture"], ["presentation", "Presentation"], ["technical", "Technical discussion"]] as [Tab, string][]).map(([t, l]) => <button key={t} role="menuitem" onClick={() => { setMenu(false); onNavigate(t); }}>{l}</button>)}
-            </div>
-          )}
+        <div className="d-private">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /><rect x="9" y="10.5" width="6" height="5" rx="1" /><path d="M10 10.5V9a2 2 0 0 1 4 0v1.5" /></svg>
+          <div><strong>Your conversations stay private</strong><span>No accounts and no tracking. Recordings and notes are stored on this computer.</span></div>
         </div>
       </section>
 
-      <section className="d-metrics" aria-label="Your activity">
-        {stats && (
-          <>
-            {metric("Sessions", stats.sessions, stats.sessions_week, "sessions", "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3", "purple")}
-            {metric("Notes", stats.notes, stats.notes_week, "notes", "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6", "blue")}
-            {metric("Diagrams", stats.diagrams, stats.diagrams_week, "technical", "M4 4h6v5H4zM14 4h6v5h-6zM9 15h6v5H9zM7 9v3h10V9M12 12v3", "green")}
-            {metric("Boards", stats.whiteboards, stats.whiteboards_week, "whiteboard", "M3 5h18v12H3zM8 21h8M12 17v4", "amber")}
-            <button className="d-metric" onClick={() => onNavigate("learning")}>
-              <span className="d-ico tone-rose"><Icon d="M3 8l9-5 9 5-9 5zM7 10.5V16c0 1 2.2 3 5 3s5-2 5-3v-5.5" /></span>
-              <span className="d-metric-body"><span className="d-metric-value">{stats.learning_done}</span><span className="d-metric-label">Learning</span><span className="d-week">{stats.learning_total ? `of ${stats.learning_total} steps` : "no goals yet"}</span></span>
-            </button>
-          </>
-        )}
+      <section className="d-modes" aria-label="What would you like to do?">
+        {([
+          ["Meetings", "Transcribe and get summaries", "meeting", "M5 5h14v14H5zM5 9h14M9 3v4M15 3v4", "purple"],
+          ["Interviews", "Practise and get answer help", "interview", "M12 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zM5 20a7 7 0 0 1 14 0", "blue"],
+          ["Technical Copilot", "Solve problems, learn faster", "technical", "M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16", "purple"],
+          ["Classroom", "Get explanations in plain English", "classroom", "M3 8l9-5 9 5-9 5zM7 10.5V16c0 1 2.2 3 5 3s5-2 5-3v-5.5", "blue"],
+          ["Presentations", "Prepare and refine your talks", "presentation", "M3 5h18v12H3zM8 21h8M12 17v4M10 9l5 2.5-5 2.5z", "purple"],
+        ] as [string, string, Tab, string, string][]).map(([l, d, t, ic, tone]) => (
+          <button key={l} className="d-mode" onClick={() => onNavigate(t)}>
+            <span className={`d-ico d-ico-sm tone-${tone}`}><Icon d={ic} size={22} /></span>
+            <strong>{l}</strong>
+            <span className="d-mode-desc">{d}</span>
+            <span className="d-mode-go" aria-hidden>→</span>
+          </button>
+        ))}
       </section>
+
+      {stats && (
+        <section className="d-metrics d-strip" aria-label="Your activity">
+          <button onClick={() => onNavigate("sessions")}><b>{stats.sessions}</b> sessions <i>{stats.sessions_week > 0 ? `+${stats.sessions_week} this week` : ""}</i></button>
+          <button onClick={() => onNavigate("notes")}><b>{stats.notes}</b> notes</button>
+          <button onClick={() => onNavigate("technical")}><b>{stats.diagrams}</b> diagrams</button>
+          <button onClick={() => onNavigate("whiteboard")}><b>{stats.whiteboards}</b> boards</button>
+          <button onClick={() => onNavigate("learning")}><b>{stats.learning_done}</b>{stats.learning_total ? ` of ${stats.learning_total}` : ""} learning steps</button>
+        </section>
+      )}
 
       <section className="d-card d-recent">
         <header><h2>Recent sessions</h2><button className="d-link" onClick={() => onNavigate("sessions")}>View all →</button></header>
@@ -222,6 +233,12 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
             <button className="btn btn-sm" type="submit" disabled={!task.trim()}>Add</button>
           </form>
           {tasks.length > 0 && <div className="d-progress"><div className="d-bar"><i style={{ width: `${percent(done, tasks.length) ?? 0}%` }} /></div><span>{done} of {tasks.length} completed</span></div>}
+        </section>
+        <section className="d-card d-promo">
+          <svg className="d-wave" viewBox="0 0 300 80" aria-hidden><defs><linearGradient id="dw" x1="0" x2="1"><stop offset="0" stopColor="#3b82f6" /><stop offset="1" stopColor="#8b5cf6" /></linearGradient></defs><path d="M0 60C50 10 90 70 150 40S250 0 300 30V80H0z" fill="url(#dw)" opacity=".18" /><path d="M0 60C50 10 90 70 150 40S250 0 300 30" fill="none" stroke="url(#dw)" strokeWidth="3" /></svg>
+          <h2>Turn your conversations into <span className="d-grad">clarity</span></h2>
+          <p>Clearer notes. Better decisions.</p>
+          <button className="btn btn-primary" onClick={() => onNavigate("meeting")}>Start now →</button>
         </section>
       </aside>
 
