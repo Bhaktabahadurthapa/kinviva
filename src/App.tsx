@@ -18,7 +18,7 @@ import { MeetingView, type MeetingTab } from "./views/MeetingView";
 import { SettingsView } from "./views/SettingsView";
 import { SavedDialog } from "./components/SavedDialog";
 import { chooseSavePath, safeName, type NotesFormat } from "./lib/download";
-import { defaultSession, loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
+import { defaultSession, KIND_LABEL, loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
 import type { Course } from "./lib/types";
 import { setFocus, useFocus } from "./lib/focus";
 
@@ -208,7 +208,7 @@ export default function App() {
         const chosen = inInterview ? defaultSession : session;
         const problem = sessionProblem(chosen, courses.map((c) => c.id));
         if (problem) {
-          setTab("meeting");
+          if (!focused) setTab("meeting");
           setError(problem);
           return;
         }
@@ -222,6 +222,18 @@ export default function App() {
     }
   };
   toggleRef.current = toggleMeeting;
+  // Playing a video starts listening by itself, so the transcript and answers begin without another click.
+  const autoStart = useRef<(title: string) => void>(() => {});
+  autoStart.current = (videoTitle: string) => {
+    if (running || busy) return;
+    const chosen = sessionProblem(session, courses.map((c) => c.id)) ? defaultSession : session;
+    api.startMeeting(videoTitle || title, chosen).then(() => setTitle("")).catch((e) => setError(errorText(e)));
+  };
+  useEffect(() => {
+    const h = (e: Event) => autoStart.current(String((e as CustomEvent).detail?.title ?? ""));
+    window.addEventListener("ml:auto-start", h);
+    return () => window.removeEventListener("ml:auto-start", h);
+  }, []);
 
   if (!inTauri) {
     return (
@@ -283,6 +295,19 @@ export default function App() {
             <b>Answer engine</b>
             <span>{settings?.llm_model?.trim() ? "Ready" : "Not set up"}</span>
           </button>
+          {!running && tab !== "interview" && (
+            <span className="fb-session" title="What kind of session this is">
+              <select aria-label="Session type" value={session.kind} onChange={(e) => setSession({ ...session, kind: e.target.value as SessionChoice["kind"], courseId: e.target.value === "class" ? session.courseId ?? courses[0]?.id ?? null : null })}>
+                {(["general", "work", "class"] as const).map((k) => <option key={k} value={k}>{KIND_LABEL[k]} session</option>)}
+              </select>
+              {session.kind === "class" && courses.length > 0 && (
+                <select aria-label="Course" value={session.courseId ?? ""} onChange={(e) => setSession({ ...session, courseId: e.target.value || null })}>
+                  {courses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              )}
+              {session.kind === "class" && courses.length === 0 && <span className="fb-note">No course yet. <button className="fb-link" onClick={() => setSession({ ...session, kind: "general", courseId: null })}>Use a general session</button></span>}
+            </span>
+          )}
           <span className="fb-actions">
             {running && <button className="fb-btn" onClick={() => api.setPaused(!status?.paused).catch((e) => setError(errorText(e)))}>{status?.paused ? "Resume" : "Pause"}</button>}
             <button className={`fb-btn ${running ? "danger" : "primary"}`} onClick={toggleMeeting} disabled={busy}>{running ? "End session" : tab === "interview" ? "Begin interview" : "Begin session"}</button>

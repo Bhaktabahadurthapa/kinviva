@@ -54,6 +54,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     try { localStorage.setItem("ml.videoMode", m); } catch { /* not essential */ }
   };
   const full = useFocus();
+  const [autoListen] = useState(() => flag("ml.videoAutoListen", true));
   const [autoHide, setAutoHide] = useState(() => flag("ml.videoAutoHide", true));
   const toggleFull = (on: boolean) => {
     void setFocus(on);
@@ -99,7 +100,10 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
       const next = [address, ...recent.filter((x) => x !== address)].slice(0, 5);
       setRecent(next);
       try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* not essential */ }
-      api.videoInfo(address).then(setInfo).catch(() => {});
+      api.videoInfo(address).then((i) => {
+        setInfo(i);
+        if (autoListen) window.dispatchEvent(new CustomEvent("ml:auto-start", { detail: { title: i?.title ?? "" } }));
+      }).catch(() => { if (autoListen) window.dispatchEvent(new CustomEvent("ml:auto-start", { detail: { title: "" } })); });
     } catch (e) {
       setOnlineErr(errorText(e));
     }
@@ -175,6 +179,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     if (!f) return;
     if (!/^(video|audio)\//.test(f.type) && !/\.(mp4|m4v|mov|webm|mkv|mp3|m4a|wav)$/i.test(f.name)) return setFileErr("Choose a video file, for example MP4, MOV or WebM.");
     setSrc({ url: URL.createObjectURL(f), name: f.name });
+    if (autoListen) window.dispatchEvent(new CustomEvent("ml:auto-start", { detail: { title: f.name.replace(/\.[^.]+$/, "") } }));
   };
 
   const showing = mode === "online" ? !!live : !!src;
