@@ -50,6 +50,29 @@ export function LiveView({
     setLayoutState(v);
     try { localStorage.setItem("ml.liveLayout", v); } catch { /* not essential */ }
   };
+  const [vsize, setVsizeState] = useState<"s" | "m" | "l">(() => {
+    try {
+      const v = localStorage.getItem("ml.videoSize");
+      return v === "s" || v === "l" ? v : "m";
+    } catch {
+      return "m";
+    }
+  });
+  const setVsize = (v: "s" | "m" | "l") => {
+    setVsizeState(v);
+    try { localStorage.setItem("ml.videoSize", v); } catch { /* not essential */ }
+  };
+  const [tOpen, setTOpenState] = useState(() => {
+    try {
+      return localStorage.getItem("ml.watchTranscript") === "open";
+    } catch {
+      return false;
+    }
+  });
+  const setTOpen = (v: boolean) => {
+    setTOpenState(v);
+    try { localStorage.setItem("ml.watchTranscript", v ? "open" : "closed"); } catch { /* not essential */ }
+  };
   const lastLine = live.transcript.finals[live.transcript.finals.length - 1];
   const caption = lastLine ? { who: lastLine.source === "system" ? "Them" : "Me", text: lastLine.text } : null;
   const [query, setQuery] = useState("");
@@ -104,11 +127,39 @@ export function LiveView({
       <div className="live-layout" role="group" aria-label="Screen layout">
         <button className={layout === "standard" ? "on" : ""} aria-pressed={layout === "standard"} onClick={() => setLayout("standard")}>Standard</button>
         <button className={layout === "watch" ? "on" : ""} aria-pressed={layout === "watch"} onClick={() => setLayout("watch")}>Watch a video</button>
+        {layout === "watch" && (
+          <span className="live-size" role="group" aria-label="Video size">
+            <i>Video</i>
+            {(["s", "m", "l"] as const).map((k) => <button key={k} className={vsize === k ? "on" : ""} aria-pressed={vsize === k} onClick={() => setVsize(k)}>{k === "s" ? "Small" : k === "m" ? "Medium" : "Large"}</button>)}
+          </span>
+        )}
       </div>
       {layout === "watch" ? (
-        <div className="live-watch">
+        <div className={`live-watch vs-${vsize}`}>
           <WatchStage caption={caption} />
           <div className="live-watch-side">
+        {autoMode === "off" ? (
+          <div className="side">
+            <AiPanel title="Plain-English meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
+            <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
+          </div>
+        ) : (
+          // Reading view: what they said (top) becomes simple words (bottom), hands-free.
+          <section className="panel simple-panel">
+            <header>
+              <h2>Live insights</h2>
+              <span className="auto-tag">Auto-assist</span>
+            </header>
+            <ManualAnswers live={live} />
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
+          </section>
+        )}
+        <button className="ws-tbar" onClick={() => setTOpen(!tOpen)} aria-expanded={tOpen}>
+          <span className="ws-tbar-label">Transcript</span>
+          <span className="ws-tbar-line">{caption ? `${caption.who}: ${caption.text}` : running ? "Listening…" : "Nothing yet"}</span>
+          <span className="ws-tbar-act">{tOpen ? "Hide" : "Show all"}</span>
+        </button>
+        {tOpen && (
         <section className="panel transcript-panel">
           <header>
             <h2>{autoMode === "off" ? "Live transcript" : "Live transcript"}</h2>
@@ -159,21 +210,6 @@ export function LiveView({
             emptyHint={running ? "Listening… speech will appear here." : "Start a meeting to see the live transcript."}
           />
         </section>
-        {autoMode === "off" ? (
-          <div className="side">
-            <AiPanel title="Plain-English meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
-            <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
-          </div>
-        ) : (
-          // Reading view: what they said (top) becomes simple words (bottom), hands-free.
-          <section className="panel simple-panel">
-            <header>
-              <h2>Live insights</h2>
-              <span className="auto-tag">Auto-assist</span>
-            </header>
-            <ManualAnswers live={live} />
-            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
-          </section>
         )}
           </div>
         </div>

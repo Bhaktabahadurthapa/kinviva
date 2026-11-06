@@ -2208,3 +2208,43 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .live-watch { padding: 0 var(--s-5) var(--s-3); }
 .live-watch-side > .transcript-panel { flex: 1 1 340px; min-height: 340px; }
 .live-watch-side > .simple-panel, .live-watch-side > .side { flex: 1 1 280px; min-height: 280px; }
+
+/* Watch layout v2: answers get the room; the video size is adjustable; online video pane. */
+.live-watch { grid-template-columns: minmax(0, 1.1fr) minmax(400px, 1fr); }
+.live-watch.vs-s { grid-template-columns: minmax(0, .75fr) minmax(420px, 1fr); }
+.live-watch.vs-l { grid-template-columns: minmax(0, 1.6fr) minmax(380px, 1fr); }
+.live-watch-side > .simple-panel, .live-watch-side > .side { order: 1; flex: 2 1 420px; min-height: 420px; }
+.live-watch-side > .transcript-panel { order: 2; flex: 1 1 240px; min-height: 240px; }
+.live-watch-side .simple-panel, .live-watch-side .side { overflow: auto; }
+.live-watch-side .simple-panel .simple-item p, .live-watch-side .simple-panel p { font-size: 15.5px; line-height: 1.55; }
+.live-size { display: inline-flex; align-items: center; gap: 2px; margin-left: 12px; padding-left: 12px; border-left: 1px solid var(--c-line); }
+.live-size i { font-style: normal; font-size: 12px; color: var(--c-text-2); margin-right: 4px; }
+.live-layout { display: inline-flex; align-items: center; }
+.ws-modes { display: inline-flex; gap: 2px; padding: 3px; margin-bottom: 8px; border-radius: 10px; background: var(--c-sunken); border: 1px solid var(--c-line); align-self: flex-start; }
+.ws-modes button { border: none; background: none; padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--c-text-2); cursor: pointer; }
+.ws-modes button.on { background: var(--c-surface); color: var(--c-heading); box-shadow: 0 0 0 1px var(--c-line-strong); }
+.ws-online { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.ws-url { display: flex; gap: 8px; }
+.ws-url input { flex: 1; min-width: 0; }
+.ws-err-line { margin: 0; color: var(--mt-error, #b91c1c); font-size: 13px; }
+.ws-recent { display: flex; gap: 6px; flex-wrap: wrap; }
+.ws-recent button { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--c-line); background: var(--c-surface); font-size: 12px; color: var(--c-text-2); cursor: pointer; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-slotframe { aspect-ratio: 16 / 9; width: 100%; max-height: 66vh; }
+.ws-slot { position: absolute; inset: 0; }
+.ws-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center; color: #fff; background: radial-gradient(90% 80% at 80% 0%, rgba(124, 58, 237, .45), transparent 60%), linear-gradient(160deg, #12214a, #0b1735 60%, #070f26); }
+.ws-empty h3 { margin: 4px 0 0; font-size: 22px; color: #fff; letter-spacing: -0.02em; }
+.ws-empty p { margin: 0; max-width: 44ch; color: #b6c2e6; font-size: 14.5px; line-height: 1.5; }
+.ws-empty .ws-tip { margin-top: 8px; padding: 8px 12px; border-radius: 10px; background: rgba(148, 163, 255, .12); font-size: 12.5px; }
+.ws-capstrip { padding: 8px 14px; border-radius: 12px; background: #0b1735; color: #fff; font-size: 15px; line-height: 1.4; }
+.ws-capstrip span { margin-right: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #93c5fd; }
+@media (max-width: 1000px) { .live-watch, .live-watch.vs-s, .live-watch.vs-l { grid-template-columns: 1fr; } }
+.live-watch { align-items: stretch; }
+.live-watch-side { overflow: hidden; height: 100%; }
+.live-watch-side > .simple-panel, .live-watch-side > .side { flex: 1 1 0; min-height: 260px; overflow: auto; }
+.live-watch-side > .transcript-panel { flex: 0 0 210px; min-height: 0; overflow: hidden; }
+.live-watch-side .tsearch { display: none; }
+.ws-tbar { order: 2; flex: none; display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: 1px solid var(--c-line); border-radius: 14px; background: var(--c-surface); cursor: pointer; text-align: left; color: inherit; }
+.ws-tbar-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--c-text-2); }
+.ws-tbar-line { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--c-text-2); font-size: 14px; }
+.ws-tbar-act { font-size: 13px; font-weight: 600; color: var(--c-signal); }
+.live-watch-side > .transcript-panel { order: 3; flex: 0 0 240px; }

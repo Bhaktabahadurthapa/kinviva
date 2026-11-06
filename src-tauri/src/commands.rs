@@ -427,6 +427,87 @@ pub fn architecture_write_file(path: String, data_base64: String) -> R<()> {
     std::fs::write(&path, bytes).map_err(|e| format!("Could not save the file: {e}"))
 }
 
+// ---- Video pane: a real web page shown inside the main window -------------------------------------
+
+const VIDEO_LABEL: &str = "video-pane";
+
+/// Turns what the user pasted into an address that plays the video: YouTube short links and
+/// "shorts" become a normal watch page; any other https page is used as it is.
+pub fn video_address(input: &str) -> Result<String, String> {
+    let t = input.trim();
+    let t = if t.contains("://") { t.to_string() } else { format!("https://{t}") };
+    let url = url::Url::parse(&t).map_err(|_| "That does not look like a web address.".to_string())?;
+    if url.scheme() != "https" {
+        return Err("Only secure https links can be opened here.".into());
+    }
+    let host = url.host_str().unwrap_or("").to_lowercase();
+    if host.is_empty() || host == "localhost" || host.parse::<std::net::IpAddr>().is_ok() || !host.contains('.') {
+        return Err("Paste the link of a video page, for example from YouTube.".into());
+    }
+    let id = if host == "youtu.be" {
+        url.path_segments().and_then(|mut p| p.next()).map(str::to_string)
+    } else if host.ends_with("youtube.com") {
+        let seg = url.path_segments().map(|p| p.collect::<Vec<_>>()).unwrap_or_default();
+        match seg.first().copied() {
+            Some("shorts") | Some("embed") | Some("live") => seg.get(1).map(|x| x.to_string()),
+            Some("watch") => url.query_pairs().find(|(k, _)| k == "v").map(|(_, v)| v.to_string()),
+            _ => None,
+        }
+    } else {
+        None
+    };
+    match id.filter(|i| !i.is_empty() && i.len() <= 20 && i.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')) {
+        Some(id) => Ok(format!("https://www.youtube.com/watch?v={id}")),
+        None => Ok(url.to_string()),
+    }
+}
+
+fn video_rect(x: f64, y: f64, w: f64, h: f64) -> (tauri::LogicalPosition<f64>, tauri::LogicalSize<f64>) {
+    (tauri::LogicalPosition::new(x.max(0.0), y.max(0.0)), tauri::LogicalSize::new(w.max(80.0), h.max(60.0)))
+}
+
+/// Opens (or changes) the video page in a pane laid over the given area of the main window.
+#[tauri::command]
+pub fn video_open(app: AppHandle, url: String, x: f64, y: f64, w: f64, h: f64) -> R<String> {
+    let address = video_address(&url)?;
+    let parsed: url::Url = address.parse().map_err(|_| "That does not look like a web address.".to_string())?;
+    let (pos, size) = video_rect(x, y, w, h);
+    if let Some(v) = app.get_webview(VIDEO_LABEL) {
+        v.navigate(parsed).map_err(|e| e.to_string())?;
+        v.set_position(pos).map_err(|e| e.to_string())?;
+        v.set_size(size).map_err(|e| e.to_string())?;
+        return Ok(address);
+    }
+    let window = app.get_window("main").ok_or("The main window is not available.")?;
+    #[cfg(target_os = "macos")]
+    let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15";
+    #[cfg(not(target_os = "macos"))]
+    let ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0";
+    let builder = tauri::webview::WebviewBuilder::new(VIDEO_LABEL, tauri::WebviewUrl::External(parsed)).user_agent(ua);
+    window.add_child(builder, pos, size).map_err(|e| format!("Could not open the video pane: {e}"))?;
+    Ok(address)
+}
+
+/// Keeps the video pane over the area it belongs to when the window or layout changes.
+#[tauri::command]
+pub fn video_bounds(app: AppHandle, x: f64, y: f64, w: f64, h: f64) -> R<()> {
+    if let Some(v) = app.get_webview(VIDEO_LABEL) {
+        let (pos, size) = video_rect(x, y, w, h);
+        v.set_position(pos).map_err(|e| e.to_string())?;
+        v.set_size(size).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+/// Closes the video pane (the page stops playing).
+#[tauri::command]
+pub fn video_close(app: AppHandle) -> R<()> {
+    if let Some(v) = app.get_webview(VIDEO_LABEL) {
+        v.close().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn interview_run(app: AppHandle, state: State<AppState>, request: crate::interview::Request) -> R<String> {
     crate::interview::start(&app, &state, request)
@@ -698,5 +779,20 @@ pub fn app_info(app: AppHandle, state: State<AppState>) -> AppInfo {
         data_dir: state.data_dir.display().to_string(),
         os: std::env::consts::OS.into(),
         schema_version: state.db.schema_version(),
+    }
+}
+
+#[cfg(test)]
+mod video_tests {
+    use super::video_address;
+    #[test]
+    fn video_links_become_watch_pages_and_unsafe_ones_are_refused() {
+        assert_eq!(video_address("https://youtu.be/dQw4w9WgXcQ?t=5").unwrap(), "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        assert_eq!(video_address("youtube.com/shorts/abc_DEF-123").unwrap(), "https://www.youtube.com/watch?v=abc_DEF-123");
+        assert_eq!(video_address("https://www.youtube.com/watch?v=abc123&list=x").unwrap(), "https://www.youtube.com/watch?v=abc123");
+        assert_eq!(video_address("https://vimeo.com/12345").unwrap(), "https://vimeo.com/12345");
+        for bad in ["http://example.com/a", "javascript:alert(1)", "file:///etc/passwd", "https://localhost/x", "https://127.0.0.1/x", "hello", ""] {
+            assert!(video_address(bad).is_err(), "{bad}");
+        }
     }
 }

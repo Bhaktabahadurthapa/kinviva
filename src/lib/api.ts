@@ -57,6 +57,9 @@ export const api = {
   architectureSave: (diagram: DiagramRecord) => invoke<void>("architecture_save", { diagram }),
   architectureList: (meetingId?: string | null) => invoke<DiagramRecord[]>("architecture_list", { meetingId: meetingId ?? null }),
   architectureDelete: (id: string) => invoke<void>("architecture_delete", { id }),
+  videoOpen: (url: string, x: number, y: number, w: number, h: number) => invoke<string>("video_open", { url, x, y, w, h }),
+  videoBounds: (x: number, y: number, w: number, h: number) => invoke<void>("video_bounds", { x, y, w, h }),
+  videoClose: () => invoke<void>("video_close"),
   architectureWriteFile: (path: string, dataBase64: string) => invoke<void>("architecture_write_file", { path, dataBase64 }),
   studioGenerate: (requestId: string, kind: string, input?: string, meetingId?: string | null) =>
     invoke<string>("studio_generate", { requestId, kind, input: input ?? null, meetingId: meetingId ?? null }),
