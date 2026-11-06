@@ -4,6 +4,7 @@ import { ActionBar } from "../components/ActionBar";
 import { SimpleStream } from "../components/SimpleStream";
 import { ScreenAssist } from "../components/ScreenAssist";
 import { ManualAnswers } from "../components/ManualAnswers";
+import { WatchStage } from "../components/WatchStage";
 import { Splitter } from "../components/Splitter";
 import { TranscriptView } from "../components/TranscriptView";
 import { countMatches } from "../lib/search";
@@ -38,6 +39,19 @@ export function LiveView({
     setSplitState(v);
     saveSplit(v);
   };
+  const [layout, setLayoutState] = useState<"standard" | "watch">(() => {
+    try {
+      return localStorage.getItem("ml.liveLayout") === "watch" ? "watch" : "standard";
+    } catch {
+      return "standard";
+    }
+  });
+  const setLayout = (v: "standard" | "watch") => {
+    setLayoutState(v);
+    try { localStorage.setItem("ml.liveLayout", v); } catch { /* not essential */ }
+  };
+  const lastLine = live.transcript.finals[live.transcript.finals.length - 1];
+  const caption = lastLine ? { who: lastLine.source === "system" ? "Them" : "Me", text: lastLine.text } : null;
   const [query, setQuery] = useState("");
   const grid = useRef<HTMLDivElement>(null);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -87,6 +101,83 @@ export function LiveView({
           </span>
         </div>
       )}
+      <div className="live-layout" role="group" aria-label="Screen layout">
+        <button className={layout === "standard" ? "on" : ""} aria-pressed={layout === "standard"} onClick={() => setLayout("standard")}>Standard</button>
+        <button className={layout === "watch" ? "on" : ""} aria-pressed={layout === "watch"} onClick={() => setLayout("watch")}>Watch a video</button>
+      </div>
+      {layout === "watch" ? (
+        <div className="live-watch">
+          <WatchStage caption={caption} />
+          <div className="live-watch-side">
+        <section className="panel transcript-panel">
+          <header>
+            <h2>{autoMode === "off" ? "Live transcript" : "Live transcript"}</h2>
+            <div className="panel-tools">
+              <div className="seg" role="group" aria-label="Automatic help">
+                <span className="seg-label">Auto</span>
+                {AUTO_OPTIONS.map(([m, label, title]) => (
+                  <button key={m} className={autoMode === m ? "active" : ""} title={title} aria-pressed={autoMode === m} onClick={() => onAutoChange(m)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {running && status?.mic.enabled && devices.length > 0 && (
+                <select
+                  className="select-sm"
+                  aria-label="Microphone"
+                  value={devices.find((d) => d.name === status.mic.device)?.name ?? ""}
+                  onChange={(e) => api.switchMic(e.target.value || null).catch((err) => onError(errorText(err)))}
+                >
+                  <option value="">Default microphone</option>
+                  {devices.map((d) => (
+                    <option key={d.name} value={d.name}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button className="btn btn-ghost btn-sm" onClick={() => setNotesOpen((o) => !o)}>
+                {notesOpen ? "Hide notes" : "My notes"}
+              </button>
+            </div>
+          </header>
+          {notesOpen && (
+            <textarea
+              className="notes"
+              value={notes}
+              onChange={(e) => saveNotes(e.target.value)}
+              placeholder="Private notes for this meeting. Suggested replies may use them as facts about you."
+            />
+          )}
+          <div className="tsearch">
+            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search this transcript" aria-label="Search this transcript" />
+            {query.trim() && <span className="tsearch-count" role="status">{countMatches(live.transcript.finals, query)} found</span>}
+          </div>
+          <TranscriptView
+            query={query}
+            transcript={live.transcript}
+            emptyHint={running ? "Listening… speech will appear here." : "Start a meeting to see the live transcript."}
+          />
+        </section>
+        {autoMode === "off" ? (
+          <div className="side">
+            <AiPanel title="Plain-English meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
+            <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
+          </div>
+        ) : (
+          // Reading view: what they said (top) becomes simple words (bottom), hands-free.
+          <section className="panel simple-panel">
+            <header>
+              <h2>Live insights</h2>
+              <span className="auto-tag">Auto-assist</span>
+            </header>
+            <ManualAnswers live={live} />
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
+          </section>
+        )}
+          </div>
+        </div>
+      ) : (
       <div ref={grid} className={autoMode === "off" ? "live-grid" : "live-stack"} style={{ ["--split" as string]: `minmax(0, ${split}fr) 16px minmax(0, ${100 - split}fr)` }}>
         <section className="panel transcript-panel">
           <header>
@@ -156,6 +247,7 @@ export function LiveView({
           </section>
         )}
       </div>
+      )}
       <ScreenAssist />
       <ActionBar live={live} onError={onError} />
     </div>
