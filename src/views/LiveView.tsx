@@ -4,6 +4,7 @@ import { ActionBar, useActions } from "../components/ActionBar";
 import { SimpleStream } from "../components/SimpleStream";
 import { ScreenAssist } from "../components/ScreenAssist";
 import { ManualAnswers } from "../components/ManualAnswers";
+import { AnswerStyle } from "../components/AnswerStyle";
 import { WatchStage } from "../components/WatchStage";
 import { Splitter } from "../components/Splitter";
 import { TranscriptView } from "../components/TranscriptView";
@@ -139,6 +140,7 @@ export function LiveView({
           <div className="live-watch-side">
         {autoMode === "off" ? (
           <div className="side">
+            <AnswerStyle onError={onError} />
             <AiPanel title="Plain-English meaning" voice="serif" slot={live.ai.meaning} placeholder="Press Explain to get the latest point in plain English. Recap and Ask answers also appear here." />
             <AiPanel title="Suggested reply" slot={live.ai.reply} editable placeholder="Press Suggest reply for a short draft you can edit. Nothing is sent to the meeting." />
           </div>
@@ -149,6 +151,8 @@ export function LiveView({
               <h2>Live insights</h2>
               <span className="auto-tag">Auto-assist</span>
             </header>
+            <AnswerStyle onError={onError} />
+            <AnswerStyle onError={onError} />
             <ManualAnswers live={live} />
             <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
           </section>
@@ -277,6 +281,7 @@ export function LiveView({
               <h2>Live insights</h2>
               <span className="auto-tag">Auto-assist</span>
             </header>
+            <AnswerStyle onError={onError} />
             <ManualAnswers live={live} />
             <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
           </section>

@@ -110,6 +110,8 @@ export interface Settings {
   profile_level: string;
   interests: string[];
   discover_enabled: boolean;
+  answer_level: "simple" | "professional" | "student";
+  answer_length: "short" | "normal" | "detailed";
   capture_mic: boolean;
   capture_system: boolean;
   mic_device: string | null;

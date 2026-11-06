@@ -36,6 +36,10 @@ pub struct Settings {
     pub interests: Vec<String>,
     /// Discover contacts the internet only after the user turns it on.
     pub discover_enabled: bool,
+    /// Reading level of answers: simple | professional | student.
+    pub answer_level: String,
+    /// Length of answers: short | normal | detailed.
+    pub answer_length: String,
     // Audio
     pub capture_mic: bool,
     pub capture_system: bool,
@@ -88,6 +92,8 @@ impl Default for Settings {
             profile_level: "intermediate".into(),
             interests: Vec::new(),
             discover_enabled: false,
+            answer_level: "simple".into(),
+            answer_length: "normal".into(),
             capture_mic: true,
             capture_system: true,
             mic_device: None,

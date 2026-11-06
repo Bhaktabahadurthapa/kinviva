@@ -1,7 +1,7 @@
 import { renderMarked, renderTerm } from "../lib/highlight";
 const LABELS = ["Key points", "Expert addition", "Meaning", "Details", "Terms", "Hard words", "Answer", "Unclear", "Asking", "Points to cover"];
 /** Headings of a meeting answer, alone on a line. */
-const HEADINGS = ["WHAT I SEE", "EXPLANATION", "YOU COULD SAY", "KEY TAKEAWAY", "HARD WORDS", "SOURCES", "CLARIFICATION"];
+const HEADINGS = ["WHAT I SEE", "EXPLANATION", "YOU COULD SAY", "KEY TAKEAWAY", "HARD WORDS", "REMEMBER IT", "CHECK YOURSELF", "SOURCES", "CLARIFICATION"];
 const HEADING_RE = new RegExp(`^\\**(${HEADINGS.join("|")})\\**\\s*:?\\s*\\**$`, "i");
 const LABEL_RE = new RegExp(`^\\**(${LABELS.join("|")})\\**\\s*:\\s*\\**\\s*(.*)$`, "i");
 
@@ -61,6 +61,8 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
           {b.text && <p>{/^(hard words|terms)$/i.test(b.label) ? renderTerm(b.text) : renderMarked(b.text)}</p>}
         </div>,
       );
+    } else if (/^check yourself$/i.test(section) && /^answer\s*:/i.test(b.text)) {
+      out.push(<details key={i} className="ai-reveal"><summary>Show the answer</summary><p>{renderMarked(b.text.replace(/^answer\s*:\s*/i, ""))}</p></details>);
     } else out.push(<p key={i}>{renderMarked(b.text)}</p>);
   });
   flush();

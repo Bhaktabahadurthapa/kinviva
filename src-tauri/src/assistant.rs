@@ -144,6 +144,11 @@ pub fn start_with(
         focus: focus.as_deref(),
         session: &session,
     }, expert.map(|s| s.body.as_str()));
+    if let Some(note) = prompts::style_note(action, &settings.answer_level, &settings.answer_length) {
+        if let Some(user) = messages.last_mut() {
+            user.content.push_str(&note);
+        }
+    }
 
     // A request the user asks for replaces the previous one in its panel.
     // Automatic ones answer different sentences, so they run side by side

@@ -114,6 +114,28 @@ Reread your YOU COULD SAY text. For every word a 10-year-old may not know (techn
 SOURCES\n\
 General knowledge: no notes or documents about the user were provided.";
 
+/// Extra instructions for how the answer reads: its level and length, plus a memorable "Remember it" line.
+/// Appended after the layout so it can adjust it. Recaps stay as they are.
+pub fn style_note(action: Action, level: &str, length: &str) -> Option<String> {
+    if action == Action::Recap {
+        return None;
+    }
+    let mut n = String::from("\n\n--- How this answer should read (these adjust the layout above; never add facts) ---\n");
+    n.push_str("- Lead with the answer in the first sentence, then the reason, then a small example. Keep paragraphs to 2 or 3 short sentences.\n");
+    n.push_str("- Add one extra section with the heading REMEMBER IT on its own line, right after KEY TAKEAWAY (or at the end of the answer when there is no KEY TAKEAWAY, but before SOURCES). It holds ONE short, memorable sentence, ideally a comparison to everyday life, that helps the reader remember the idea. Leave this section out when you output NO_ANSWER, when the question is about what was said in the conversation, or when no honest comparison exists.\n");
+    match level {
+        "professional" => n.push_str("- Level: write in clear, professional business English a senior colleague would use. Sentences stay short. This replaces the earlier rule about a 10-year-old; still explain any acronym once.\n"),
+        "student" => n.push_str("- Level: the reader is a learner. Teach step by step: define each new term the first time you use it and use one small, concrete example. After REMEMBER IT add a section with the heading CHECK YOURSELF on its own line, holding one short question the reader can answer from this explanation, then on the next line \"Answer:\" followed by the answer in one sentence.\n"),
+        _ => {}
+    }
+    match length {
+        "short" => n.push_str("- Length: keep the whole answer very short, under 45 words in total, and keep only the most important point. This replaces the earlier length rules; skip HARD WORDS unless a term is essential.\n"),
+        "detailed" => n.push_str("- Length: this answer may run up to about 180 words and should include one concrete example. This replaces the earlier length rules.\n"),
+        _ => {}
+    }
+    Some(n)
+}
+
 /// True when the line asks about the user's own history, experience or opinion
 /// (facts only the user can supply). Scenario and how/what/why questions are not.
 /// The model's "this needs no answer from the user" marker.
@@ -304,6 +326,18 @@ mod tests {
         assert!(!about_user("Can you walk us through it?"));
         assert!(!about_user("So what happens in this case?"));
         assert!(!about_user("Young teams use it"));
+    }
+
+
+    #[test]
+    fn style_note_adds_remember_it_and_level_and_length_rules() {
+        let n = style_note(Action::Explain, "student", "short").unwrap();
+        assert!(n.contains("REMEMBER IT") && n.contains("CHECK YOURSELF") && n.contains("under 45 words"));
+        let n = style_note(Action::Suggest, "professional", "detailed").unwrap();
+        assert!(n.contains("professional business English") && n.contains("180 words") && !n.contains("CHECK YOURSELF"));
+        let n = style_note(Action::Ask, "simple", "normal").unwrap();
+        assert!(n.contains("REMEMBER IT") && !n.contains("Level:") && !n.contains("Length:"));
+        assert!(style_note(Action::Recap, "student", "short").is_none());
     }
 
     #[test]
