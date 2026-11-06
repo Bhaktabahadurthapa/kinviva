@@ -169,7 +169,7 @@ export default function WhiteboardView({ onError, onChanged, initialBoard }: { o
         const near = o.near ? shapes(resolve(o.near)) : null;
         const id = `ml-${Date.now().toString(36)}-${n}`;
         created[`new${n}`] = id;
-        toAdd.push({ type: "rectangle", id, x: near ? near.x + 260 : bottomRight(els) + 80, y: near ? near.y + 100 * n : 0, width: 190, height: 72, backgroundColor: "#ece8ff", strokeColor: "#5b3fd6", strokeWidth: 2, roundness: { type: 3 }, label: { text: o.label, fontSize: 16 }, customData: { ml: { ai: true, node: id } } });
+        toAdd.push({ type: "rectangle", id, x: near ? near.x + 260 : bottomRight(els) + 80, y: near ? near.y + 100 * n : 0, width: 190, height: 72, backgroundColor: "#e8eefe", strokeColor: "#2563eb", strokeWidth: 2, roundness: { type: 3 }, label: { text: o.label, fontSize: 16 }, customData: { ml: { ai: true, node: id } } });
       } else if (o.op === "rename") {
         els = els.map((e) => (e.type === "text" && e.containerId === o.id ? { ...e, text: o.label, originalText: o.label, version: e.version + 1, versionNonce: Math.floor(Math.random() * 2 ** 31) } : e));
       } else if (o.op === "remove") {

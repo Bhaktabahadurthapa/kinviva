@@ -64,7 +64,7 @@ export function layout(spec: DiagramSpec, origin = { x: 0, y: 0 }): Placed[] {
 
 const STYLE = {
   verified: { backgroundColor: "#e3f3ea", strokeColor: "#2f7d4f", strokeStyle: "solid" },
-  mentioned: { backgroundColor: "#ece8ff", strokeColor: "#5b3fd6", strokeStyle: "solid" },
+  mentioned: { backgroundColor: "#e8eefe", strokeColor: "#2563eb", strokeStyle: "solid" },
   inferred: { backgroundColor: "#fff7e0", strokeColor: "#a06a00", strokeStyle: "dashed" },
   plain: { backgroundColor: "#f3f4f8", strokeColor: "#4b5262", strokeStyle: "solid" },
 } as const;

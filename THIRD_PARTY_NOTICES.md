@@ -806,6 +806,7 @@ Dependency tree as installed (production). Where a package offers a choice of li
 |---|---|---|
 | Fraunces | @fontsource-variable/fraunces 5.3.0 | SIL Open Font License 1.1 |
 | Instrument Sans | @fontsource-variable/instrument-sans 5.3.0 | SIL Open Font License 1.1 |
+| Inter | @fontsource-variable/inter 5.3.0 | SIL Open Font License 1.1 |
 | IBM Plex Mono | @fontsource/ibm-plex-mono 5.3.0 | SIL Open Font License 1.1 |
 
 ## Bundled native code (speech engine)

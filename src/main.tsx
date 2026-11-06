@@ -6,6 +6,7 @@ import { inTauri } from "./lib/api";
 import { applyAppearance, loadAppearance } from "./lib/appearance";
 import App from "./App";
 import Overlay from "./Overlay";
+import "@fontsource-variable/inter";
 import "@fontsource/atkinson-hyperlegible/400.css";
 import "@fontsource/atkinson-hyperlegible/400-italic.css";
 import "@fontsource/atkinson-hyperlegible/700.css";

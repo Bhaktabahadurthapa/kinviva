@@ -24,33 +24,21 @@ import type { Course } from "./lib/types";
 /** The two primary areas. Settings is a utility button, not a primary item. */
 
 function Logo() {
-  // The app icon mark: a lens with a voice waveform inside.
+  // The MeetingLens mark: a waveform that shifts from royal blue to violet.
   return (
-    <svg width="28" height="28" viewBox="100 100 824 824" aria-hidden>
+    <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden>
       <defs>
-        <linearGradient id="lg-tile" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#22386a" />
-          <stop offset="1" stopColor="#0c1730" />
-        </linearGradient>
-        <linearGradient id="lg-ring" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#9db9ff" />
-        </linearGradient>
-        <linearGradient id="lg-bar" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#9db9ff" />
-          <stop offset="1" stopColor="#4d7cff" />
+        <linearGradient id="ml-wave" gradientUnits="userSpaceOnUse" x1="8" y1="0" x2="56" y2="0">
+          <stop offset="0" stopColor="#3B82F6" />
+          <stop offset="1" stopColor="#8B5CF6" />
         </linearGradient>
       </defs>
-      <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#lg-tile)" />
-      <circle cx="512" cy="500" r="206" fill="#0a1226" fillOpacity="0.55" />
-      <circle cx="512" cy="500" r="206" fill="none" stroke="url(#lg-ring)" strokeWidth="40" />
-      <path d="M668 656 L748 736" stroke="url(#lg-ring)" strokeWidth="44" strokeLinecap="round" />
-      <g fill="url(#lg-bar)">
-        <rect x="396" y="466" width="32" height="68" rx="16" />
-        <rect x="448" y="418" width="32" height="164" rx="16" />
-        <rect x="496" y="372" width="32" height="256" rx="16" />
-        <rect x="544" y="418" width="32" height="164" rx="16" />
-        <rect x="596" y="466" width="32" height="68" rx="16" />
+      <g stroke="url(#ml-wave)" strokeWidth="6.5" strokeLinecap="round">
+        <path d="M11 23.5v17" />
+        <path d="M21.5 14v36" />
+        <path d="M32 7v50" />
+        <path d="M42.5 17v30" />
+        <path d="M53 25v14" />
       </g>
     </svg>
   );

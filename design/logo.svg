@@ -1,38 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="MeetingLens">
   <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="8" y1="0" x2="56" y2="0">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#6D28D9"/>
+    </linearGradient>
     <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#22386a"/>
-      <stop offset="1" stop-color="#0c1730"/>
+      <stop offset="0" stop-color="#10224f"/>
+      <stop offset="1" stop-color="#0B1735"/>
     </linearGradient>
-    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#9db9ff"/>
-    </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#9db9ff"/>
-      <stop offset="1" stop-color="#4d7cff"/>
-    </linearGradient>
-    <radialGradient id="glass" cx="0.35" cy="0.3" r="0.8">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="lens"><circle cx="512" cy="500" r="206"/></clipPath>
   </defs>
-  <!-- tile -->
   <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#tile)"/>
-  <rect x="100.5" y="100.5" width="823" height="823" rx="185.5" fill="none" stroke="#ffffff" stroke-opacity="0.12"/>
-  <!-- lens -->
-  <circle cx="512" cy="500" r="206" fill="#0a1226" fill-opacity="0.55"/>
-  <circle cx="512" cy="500" r="206" fill="url(#glass)"/>
-  <circle cx="512" cy="500" r="206" fill="none" stroke="url(#ring)" stroke-width="40"/>
-  <!-- handle (a lens, held) -->
-  <path d="M668 656 L748 736" stroke="url(#ring)" stroke-width="44" stroke-linecap="round"/>
-  <!-- voice bars inside the lens -->
-  <g clip-path="url(#lens)" fill="url(#bar)">
-    <rect x="396" y="466" width="32" height="68" rx="16"/>
-    <rect x="448" y="418" width="32" height="164" rx="16"/>
-    <rect x="496" y="372" width="32" height="256" rx="16"/>
-    <rect x="544" y="418" width="32" height="164" rx="16"/>
-    <rect x="596" y="466" width="32" height="68" rx="16"/>
+  <g stroke="url(#g)" stroke-width="8.2" stroke-linecap="round" transform="translate(512 512) scale(7.4) translate(-32 -32)">
+    <path d="M11 23.5v17"/><path d="M21.5 14v36"/><path d="M32 7v50"/><path d="M42.5 17v30"/><path d="M53 25v14"/>
   </g>
 </svg>
