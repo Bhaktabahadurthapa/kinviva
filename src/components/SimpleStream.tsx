@@ -4,10 +4,6 @@ import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
 import { citationText, displayText, spokenPart } from "../lib/citations";
 
-/** Minimum time between new explanations appearing, so each can be read. */
-const REVEAL_GAP_MS = 300;
-/** If the speaker races ahead, skip older waiting notes instead of flooding. */
-const MAX_WAITING = 1;
 
 /**
  * Notes still waiting to be revealed. An id counts as handled when it was shown
@@ -53,52 +49,29 @@ const isFinished = (n?: SideNote["meaning"]) => n?.state === "done";
 const maybeNoAnswer = (t: string) => "NO_ANSWER".startsWith(t.trim().toUpperCase()) || isNoAnswer(t);
 
 /**
- * The reading pane: what the other side said, in simple words. Notes appear
- * only once complete (no word-by-word typing), one at a time with a pause
- * between them; the newest is large and earlier ones fade back.
+ * The reading pane, step by step. Each thing the other side says becomes a numbered step the moment
+ * it is being explained: their words first, the explanation filling in below them. Steps stay in the
+ * order they were spoken, none is skipped or moved, and the view follows the newest step until you scroll
+ * up to read; then it stays put and offers a button to jump back.
  */
 export function SimpleStream({ finals, side, running }: { finals: Segment[]; side: Record<number, SideNote>; running: boolean }) {
   const box = useRef<HTMLDivElement>(null);
-  const prevHeight = useRef(0);
-  const lastReveal = useRef(0);
-  const [shown, setShown] = useState<number[]>([]);
+  const [follow, setFollow] = useState(true);
 
-  // A line is worth showing once its key points or its answer is complete.
   const hasAnswer = (n?: SideNote) => isDone(n?.answer) && !maybeNoAnswer(n!.answer!.text);
-  const ready = dropRepeats(
-    finals.filter((s) => s.source === "system" && (isDone(side[s.id]?.meaning) || hasAnswer(side[s.id]))).map((s) => s.id),
-    (id) => (hasAnswer(side[id]) || !isFinished(side[id]?.meaning) ? null : side[id]!.meaning!.text),
-  );
-  const writing = finals.some(
-    (s) => s.source === "system" && (side[s.id]?.meaning?.state === "streaming" || side[s.id]?.answer?.state === "streaming") && !ready.includes(s.id),
-  );
+  const active = (n?: SideNote) => {
+    if (!n) return false;
+    const m = n.meaning;
+    if (m && m.state !== "idle") return true;
+    return !!n.answer && n.answer.state !== "idle" && !(n.answer.state === "done" && maybeNoAnswer(n.answer.text)) && !(n.answer.state === "cancelled" && !n.answer.text);
+  };
+  const steps = finals.filter((sg) => sg.source === "system" && active(side[sg.id]));
+  // Which steps repeat the one before them (shown folded, never removed).
+  const kept = new Set(dropRepeats(steps.map((sg) => sg.id), (id) => (hasAnswer(side[id]) || !isFinished(side[id]?.meaning) ? null : side[id]!.meaning!.text)));
+  let lastKept = 0;
+  const sameAs = new Map<number, number>();
+  steps.forEach((sg, i) => (kept.has(sg.id) ? (lastKept = i + 1) : sameAs.set(sg.id, lastKept)));
 
-  // Reveal ready notes one at a time, at a readable pace.
-  useEffect(() => {
-    let pending = pendingNotes(ready, shown);
-    if (!pending.length) return;
-    if (pending.length > MAX_WAITING + 1) {
-      // Keep the newest; older waiting notes stay in History instead.
-      const skipped = pending.slice(0, pending.length - (MAX_WAITING + 1));
-      pending = pending.slice(skipped.length);
-      setShown((s) => [...s, ...skipped.map((id) => -id - 1)]);
-      return;
-    }
-    const wait = Math.max(0, lastReveal.current + REVEAL_GAP_MS - Date.now());
-    const t = window.setTimeout(() => {
-      lastReveal.current = Date.now();
-      setShown((s) => [...s, pending[0]]);
-    }, wait);
-    return () => window.clearTimeout(t);
-  }, [ready.join(","), shown]);
-
-  // New meeting: start fresh.
-  useEffect(() => {
-    if (finals.length === 0) setShown([]);
-  }, [finals.length === 0]);
-
-  // A failed request used to vanish silently. Show why, for the newest failure
-  // that no later answer has replaced.
   const failure = (() => {
     for (const seg of [...finals].reverse()) {
       if (seg.source !== "system") continue;
@@ -110,69 +83,83 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
     return null;
   })();
 
-  const visible = shown.filter((id) => id >= 0);
-  const latest = visible[visible.length - 1];
-
-  // Newest note sits at the top and nothing scrolls by itself. If you have
-  // scrolled down to re-read an older note, new ones are added above without
-  // moving what you are reading.
+  // Follow the newest step while following is on, including while its text is still arriving.
+  const lastNote = steps.length ? side[steps[steps.length - 1].id] : undefined;
+  const signature = `${steps.length}:${lastNote?.meaning?.text.length ?? 0}:${lastNote?.answer?.text.length ?? 0}`;
   useLayoutEffect(() => {
     const el = box.current;
+    if (el && follow) el.scrollTop = el.scrollHeight;
+  }, [signature, follow]);
+  const onScroll = () => {
+    const el = box.current;
     if (!el) return;
-    const grew = el.scrollHeight - prevHeight.current;
-    if (prevHeight.current && el.scrollTop > 24 && grew > 0) el.scrollTop += grew;
-    prevHeight.current = el.scrollHeight;
-  }, [visible.length]);
-
-  const byId = new Map(finals.map((s) => [s.id, s]));
+    const away = el.scrollHeight - el.scrollTop - el.clientHeight > 90;
+    if (away !== !follow) setFollow(!away);
+  };
+  useEffect(() => {
+    if (finals.length === 0) setFollow(true);
+  }, [finals.length === 0]);
 
   return (
-    <div className="simple-stream" ref={box} aria-live="polite">
-      {failure && (
-        <div className="banner" role="alert">
-          <b>MeetingLens could not generate an answer.</b> {failure}
-        </div>
-      )}
-      {visible.length === 0 && running && !failure && <p className="empty">When they finish a thought, its meaning appears here in simple words.</p>}
-      {visible.length === 0 && !running && (
-        <div className="how">
-          <p className="empty">Simple explanations appear here automatically.</p>
-          <ol className="how-steps">
-            <li><b>Begin session</b><span>MeetingLens listens to the call and your microphone.</span></li>
-            <li><b>They speak</b><span>Each finished thought is explained in plain words.</span></li>
-            <li><b>You reply</b><span>A short answer you could say is drafted when a question is asked.</span></li>
-          </ol>
-        </div>
-      )}
-      {running && writing && <div className="simple-writing">Writing the key points…</div>}
-      {[...visible].reverse().map((id) => {
-        const seg = byId.get(id);
-        const note = side[id];
-        if (!seg || !note || (!note.meaning && !hasAnswer(note))) return null;
-        const answer = note.answer;
-        return (
-          <article key={id} className={`simple-item ${id === latest ? "is-latest" : "is-earlier"}`}>
-            <div className="simple-said">
-              <span className="when">{fmt(seg.start_ms)}</span> They said: “{seg.text}”
-            </div>
-            {note.meaning && (
-              <div className="simple-meaning">
-                <AiText text={displayText(note.meaning)} streaming={!isFinished(note.meaning)} />
+    <div className="simple-wrap">
+      <div className="simple-stream" ref={box} onScroll={onScroll} aria-live="polite">
+        {failure && (
+          <div className="banner" role="alert">
+            <b>MeetingLens could not generate an answer.</b> {failure}
+          </div>
+        )}
+        {steps.length === 0 && running && !failure && <p className="empty">When they finish a thought, it appears here as a numbered step with its meaning in simple words.</p>}
+        {steps.length === 0 && !running && (
+          <div className="how">
+            <p className="empty">Simple explanations appear here automatically.</p>
+            <ol className="how-steps">
+              <li><b>Begin session</b><span>MeetingLens listens to the call and your microphone.</span></li>
+              <li><b>They speak</b><span>Each finished thought becomes a numbered step.</span></li>
+              <li><b>You reply</b><span>A short answer you could say is drafted when a question is asked.</span></li>
+            </ol>
+          </div>
+        )}
+        {steps.map((seg, i) => {
+          const note = side[seg.id]!;
+          const answer = note.answer;
+          const m = note.meaning;
+          const isNewest = i === steps.length - 1;
+          const folded = sameAs.get(seg.id);
+          const meaningState = !m || m.state === "idle" ? null : m.text.trim() ? "text" : m.state === "error" ? "error" : m.state === "cancelled" ? "covered" : "waiting";
+          return (
+            <article key={seg.id} className={`step ${isNewest ? "is-newest" : ""}`}>
+              <div className="step-head">
+                <span className="step-n">{i + 1}</span>
+                <span className="when">{fmt(seg.start_ms)}</span>
+                {isNewest && running && <span className="step-now">Latest</span>}
               </div>
-            )}
-            {answer && hasAnswer(note) && (
-              <div className={`simple-answer${note.meaning ? "" : " is-primary"}`}>
-                <div className="script-head">
-                  <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : (note.meaning ? "Your script — you could say" : "Answer — you could say")}</span>
-                  <CopyButton text={spokenPart(answer.text)} />
+              <div className="step-said">“{seg.text}”</div>
+              {meaningState === "waiting" && <div className="step-wait" role="status"><i /><i /><i /><span>Explaining this…</span></div>}
+              {meaningState === "covered" && <p className="step-note">Skipped while the speaker kept talking. The next step covers it.</p>}
+              {meaningState === "error" && <p className="step-note">This part could not be explained.</p>}
+              {meaningState === "text" && folded !== undefined && isFinished(m) && (
+                <details className="step-same"><summary>Same point as step {folded}</summary><div className="simple-meaning"><AiText text={displayText(m!)} /></div></details>
+              )}
+              {meaningState === "text" && !(folded !== undefined && isFinished(m)) && (
+                <div className="simple-meaning">
+                  <AiText text={displayText(m!)} streaming={!isFinished(m)} />
                 </div>
-                <AiText text={displayText(answer)} streaming={!isFinished(answer)} />
-                {isFinished(answer) && answer.sources.length === 0 && (answer.web ?? []).length === 0 && !/SOURCES/i.test(displayText(answer)) && <SourceLine sources={answer.sources} web={answer.web} />}
-              </div>
-            )}
-          </article>
-        );
-      })}
+              )}
+              {answer && answer.state !== "idle" && !(answer.state === "done" && maybeNoAnswer(answer.text)) && (answer.text.trim() || answer.state === "streaming") && (
+                <div className={`simple-answer${m ? "" : " is-primary"}`}>
+                  <div className="script-head">
+                    <span className="note-label">{/^\s*asking:/i.test(answer.text) ? "Your turn" : (m ? "Your script — you could say" : "Answer — you could say")}</span>
+                    {answer.text.trim() && <CopyButton text={spokenPart(answer.text)} />}
+                  </div>
+                  {answer.text.trim() ? <AiText text={displayText(answer)} streaming={!isFinished(answer)} /> : <div className="step-wait"><i /><i /><i /><span>Writing your answer…</span></div>}
+                  {isFinished(answer) && answer.sources.length === 0 && (answer.web ?? []).length === 0 && !/SOURCES/i.test(displayText(answer)) && <SourceLine sources={answer.sources} web={answer.web} />}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+      {!follow && steps.length > 0 && <button className="simple-jump" onClick={() => { setFollow(true); }}>Jump to latest ↓</button>}
     </div>
   );
 }

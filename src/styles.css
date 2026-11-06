@@ -2334,3 +2334,27 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .manual-answers .iv-ask-result { position: relative; }
 .ma-x { position: absolute; top: 8px; right: 10px; border: none; background: none; color: var(--c-text-3); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 6px; }
 .ma-x:hover { background: var(--c-sunken); color: var(--c-text); }
+
+/* Step-by-step reading pane: numbered steps in the order spoken, filled in place. */
+.simple-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.simple-wrap > .simple-stream { flex: 1; min-height: 0; gap: 14px; scroll-behavior: smooth; }
+.step { padding: 12px 14px 14px; border: 1px solid var(--c-line); border-radius: 14px; background: var(--c-surface); animation: calm-in 260ms var(--ease-out) both; }
+.step.is-newest { border-color: rgba(37, 99, 235, .45); box-shadow: 0 0 0 3px rgba(37, 99, 235, .10); }
+.step-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.step-n { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; font-size: 12px; font-weight: 700; }
+.step-head .when { font-family: var(--f-mono); font-size: 11px; color: var(--c-text-3); }
+.step-now { margin-left: auto; padding: 1px 9px; border-radius: 999px; background: rgba(37, 99, 235, .12); color: var(--c-signal); font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.step-said { margin: 0 0 8px; padding: 8px 12px; border-radius: 10px; background: var(--c-sunken); color: var(--c-text-2); font-size: 14.5px; line-height: 1.5; font-style: italic; }
+.step-wait { display: flex; align-items: center; gap: 5px; color: var(--c-text-3); font-size: 13.5px; padding: 4px 2px; }
+.step-wait i { width: 6px; height: 6px; border-radius: 50%; background: var(--c-signal); opacity: .35; animation: step-dot 1.2s infinite; }
+.step-wait i:nth-child(2) { animation-delay: .2s; } .step-wait i:nth-child(3) { animation-delay: .4s; }
+.step-wait span { margin-left: 6px; }
+@keyframes step-dot { 40% { opacity: 1; transform: translateY(-2px); } }
+.step-note { margin: 4px 0 0; font-size: 13.5px; color: var(--c-text-3); }
+.step-same { margin-top: 2px; }
+.step-same summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--c-text-2); }
+.step .simple-meaning .ai-rich p, .step .simple-meaning .ai-rich li { font-size: 16.5px; line-height: 1.55; }
+.simple-jump { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); padding: 7px 16px; border: none; border-radius: 999px; background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; font: 700 13px var(--f-ui); box-shadow: 0 8px 22px rgba(37, 99, 235, .4); cursor: pointer; }
+.overlay .step { background: rgba(9, 12, 26, .55); border-color: rgba(255, 255, 255, .2); }
+.overlay .step-said { background: rgba(255, 255, 255, .08); color: #d6defa; }
+@media (prefers-reduced-motion: reduce) { .step, .step-wait i { animation: none; } .simple-wrap > .simple-stream { scroll-behavior: auto; } }
