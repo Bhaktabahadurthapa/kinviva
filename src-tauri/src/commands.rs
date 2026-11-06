@@ -417,8 +417,8 @@ pub fn architecture_delete(state: State<AppState>, id: String) -> R<()> {
 pub fn architecture_write_file(path: String, data_base64: String) -> R<()> {
     use base64::Engine;
     let lower = path.to_lowercase();
-    if !(lower.ends_with(".svg") || lower.ends_with(".png") || lower.ends_with(".pptx") || lower.ends_with(".csv")) {
-        return Err("Files can only be exported as .svg, .png, .pptx or .csv.".into());
+    if !(lower.ends_with(".svg") || lower.ends_with(".png") || lower.ends_with(".pptx") || lower.ends_with(".csv") || lower.ends_with(".md")) {
+        return Err("Files can only be exported as .svg, .png, .pptx, .csv or .md.".into());
     }
     let bytes = base64::engine::general_purpose::STANDARD.decode(data_base64).map_err(|e| e.to_string())?;
     if bytes.len() > 40 * 1024 * 1024 {

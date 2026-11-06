@@ -35,6 +35,7 @@ pub enum Kind {
     ClassItems,
     Flashcards,
     HomeworkHint,
+    ScriptHighlights,
 }
 
 impl Kind {
@@ -62,11 +63,12 @@ impl Kind {
             "class_items" => Kind::ClassItems,
             "flashcards" => Kind::Flashcards,
             "homework_hint" => Kind::HomeworkHint,
+            "script_highlights" => Kind::ScriptHighlights,
             _ => return None,
         })
     }
     pub fn is_json(self) -> bool {
-        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart | Kind::SlideDeck | Kind::ClassItems | Kind::Flashcards)
+        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart | Kind::SlideDeck | Kind::ClassItems | Kind::Flashcards | Kind::ScriptHighlights)
     }
     /// Kinds that need conversation text to work from.
     pub fn needs_transcript(self) -> bool {
@@ -99,6 +101,7 @@ fn instructions(kind: Kind) -> &'static str {
         Kind::ClassItems => "Find what the teacher announced for the students: homework, assignments, deadlines, exams or tests, readings, projects and other announcements. Return ONE JSON object only: {\"items\": [{\"type\": \"assignment\"|\"deadline\"|\"exam\"|\"reading\"|\"announcement\", \"text\": what the student must do or know, \"when\": a date or time ONLY if it was said, else \"\", \"quote\": the exact words from the transcript}]} (max 12). Only include what was really said. If nothing was announced, return {\"items\": []}.",
         Kind::Flashcards => "Make study flashcards from the lecture, the documents or the topic in <input>. Return ONE JSON object only: {\"topic\": string, \"cards\": [{\"front\": a term, question or idea (max 12 words), \"back\": the answer in simple words (max 40 words)}]} with 8 to 20 cards. One idea per card, no trick cards, no invented facts.",
         Kind::HomeworkHint => "The student is stuck on the problem in <input>. Teach, do not solve. Layout, headings on their own lines:\nWHAT IS BEING ASKED\nRestate the problem in simple words.\nWHAT YOU NEED TO KNOW\n2 to 4 bullets of the ideas or formulas involved, each explained briefly.\nHINT 1\nA small nudge.\nHINT 2\nA bigger nudge.\nHINT 3\nThe next step, still without the final answer.\nCHECK YOUR WORK\nHow the student can tell their own answer is right. Never give the final answer, never write the finished essay or code to hand in, and say so in one line if asked to.",
+        Kind::ScriptHighlights => "The material in <input> is the complete script of a video, one numbered line per segment, written like \"12| text\". Help a reader get the value of the video without watching it. Return ONE JSON object only: {\"summary\": 2 to 4 plain sentences on what the video is about, \"key_points\": [{\"line\": the number of the line where the point is made, \"point\": the point in one short plain sentence}] (6 to 12, in the order of the video), \"important\": [numbers of the lines that carry the most important ideas, definitions, numbers, decisions or advice; no more than one line in five], \"chapters\": [{\"line\": number of the first line of the part, \"title\": a title of at most 6 words}] (3 to 10, in ascending order)}. Use only line numbers that exist in the script. Never add facts that the script does not say.",
         Kind::Assistant => "The user's request is in <input>, starting with a mode in square brackets: [Ask], [Explain], [Summarize], [Plan] or [Code]. Do what the mode says. Ask: answer the question. Explain: explain it in simple words, then one deeper paragraph. Summarize: a short summary in bullets. Plan: a numbered plan of small steps. Code: a short, correct code example in a fenced block with a one-line note on how to run it. Use <documents> (the user's own files) when they are relevant and name the file in square brackets; say \"Not in your documents\" when you rely on general knowledge. Wrap the 1 to 3 most important words per paragraph in **double asterisks**.",
         Kind::ExplainItem => "Help the reader with the article or project described in <input>. Use only the title and summary given plus general knowledge; say plainly if the summary is too short to know more. Layout, headings on their own lines: IN SIMPLE WORDS, WHY IT MATTERS, TRY IT (one practical step), HARD WORDS (up to 5 lines \"term: meaning\"). Wrap key terms in **double asterisks**.",
     }
@@ -120,7 +123,7 @@ pub fn build_messages(kind: Kind, transcript: &str, notes: &str, passages: &[Pas
         user.push_str("</documents>\n");
     }
     if !input.trim().is_empty() {
-        user.push_str(&format!("<input>\n{}\n</input>\n", input.trim().chars().take(6000).collect::<String>()));
+        user.push_str(&format!("<input>\n{}\n</input>\n", input.trim().chars().take(if kind == Kind::ScriptHighlights { 60_000 } else { 6000 }).collect::<String>()));
     }
     let mut system = String::from(COMMON);
     system.push_str("\n\n");
@@ -377,6 +380,26 @@ pub fn post(kind: Kind, raw: &str, transcript: &str) -> Result<String, String> {
             }
             json!({"topic": clean(v.get("topic").and_then(Value::as_str).unwrap_or("Flashcards"), 80), "cards": cards})
         }
+        Kind::ScriptHighlights => {
+            // The highest line number really present in the script the model was given.
+            let max = transcript.lines().filter_map(|l| l.split_once('|').and_then(|(n, _)| n.trim().parse::<u32>().ok())).max().unwrap_or(0);
+            let ok = |n: &Value| n.as_u64().filter(|x| *x >= 1 && *x <= max as u64);
+            let key_points: Vec<Value> = v.get("key_points").and_then(Value::as_array).into_iter().flatten().take(14)
+                .filter_map(|k| Some(json!({"line": ok(k.get("line")?)?, "point": clean(k.get("point")?.as_str()?, 240)})))
+                .filter(|k| !k["point"].as_str().unwrap_or("").is_empty()).collect();
+            let mut important: Vec<u64> = v.get("important").and_then(Value::as_array).into_iter().flatten().filter_map(ok).collect();
+            important.sort_unstable();
+            important.dedup();
+            important.truncate((max as usize / 4).max(3));
+            let mut chapters: Vec<Value> = v.get("chapters").and_then(Value::as_array).into_iter().flatten().take(12)
+                .filter_map(|c| Some(json!({"line": ok(c.get("line")?)?, "title": clean(c.get("title")?.as_str()?, 60)})))
+                .filter(|c| !c["title"].as_str().unwrap_or("").is_empty()).collect();
+            chapters.sort_by_key(|c| c["line"].as_u64().unwrap_or(0));
+            if key_points.is_empty() && important.is_empty() {
+                return Err("No important points could be found. Check that the script was pasted in full and try again.".into());
+            }
+            json!({"summary": clean(v.get("summary").and_then(Value::as_str).unwrap_or(""), 700), "key_points": key_points, "important": important, "chapters": chapters})
+        }
         Kind::SlideDeck => {
             let layouts = ["bullets", "two_column", "stat", "steps", "quote", "summary"];
             let mut slides = Vec::new();
@@ -446,6 +469,18 @@ mod tests {
         assert!(post(Kind::Flashcards, r#"{"cards":[{"front":"a","back":"b"}]}"#, "").is_err());
         let ok = r#"{"topic":"T","cards":[{"front":"a","back":"1"},{"front":"b","back":"2"},{"front":"c","back":"3"}]}"#;
         assert!(post(Kind::Flashcards, ok, "").is_ok());
+    }
+
+    #[test]
+    fn script_highlights_only_point_at_lines_that_exist() {
+        let evidence = "1| hello\n2| vector databases store embeddings\n3| keyword search is simple\n4| done";
+        let raw = r#"{"summary":"About search.","key_points":[{"line":2,"point":"Vector databases store embeddings."},{"line":99,"point":"Invented"}],"important":[2,3,99,2],"chapters":[{"line":3,"title":"Keyword search"},{"line":1,"title":"Intro"},{"line":50,"title":"Nope"}]}"#;
+        let out: Value = serde_json::from_str(&post(Kind::ScriptHighlights, raw, evidence).unwrap()).unwrap();
+        assert_eq!(out["key_points"].as_array().unwrap().len(), 1);
+        assert_eq!(out["important"], json!([2, 3]));
+        assert_eq!(out["chapters"][0]["line"], 1);
+        assert_eq!(out["chapters"].as_array().unwrap().len(), 2);
+        assert!(post(Kind::ScriptHighlights, r#"{"key_points":[],"important":[]}"#, evidence).is_err());
     }
 
     #[test]
