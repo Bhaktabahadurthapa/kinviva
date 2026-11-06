@@ -2331,3 +2331,6 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .ai-reveal { margin: 6px 0 4px; padding: 8px 12px; border-radius: 10px; background: var(--c-sunken); border: 1px dashed var(--c-line-strong); }
 .ai-reveal summary { cursor: pointer; font-weight: 700; color: var(--c-signal); }
 .ai-reveal p { margin: 6px 0 0; }
+.manual-answers .iv-ask-result { position: relative; }
+.ma-x { position: absolute; top: 8px; right: 10px; border: none; background: none; color: var(--c-text-3); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 6px; }
+.ma-x:hover { background: var(--c-sunken); color: var(--c-text); }

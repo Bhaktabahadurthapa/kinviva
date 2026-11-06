@@ -61,7 +61,10 @@ Rules:\n\
 - Use words a 10-year-old can understand: everyday words, short sentences (about 12 words), and a few simple words to explain any hard term. Sound like a person talking to a friend, not a textbook.\n\
 - Be accurate: explain the speaker's idea using general expert knowledge. Do not invent facts about this meeting, its people, or its numbers.\n\
 - When <document_excerpts> are present, use them only to add the user's own course or document detail, in your own words. Never copy their sentences.\n\
-- Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.",
+- Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.\n\
+- Explain ONLY what is new in <latest>. Everything earlier in <transcript> was already explained before: never explain it again and never repeat an earlier point, example, comparison or hard word. Your first bullet must come from a fact that is in <latest>.\n\
+- Hard words: only words that appear in <latest> or in your new bullets, never words from earlier lines.\n\
+- If <latest> only repeats or continues an earlier point and adds nothing new, write just one line starting \"Continuing:\" with the new detail in plain words, and nothing else.",
         Action::Suggest => "Write the answer the user could say to the question in <latest> (if there is no <latest>, the most recent question from \"Them\").\n\
 Output exactly NO_ANSWER only when the question is clearly rhetorical, the speaker answers it themselves, \
 or it is clearly addressed to someone else. Any question about what or how the user would do, decide, design or recommend is addressed to the user: answer it.\n\
@@ -299,6 +302,7 @@ mod tests {
         assert!(u.contains("Unclear:"));
         assert!(u.contains("Key points:"));
         assert!(u.contains("Do not just repeat the speaker") && u.contains("Expert addition:"));
+        assert!(u.contains("Explain ONLY what is new in <latest>") && u.contains("Continuing:"));
         assert!(!u.contains("<document_excerpts>\n"), "no excerpt block when nothing was retrieved");
         assert!(u.contains("No notes or documents were provided"));
     }

@@ -33,7 +33,7 @@ fn publish(app: &AppHandle, state: &AppState, slot: &str, f: impl FnOnce(&mut Ai
 }
 
 /// Transcript characters sent with an automatic answer (clicks use the setting).
-const AUTO_CONTEXT_CHARS: usize = 2500;
+const AUTO_CONTEXT_CHARS: usize = 1800;
 
 /// Automatic answers in flight per panel before the oldest is dropped.
 const MAX_AUTO_IN_FLIGHT: usize = 2;
