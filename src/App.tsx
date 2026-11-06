@@ -291,10 +291,10 @@ export default function App() {
             {running ? (status?.paused ? "Paused" : "Listening") : "Ready"}
             {running && status?.started_at ? <Elapsed since={status.started_at} /> : null}
           </span>
-          <button className="fb-engine" onClick={() => { void setFocus(false); setTab("settings"); }} title="The answer engine that writes your explanations and replies. Open settings to change it.">
+          <span className="fb-engine" title="The answer engine that writes your explanations and replies. Change it in Settings.">
             <b>Answer engine</b>
             <span>{settings?.llm_model?.trim() ? "Ready" : "Not set up"}</span>
-          </button>
+          </span>
           {!running && tab !== "interview" && (
             <span className="fb-session" title="What kind of session this is">
               <select aria-label="Session type" value={session.kind} onChange={(e) => setSession({ ...session, kind: e.target.value as SessionChoice["kind"], courseId: e.target.value === "class" ? session.courseId ?? courses[0]?.id ?? null : null })}>

@@ -2294,10 +2294,10 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .fb-state i { width: 9px; height: 9px; border-radius: 50%; background: #64748b; }
 .fb-state.live i { background: #34d399; box-shadow: 0 0 0 0 rgba(52, 211, 153, .6); animation: iv-ping 1.8s infinite; }
 .fb-state .timecode, .fb-state span { font-variant-numeric: tabular-nums; color: #aebcf0; }
-.fb-engine { display: flex; flex-direction: column; align-items: flex-start; padding: 3px 12px; border-radius: 10px; border: 1px solid rgba(148, 163, 255, .25); background: rgba(148, 163, 255, .1); color: #fff; cursor: pointer; text-align: left; min-width: 0; max-width: 300px; }
+.fb-engine { display: flex; flex-direction: column; align-items: flex-start; padding: 3px 12px; border-radius: 10px; border: 1px solid rgba(148, 163, 255, .25); background: rgba(148, 163, 255, .1); color: #fff; cursor: default; text-align: left; min-width: 0; max-width: 300px; }
 .fb-engine b { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #93c5fd; }
 .fb-engine span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
-.fb-engine:hover { background: rgba(148, 163, 255, .2); }
+
 .fb-actions { display: inline-flex; gap: 6px; }
 .fb-btn { padding: 7px 14px; border-radius: 10px; border: 1px solid rgba(148, 163, 255, .3); background: rgba(148, 163, 255, .12); color: #fff; font: 600 13px var(--f-ui); cursor: pointer; white-space: nowrap; }
 .fb-btn:hover:not(:disabled) { background: rgba(148, 163, 255, .26); }
