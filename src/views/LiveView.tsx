@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "../components/AiPanel";
-import { ActionBar } from "../components/ActionBar";
+import { ActionBar, useActions } from "../components/ActionBar";
 import { SimpleStream } from "../components/SimpleStream";
 import { ScreenAssist } from "../components/ScreenAssist";
 import { ManualAnswers } from "../components/ManualAnswers";
@@ -73,6 +73,7 @@ export function LiveView({
     setTOpenState(v);
     try { localStorage.setItem("ml.watchTranscript", v ? "open" : "closed"); } catch { /* not essential */ }
   };
+  const act = useActions(onError);
   const lastLine = live.transcript.finals[live.transcript.finals.length - 1];
   const caption = lastLine ? { who: lastLine.source === "system" ? "Them" : "Me", text: lastLine.text } : null;
   const [query, setQuery] = useState("");
@@ -136,7 +137,7 @@ export function LiveView({
       </div>
       {layout === "watch" ? (
         <div className={`live-watch vs-${vsize}`}>
-          <WatchStage caption={caption} />
+          <WatchStage caption={caption} onAction={(a) => void act(a)} />
           <div className="live-watch-side">
         {autoMode === "off" ? (
           <div className="side">

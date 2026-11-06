@@ -508,6 +508,39 @@ pub fn video_close(app: AppHandle) -> R<()> {
     Ok(())
 }
 
+#[derive(serde::Serialize)]
+pub struct VideoInfo {
+    pub title: String,
+    pub channel: String,
+}
+
+/// The title and channel of a YouTube video, from YouTube's public oEmbed address. Other sites return nothing.
+#[tauri::command]
+pub async fn video_info(url: String) -> R<Option<VideoInfo>> {
+    let address = video_address(&url)?;
+    if !address.starts_with("https://www.youtube.com/watch?v=") {
+        return Ok(None);
+    }
+    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(6)).user_agent("MeetingLens").build().map_err(|e| e.to_string())?;
+    let r = client.get("https://www.youtube.com/oembed").query(&[("url", address.as_str()), ("format", "json")]).send().await;
+    let Ok(r) = r else { return Ok(None) };
+    if !r.status().is_success() {
+        return Ok(None);
+    }
+    let v: serde_json::Value = r.json().await.map_err(|e| e.to_string())?;
+    let t = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or("").chars().take(160).collect::<String>();
+    Ok(Some(VideoInfo { title: t("title"), channel: t("author_name") }))
+}
+
+/// Hides or shows the video pane (it is a native layer above the page, so dialogs need it out of the way).
+#[tauri::command]
+pub fn video_visible(app: AppHandle, visible: bool) -> R<()> {
+    if let Some(v) = app.get_webview(VIDEO_LABEL) {
+        if visible { v.show() } else { v.hide() }.map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// The text on the clipboard, for the "Paste" button (the web view itself is not allowed to read it).
 #[tauri::command]
 pub fn clipboard_text() -> R<String> {
