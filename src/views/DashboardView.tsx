@@ -235,10 +235,15 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
           {tasks.length > 0 && <div className="d-progress"><div className="d-bar"><i style={{ width: `${percent(done, tasks.length) ?? 0}%` }} /></div><span>{done} of {tasks.length} completed</span></div>}
         </section>
         <section className="d-card d-promo">
-          <svg className="d-wave" viewBox="0 0 300 80" aria-hidden><defs><linearGradient id="dw" x1="0" x2="1"><stop offset="0" stopColor="#3b82f6" /><stop offset="1" stopColor="#8b5cf6" /></linearGradient></defs><path d="M0 60C50 10 90 70 150 40S250 0 300 30V80H0z" fill="url(#dw)" opacity=".18" /><path d="M0 60C50 10 90 70 150 40S250 0 300 30" fill="none" stroke="url(#dw)" strokeWidth="3" /></svg>
-          <h2>Turn your conversations into <span className="d-grad">clarity</span></h2>
+          <span className="dp-orb dp-orb-a" aria-hidden />
+          <span className="dp-orb dp-orb-b" aria-hidden />
+          <div className="dp-stage" aria-hidden>
+            <div className="dp-wave">{[34, 58, 86, 100, 72, 48, 62, 38].map((h, i) => <i key={i} style={{ height: `${h}%`, animationDelay: `${i * 0.18}s` }} />)}</div>
+            <span className="dp-floor" />
+          </div>
+          <h2>Turn your conversations into <span className="dp-grad">clarity</span></h2>
           <p>Clearer notes. Better decisions.</p>
-          <button className="btn btn-primary" onClick={() => onNavigate("meeting")}>Start now →</button>
+          <button className="dp-btn" onClick={() => onNavigate("meeting")}>Start now <span aria-hidden>→</span></button>
         </section>
       </aside>
 
