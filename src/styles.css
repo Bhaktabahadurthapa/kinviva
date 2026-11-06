@@ -2001,3 +2001,16 @@ h1, h2, .d-hello h1 { letter-spacing: -0.025em; }
 .d-quick-btn { min-width: 0; }
 .d-quick-btn .d-ico { flex: none; }
 body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 1; }
+
+/* Presentation maker */
+.deck-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 12px 0; }
+.deck-opts label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--c-text-2); }
+.deck-title { margin: 4px 0 2px; font-size: 20px; color: var(--c-heading); }
+.deck-list { list-style: none; margin: 10px 0 14px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.deck-list li { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: start; padding: 10px 12px; border: 1px solid var(--c-line); border-radius: 12px; background: var(--c-surface); }
+.deck-n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #6d28d9); color: #fff; font-size: 13px; font-weight: 700; }
+.deck-list strong { display: block; color: var(--c-heading); }
+.deck-layout { display: inline-block; margin-right: 8px; font-size: 12px; color: var(--c-signal); font-weight: 600; }
+.deck-stat { font-size: 13px; font-weight: 700; color: var(--c-heading); }
+.deck-b { display: block; font-size: 13px; color: var(--c-text-2); margin-top: 2px; }
+.deck-btns { display: flex; gap: 2px; }

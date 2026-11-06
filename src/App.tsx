@@ -384,7 +384,7 @@ export default function App() {
             />
           )}
           {tab === "classroom" && <ClassroomView live={live} running={!!running} onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onBoard={() => setTab("whiteboard")} />}
-          {tab === "presentation" && <PresentationView live={live} running={!!running} onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onBoard={() => setTab("whiteboard")} />}
+          {tab === "presentation" && <PresentationView settings={settings} live={live} running={!!running} onError={setError} onChanged={() => setHistoryKey((k) => k + 1)} onBoard={() => setTab("whiteboard")} />}
           {tab === "notes" && <NotesView onError={setError} refreshKey={historyKey} onChanged={() => setHistoryKey((k) => k + 1)} />}
           {tab === "knowledge" && <KnowledgeView onError={setError} onOpenHit={openHit} />}
           {tab === "interview" && <InterviewView live={live} onError={setError} since={interviewSince} onNewSession={() => setInterviewSince(Date.now())} />}

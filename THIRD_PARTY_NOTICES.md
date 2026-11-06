@@ -800,6 +800,10 @@ Dependency tree as installed (production). Where a package offers a choice of li
 | which | 2.0.2 | ISC |
 | zustand | 4.5.7 | MIT |
 
+## PptxGenJS (Presentation maker)
+
+PptxGenJS 4.0.1 (MIT License, Copyright Brent Ely) builds the PowerPoint files on this computer. Its dependency JSZip is MIT or GPL-3.0 dual-licensed; MeetingLens uses it under the MIT option.
+
 ## Bundled fonts
 
 | Font | Package | License |

@@ -19,3 +19,9 @@ export async function chooseSavePath(stem: string, format: NotesFormat): Promise
 export async function chooseImagePath(stem: string, ext: "svg" | "png"): Promise<string | null> {
   return save({ defaultPath: `${stem}.${ext}`, filters: [{ name: ext === "svg" ? "SVG image" : "PNG image", extensions: [ext] }] });
 }
+
+/** Save dialog for a PowerPoint file. */
+export async function chooseDeckPath(stem: string): Promise<string | null> {
+  const path = await save({ defaultPath: `${stem}.pptx`, filters: [{ name: "PowerPoint presentation", extensions: ["pptx"] }] });
+  return path && !path.toLowerCase().endsWith(".pptx") ? `${path}.pptx` : path;
+}

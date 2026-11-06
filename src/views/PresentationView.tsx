@@ -1,15 +1,18 @@
+import { DeckMaker } from "../components/tools/DeckMaker";
 import { ToolRun } from "../components/tools/ToolRun";
 import type { LiveState } from "../lib/liveReducer";
+import type { Settings } from "../lib/types";
 
 /** Presentation Copilot: prepare, rehearse, and handle questions. Slides come from your Documents or pasted text. */
-export function PresentationView({ live, running, onError, onChanged, onBoard }: { live: LiveState; running: boolean; onError: (m: string) => void; onChanged: () => void; onBoard: () => void }) {
+export function PresentationView({ settings, live, running, onError, onChanged, onBoard }: { settings: Settings | null; live: LiveState; running: boolean; onError: (m: string) => void; onChanged: () => void; onBoard: () => void }) {
   const lines = live.transcript.finals.length;
   return (
     <div className="tc-tool tools-page">
       <header>
         <h1>Presentation</h1>
-        <p className="hint">Add your slides or PDF in Documents (they are used automatically), or paste the outline below. To rehearse, press Start above and speak; to handle questions, keep the session running while people ask. {running ? `Listening: ${lines} sentence${lines === 1 ? "" : "s"}.` : ""}</p>
+        <p className="hint">Create a new presentation from your own information, or prepare an existing one: add your slides or PDF in Documents (they are used automatically), or paste the outline below. To rehearse, press Start above and speak; to handle questions, keep the session running while people ask. {running ? `Listening: ${lines} sentence${lines === 1 ? "" : "s"}.` : ""}</p>
       </header>
+      <DeckMaker settings={settings} onError={onError} />
       <ToolRun kind="speaker_notes" title="Speaker notes" help="Notes for each slide, transitions, and likely questions. Only uses what is in your material." button="Write speaker notes" placeholder="Paste your slide titles and bullets (or leave empty to use your Documents)" onError={onError} onSaved={onChanged} onBoard={onBoard} rows={6} />
       <ToolRun kind="rehearsal_feedback" title="Rehearsal feedback" help="Paste what you said (or type your script) and get feedback on clarity, structure and pace." button="Give me feedback" placeholder="Your spoken text or script" inputRequired onError={onError} onSaved={onChanged} rows={6} />
       <ToolRun kind="audience_qa" title="Audience questions" help="Suggested answers to the questions the audience asked in this session, grounded in your material." button="Suggest answers" onError={onError} onSaved={onChanged} />

@@ -30,6 +30,7 @@ pub enum Kind {
     BoardDiagram,
     BoardOps,
     Chart,
+    SlideDeck,
 }
 
 impl Kind {
@@ -52,11 +53,12 @@ impl Kind {
             "board_diagram" => Kind::BoardDiagram,
             "board_ops" => Kind::BoardOps,
             "chart" => Kind::Chart,
+            "slide_deck" => Kind::SlideDeck,
             _ => return None,
         })
     }
     pub fn is_json(self) -> bool {
-        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart)
+        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart | Kind::SlideDeck)
     }
     /// Kinds that need conversation text to work from.
     pub fn needs_transcript(self) -> bool {
@@ -84,6 +86,7 @@ fn instructions(kind: Kind) -> &'static str {
         Kind::BoardDiagram => "Turn the material into a diagram the user can edit on a whiteboard. The wanted style is in <input> (flowchart, concept map, decision tree, timeline or sequence) with optional extra wishes. Return ONE JSON object only: {\"title\": string, \"kind\": \"flowchart\"|\"concept_map\"|\"decision_tree\"|\"timeline\"|\"sequence\", \"nodes\": [{\"id\": string, \"label\": max 6 words, \"detail\": optional one short sentence}] (3 to 20 nodes), \"edges\": [{\"from\": id, \"to\": id, \"label\": max 4 words or empty}], \"references\": [exact short quotes from the material that support the diagram] (max 4)}. Use only what the material says; never invent components, steps or facts. For a timeline list nodes in time order and connect each to the next.",
         Kind::BoardOps => "The user wants to edit a whiteboard diagram. The current objects are listed in <input> as lines \"id: label\", followed by the user's request after a line \"REQUEST:\". Return ONE JSON object only: {\"ops\": [ ... ]} with at most 8 operations, each one of: {\"op\":\"add_node\",\"label\":string,\"near\":id or \"\"}, {\"op\":\"rename\",\"id\":id,\"label\":string}, {\"op\":\"remove\",\"id\":id}, {\"op\":\"connect\",\"from\":id,\"to\":id,\"label\":string}, {\"op\":\"highlight\",\"id\":id,\"reason\":string}, {\"op\":\"explain\",\"id\":id,\"text\":one to three simple sentences}. Use only ids from the list (for a new node use the id \"new1\", \"new2\" and so on in connect operations that follow). Do exactly what was asked and nothing more.",
         Kind::Chart => "Build a chart ONLY from numbers that really appear in the material (<transcript>, <documents>, <notes> or <input>). Return ONE JSON object only: {\"title\": string, \"type\": \"bar\"|\"line\"|\"pie\", \"unit\": string or \"\", \"series\": [{\"name\": string, \"points\": [{\"label\": string, \"value\": number, \"quote\": the exact words from the material that contain the number}]}]} with at most 4 series and 24 points each. Never estimate or invent a number. If the material has no usable numbers, return {\"series\": []}.",
+        Kind::SlideDeck => "Plan a presentation from the information in <input> (and <documents> when they help). The first line of <input> may give the audience, the number of slides and the tone; the rest is the user's information. Return ONE JSON object only: {\"title\": string, \"subtitle\": string, \"slides\": [{\"layout\": \"bullets\"|\"two_column\"|\"stat\"|\"steps\"|\"quote\"|\"summary\", \"title\": a short message-style title (max 8 words, no full stop), \"bullets\": [max 5 short lines of max 14 words; for two_column the first half is the left column, the second half the right; for steps each line is one step in order], \"stat\": {\"value\": a number or short figure that appears in the material, \"label\": what it means} (only for layout stat, otherwise omit), \"notes\": 2 to 4 sentences the speaker can say}]}. Start with an opening slide idea in the title and subtitle, then one message per slide, then finish with a summary slide of next steps. Vary the layouts. Use only what the material says plus well-known general knowledge; never invent statistics, names, dates or results. If you have no real figure, do not use the stat layout.",
         Kind::Assistant => "The user's request is in <input>, starting with a mode in square brackets: [Ask], [Explain], [Summarize], [Plan] or [Code]. Do what the mode says. Ask: answer the question. Explain: explain it in simple words, then one deeper paragraph. Summarize: a short summary in bullets. Plan: a numbered plan of small steps. Code: a short, correct code example in a fenced block with a one-line note on how to run it. Use <documents> (the user's own files) when they are relevant and name the file in square brackets; say \"Not in your documents\" when you rely on general knowledge. Wrap the 1 to 3 most important words per paragraph in **double asterisks**.",
         Kind::ExplainItem => "Help the reader with the article or project described in <input>. Use only the title and summary given plus general knowledge; say plainly if the summary is too short to know more. Layout, headings on their own lines: IN SIMPLE WORDS, WHY IT MATTERS, TRY IT (one practical step), HARD WORDS (up to 5 lines \"term: meaning\"). Wrap key terms in **double asterisks**.",
     }
@@ -341,6 +344,39 @@ pub fn post(kind: Kind, raw: &str, transcript: &str) -> Result<String, String> {
             }
             json!({"title": clean(v.get("title").and_then(Value::as_str).unwrap_or("Chart"), 80), "type": pick(&v, "type", &["bar", "line", "pie"], "bar"), "unit": clean(v.get("unit").and_then(Value::as_str).unwrap_or(""), 20), "series": series, "illustrative": !verified_any})
         }
+        Kind::SlideDeck => {
+            let layouts = ["bullets", "two_column", "stat", "steps", "quote", "summary"];
+            let mut slides = Vec::new();
+            for sl in v.get("slides").and_then(Value::as_array).into_iter().flatten().take(16) {
+                let title = clean(sl.get("title").and_then(Value::as_str).unwrap_or(""), 90).trim_end_matches('.').to_string();
+                if title.is_empty() {
+                    continue;
+                }
+                let mut layout = pick(sl, "layout", &layouts, "bullets");
+                let bullets = strs(sl, "bullets", 6, 140);
+                let mut stat = Value::Null;
+                if let Some(st) = sl.get("stat").filter(|x| x.is_object()) {
+                    let value = clean(st.get("value").and_then(Value::as_str).map(str::to_string).or_else(|| st.get("value").and_then(Value::as_f64).map(|n| n.to_string())).unwrap_or_default().as_str(), 14);
+                    let label = clean(st.get("label").and_then(Value::as_str).unwrap_or(""), 80);
+                    let digits: String = value.chars().filter(|c| c.is_ascii_digit() || *c == '.').collect();
+                    // A figure is kept only when it really appears in what the user provided.
+                    if !value.is_empty() && !label.is_empty() && !digits.is_empty() && number_in(transcript, &digits) {
+                        stat = json!({"value": value, "label": label});
+                    }
+                }
+                if layout == "stat" && stat.is_null() {
+                    layout = "bullets";
+                }
+                if bullets.is_empty() && stat.is_null() {
+                    continue;
+                }
+                slides.push(json!({"layout": layout, "title": title, "bullets": bullets, "stat": stat, "notes": clean(sl.get("notes").and_then(Value::as_str).unwrap_or(""), 700)}));
+            }
+            if slides.len() < 2 {
+                return Err("There was not enough to build a presentation. Add a little more information and try again.".into());
+            }
+            json!({"title": clean(v.get("title").and_then(Value::as_str).unwrap_or("Presentation"), 90), "subtitle": clean(v.get("subtitle").and_then(Value::as_str).unwrap_or(""), 140), "slides": slides})
+        }
         _ => unreachable!(),
     };
     Ok(out.to_string())
@@ -349,6 +385,23 @@ pub fn post(kind: Kind, raw: &str, transcript: &str) -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn slide_deck_keeps_only_figures_that_appear_in_the_material() {
+        let raw = r#"{"title":"Launch plan","subtitle":"Q3","slides":[
+          {"layout":"stat","title":"Growth is strong.","bullets":[],"stat":{"value":"42%","label":"more sign-ups"},"notes":"Say it."},
+          {"layout":"stat","title":"Made-up number","bullets":["A"],"stat":{"value":"99%","label":"invented"},"notes":""},
+          {"layout":"weird","title":"","bullets":["x"]},
+          {"layout":"steps","title":"How we ship","bullets":["Plan","Build","Test"],"notes":"n"}]}"#;
+        let out: Value = serde_json::from_str(&post(Kind::SlideDeck, raw, "Sign-ups grew 42% last month.").unwrap()).unwrap();
+        let sl = out["slides"].as_array().unwrap();
+        assert_eq!(sl.len(), 3);
+        assert_eq!(sl[0]["layout"], "stat");
+        assert_eq!(sl[0]["title"], "Growth is strong");
+        assert_eq!(sl[1]["layout"], "bullets");
+        assert!(sl[1]["stat"].is_null());
+        assert!(post(Kind::SlideDeck, r#"{"slides":[{"title":"One","bullets":["a"]}]}"#, "x").is_err());
+    }
 
     #[test]
     fn read_only_guard_accepts_diagnostics_and_rejects_anything_that_changes_state() {
