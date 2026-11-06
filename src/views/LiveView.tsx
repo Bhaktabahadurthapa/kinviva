@@ -152,7 +152,7 @@ export function LiveView({
               <span className="auto-tag">Auto-assist</span>
             </header>
             <AnswerStyle onError={onError} />
-            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} extraKey={`${live.ai.meaning?.text.length ?? 0}:${live.ai.reply?.text.length ?? 0}:${live.ai.meaning?.request_id ?? ""}:${live.ai.reply?.request_id ?? ""}`}>
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} extraKey={`${live.ai.meaning?.request_id ?? ""}:${live.ai.reply?.request_id ?? ""}`}>
               <ManualAnswers live={live} />
             </SimpleStream>
           </section>
@@ -282,7 +282,7 @@ export function LiveView({
               <span className="auto-tag">Auto-assist</span>
             </header>
             <AnswerStyle onError={onError} />
-            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} extraKey={`${live.ai.meaning?.text.length ?? 0}:${live.ai.reply?.text.length ?? 0}:${live.ai.meaning?.request_id ?? ""}:${live.ai.reply?.request_id ?? ""}`}>
+            <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} extraKey={`${live.ai.meaning?.request_id ?? ""}:${live.ai.reply?.request_id ?? ""}`}>
               <ManualAnswers live={live} />
             </SimpleStream>
           </section>

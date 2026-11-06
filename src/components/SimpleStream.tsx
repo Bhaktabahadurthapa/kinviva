@@ -83,17 +83,27 @@ export function SimpleStream({ finals, side, running, extraKey = "", children }:
     return null;
   })();
 
-  // Follow the newest step while following is on, including while its text is still arriving.
-  const lastNote = steps.length ? side[steps[steps.length - 1].id] : undefined;
-  const signature = `${extraKey}|${steps.length}:${lastNote?.meaning?.text.length ?? 0}:${lastNote?.answer?.text.length ?? 0}`;
-  useLayoutEffect(() => {
+  // A new step starts at the top of the view and fills downward, so it is read from its first line, top to bottom.
+  // The view is only moved when a new step (or a new answer you asked for) begins, never while its text is arriving.
+  const startKey = `${extraKey}|${steps.length}`;
+  const goToNewest = () => {
     const el = box.current;
-    if (el && follow) el.scrollTop = el.scrollHeight;
-  }, [signature, follow]);
+    if (!el) return;
+    const items = el.querySelectorAll<HTMLElement>(".step, .manual-answers .iv-ask-result");
+    const last = items[items.length - 1];
+    if (last) el.scrollTop += last.getBoundingClientRect().top - el.getBoundingClientRect().top - 8;
+  };
+  useLayoutEffect(() => {
+    if (follow) goToNewest();
+  }, [startKey, follow]);
   const onScroll = () => {
     const el = box.current;
     if (!el) return;
-    const away = el.scrollHeight - el.scrollTop - el.clientHeight > 90;
+    const items = el.querySelectorAll<HTMLElement>(".step, .manual-answers .iv-ask-result");
+    const last = items[items.length - 1];
+    if (!last) return;
+    // Following means the newest step's first line is on screen or already scrolled past; scrolling up above it pauses following.
+    const away = last.getBoundingClientRect().top - el.getBoundingClientRect().top > el.clientHeight - 24;
     if (away !== !follow) setFollow(!away);
   };
   useEffect(() => {
@@ -160,7 +170,7 @@ export function SimpleStream({ finals, side, running, extraKey = "", children }:
         })}
         {children}
       </div>
-      {!follow && steps.length > 0 && <button className="simple-jump" onClick={() => { setFollow(true); }}>Jump to latest ↓</button>}
+      {!follow && steps.length > 0 && <button className="simple-jump" onClick={() => { setFollow(true); goToNewest(); }}>Jump to latest ↓</button>}
     </div>
   );
 }

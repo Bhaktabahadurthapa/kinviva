@@ -2365,3 +2365,5 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .ai-label.is-continuing .ai-label-name { color: var(--c-text-2); }
 .simple-stream > .manual-answers { margin-top: 4px; }
 .simple-stream .manual-answers .iv-ask-result { border-color: rgba(124, 58, 237, .35); }
+/* Room below the newest step so it can start at the top of the view and be read downward. */
+.simple-wrap > .simple-stream::after { content: ""; flex: none; min-height: 42vh; }
