@@ -113,7 +113,7 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
         api.videoBounds(...r).catch(() => {});
       }
     };
-    const id = window.setInterval(tick, 200);
+    const id = window.setInterval(tick, 100);
     window.addEventListener("resize", tick);
     return () => {
       window.clearInterval(id);

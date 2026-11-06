@@ -50,18 +50,14 @@ export function LiveView({
     setLayoutState(v);
     try { localStorage.setItem("ml.liveLayout", v); } catch { /* not essential */ }
   };
-  const [vsize, setVsizeState] = useState<"s" | "m" | "l">(() => {
-    try {
-      const v = localStorage.getItem("ml.videoSize");
-      return v === "s" || v === "l" ? v : "m";
-    } catch {
-      return "m";
-    }
-  });
-  const setVsize = (v: "s" | "m" | "l") => {
-    setVsizeState(v);
-    try { localStorage.setItem("ml.videoSize", v); } catch { /* not essential */ }
+  const [wsplit, setWsplitState] = useState(() => loadSplit("ml.watchSplit", 52));
+  const setWsplit = (v: number) => {
+    setWsplitState(v);
+    saveSplit(v, "ml.watchSplit");
   };
+  const watchGrid = useRef<HTMLDivElement>(null);
+  // The video is a layer above the window: it steps aside while the divider is dragged.
+  const dragVideo = (dragging: boolean) => void api.videoVisible(!dragging).catch(() => {});
   const [tOpen, setTOpenState] = useState(() => {
     try {
       return localStorage.getItem("ml.watchTranscript") === "open";
@@ -129,15 +125,17 @@ export function LiveView({
         <button className={layout === "standard" ? "on" : ""} aria-pressed={layout === "standard"} onClick={() => setLayout("standard")}>Standard</button>
         <button className={layout === "watch" ? "on" : ""} aria-pressed={layout === "watch"} onClick={() => setLayout("watch")}>Watch a video</button>
         {layout === "watch" && (
-          <span className="live-size" role="group" aria-label="Video size">
-            <i>Video</i>
-            {(["s", "m", "l"] as const).map((k) => <button key={k} className={vsize === k ? "on" : ""} aria-pressed={vsize === k} onClick={() => setVsize(k)}>{k === "s" ? "Small" : k === "m" ? "Medium" : "Large"}</button>)}
+          <span className="live-size" role="group" aria-label="Video and answers width">
+            <i>Width</i>
+            {([[36, "More answers"], [52, "Balanced"], [66, "More video"]] as const).map(([v, l]) => <button key={v} className={Math.abs(wsplit - v) < 4 ? "on" : ""} onClick={() => setWsplit(v)}>{l}</button>)}
+            <em>Drag the divider to resize</em>
           </span>
         )}
       </div>
       {layout === "watch" ? (
-        <div className={`live-watch vs-${vsize}`}>
+        <div ref={watchGrid} className="live-watch" style={{ ["--wsplit" as string]: `minmax(0, ${wsplit}fr) 16px minmax(0, ${100 - wsplit}fr)` }}>
           <WatchStage caption={caption} onAction={(a) => void act(a)} />
+          <Splitter value={wsplit} onChange={setWsplit} container={watchGrid} reset={52} onStart={() => dragVideo(true)} onEnd={() => dragVideo(false)} />
           <div className="live-watch-side">
         {autoMode === "off" ? (
           <div className="side">
