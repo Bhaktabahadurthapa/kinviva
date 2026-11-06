@@ -4,9 +4,11 @@ import { isFocus, setFocus, useFocus } from "../lib/focus";
 import type { AiAction } from "./actionTypes";
 
 const RECENT_KEY = "ml.videoRecent";
-const loadRecent = (): string[] => {
+interface Played { url: string; title: string }
+const loadRecent = (): Played[] => {
   try {
-    return (JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]") as string[]).slice(0, 5);
+    const v = JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]") as (string | Played)[];
+    return v.map((x) => (typeof x === "string" ? { url: x, title: "" } : x)).slice(0, 12);
   } catch {
     return [];
   }
@@ -30,6 +32,8 @@ const ICON: Record<string, string> = {
   file: "M12 16V4M7 9l5-5 5 5M5 20h14",
   player: "M4 5h16v14H4zM10 9l5 3-5 3z",
   page: "M4 4h16v16H4zM4 9h16M9 9v11",
+  prev: "M15 5l-7 7 7 7M5 5v14",
+  next: "M9 5l7 7-7 7M19 5v14",
   full: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
   exit: "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5",
 };
@@ -86,12 +90,15 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
   const [live, setLive] = useState<string | null>(null);
   const [info, setInfo] = useState<{ title: string; channel: string } | null>(null);
   const [onlineErr, setOnlineErr] = useState("");
-  const [recent, setRecent] = useState<string[]>(loadRecent);
+  const [recent, setRecent] = useState<Played[]>(loadRecent);
+  // What was played in this visit, like a browser's back and forward: Previous and Next walk along it.
+  const stack = useRef<string[]>([]);
+  const [pos, setPos] = useState(-1);
   const rect = useCallback(() => {
     const r = slot.current?.getBoundingClientRect();
     return r ? ([r.left, r.top, r.width, r.height] as const) : null;
   }, []);
-  const play = async (raw: string) => {
+  const play = async (raw: string, nav?: number) => {
     setOnlineErr("");
     setInfo(null);
     const r = rect();
@@ -100,11 +107,22 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
       const address = await api.videoOpen(raw.trim(), fullPage, ...r);
       setLive(address);
       setLink(address);
-      const next = [address, ...recent.filter((x) => x !== address)].slice(0, 5);
-      setRecent(next);
-      try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* not essential */ }
+      if (nav === undefined) {
+        stack.current = [...stack.current.slice(0, pos + 1), address];
+        setPos(stack.current.length - 1);
+      } else {
+        setPos(nav);
+      }
+      const keep = (title: string) => setRecent((cur) => {
+        const prev = cur.find((x) => x.url === address);
+        const next = [{ url: address, title: title || prev?.title || "" }, ...cur.filter((x) => x.url !== address)].slice(0, 12);
+        try { localStorage.setItem(RECENT_KEY, JSON.stringify(next)); } catch { /* not essential */ }
+        return next;
+      });
+      keep("");
       api.videoInfo(address).then((i) => {
         setInfo(i);
+        keep(i?.title ?? "");
         if (autoListen) window.dispatchEvent(new CustomEvent("ml:auto-start", { detail: { title: i?.title ?? "" } }));
       }).catch(() => { if (autoListen) window.dispatchEvent(new CustomEvent("ml:auto-start", { detail: { title: "" } })); });
     } catch (e) {
@@ -117,6 +135,11 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     try { localStorage.setItem("ml.videoFullPage", next ? "on" : "off"); } catch { /* not essential */ }
     // Reopen the same video in the other view, after the layout has settled.
     if (live) window.setTimeout(() => { const r = rect(); if (r) api.videoOpen(live, next, ...r).catch((e) => setOnlineErr(errorText(e))); }, 80);
+  };
+  const go = (d: number) => {
+    const to = pos + d;
+    const url = stack.current[to];
+    if (url) void play(url, to);
   };
   const stopOnline = () => {
     setLive(null);
@@ -208,6 +231,8 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
         <RailBtn id="recap" label="Recap" onClick={() => onAction("recap")} />
         <span className="ws-rsep" />
         {mode === "file" && <RailBtn id="captions" label="Captions" on={cc} onClick={toggleCc} />}
+        {mode === "online" && <RailBtn id="prev" label="Previous" disabled={pos <= 0} onClick={() => go(-1)} />}
+        {mode === "online" && <RailBtn id="next" label="Next" disabled={pos < 0 || pos >= stack.current.length - 1} onClick={() => go(1)} />}
         {mode === "online" && <RailBtn id={fullPage ? "player" : "page"} label={fullPage ? "Player only" : "Full page"} on={fullPage} onClick={toggleFullPage} />}
         {mode === "online" && <RailBtn id="browser" label="Browser" disabled={!live && !link.trim()} onClick={() => void api.videoInBrowser(live ?? link).catch((e) => setOnlineErr(errorText(e)))} />}
         {mode === "file" && <RailBtn id="file" label="Change" onClick={() => input.current?.click()} />}
@@ -228,8 +253,10 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
               <button type="submit" className="btn btn-primary" disabled={!link.trim()}>Play</button>
             </form>
             {onlineErr && <p className="ws-err-line" role="alert">{onlineErr} {link.trim() && <button type="button" className="ws-linkbtn" onClick={() => void api.videoInBrowser(link).catch((e) => setOnlineErr(errorText(e)))}>Open in my browser instead</button>}</p>}
-            {recent.length > 0 && !live && (
-              <div className="ws-recent" aria-label="Recent links">{recent.map((r) => <button key={r} onClick={() => { setLink(r); void play(r); }} title={r}>{r.replace(/^https:\/\/(www\.)?/, "").slice(0, 38)}</button>)}</div>
+            {recent.length > 0 && (
+              <div className="ws-recent" aria-label="Videos played before">
+                {recent.map((r) => <button key={r.url} className={r.url === live ? "on" : ""} onClick={() => { setLink(r.url); void play(r.url); }} title={r.title || r.url}>{(r.title || r.url.replace(/^https:\/\/(www\.)?/, "")).slice(0, 44)}</button>)}
+              </div>
             )}
             {live && (
               <div className="ws-info">
