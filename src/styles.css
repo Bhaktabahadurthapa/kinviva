@@ -2416,3 +2416,7 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .ws-recent { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
 .ws-recent button { flex: none; }
 .ws-recent button.on { border-color: #2563eb; color: #1d4ed8; background: rgba(37, 99, 235, .08); font-weight: 600; }
+
+/* Video Assist shows only the video and its results. */
+.live-watching > .screen-assist, .live-watching > .actionbar { display: none; }
+.meeting-area:has(.live-watching) > .subnav { display: none; }

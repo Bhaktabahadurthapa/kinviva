@@ -59,17 +59,6 @@ export function LiveView({
   const watchGrid = useRef<HTMLDivElement>(null);
   // The video is a layer above the window: it steps aside while the divider is dragged.
   const dragVideo = (dragging: boolean) => void api.videoVisible(!dragging).catch(() => {});
-  const [tOpen, setTOpenState] = useState(() => {
-    try {
-      return localStorage.getItem("ml.watchTranscript") === "open";
-    } catch {
-      return false;
-    }
-  });
-  const setTOpen = (v: boolean) => {
-    setTOpenState(v);
-    try { localStorage.setItem("ml.watchTranscript", v ? "open" : "closed"); } catch { /* not essential */ }
-  };
   const act = useActions(onError);
   const lastLine = live.transcript.finals[live.transcript.finals.length - 1];
   const caption = lastLine ? { who: lastLine.source === "system" ? "Them" : "Me", text: lastLine.text } : null;
@@ -99,7 +88,7 @@ export function LiveView({
     ) : null;
 
   return (
-    <div className="live">
+    <div className={`live ${layout === "watch" ? "live-watching" : ""}`}>
       {contextBanner}
       {live.question && (
         <div className="banner banner-q">
@@ -123,8 +112,8 @@ export function LiveView({
         </div>
       )}
       <div className="live-layout" role="group" aria-label="Screen layout">
-        <button className={layout === "standard" ? "on" : ""} aria-pressed={layout === "standard"} onClick={() => setLayout("standard")}>Standard</button>
-        <button className={layout === "watch" ? "on" : ""} aria-pressed={layout === "watch"} onClick={() => setLayout("watch")}>Watch a video</button>
+        <button className={layout === "standard" ? "on" : ""} aria-pressed={layout === "standard"} onClick={() => setLayout("standard")} title="Live transcript with explanations and replies">Live Assist</button>
+        <button className={layout === "watch" ? "on" : ""} aria-pressed={layout === "watch"} onClick={() => setLayout("watch")} title="Watch a video with its explanations beside it">Video Assist</button>
         {layout === "watch" && (
           <span className="live-size" role="group" aria-label="Video and answers width">
             <i>Width</i>
@@ -156,63 +145,6 @@ export function LiveView({
               <ManualAnswers live={live} />
             </SimpleStream>
           </section>
-        )}
-        <button className="ws-tbar" onClick={() => setTOpen(!tOpen)} aria-expanded={tOpen}>
-          <span className="ws-tbar-label">Transcript</span>
-          <span className="ws-tbar-line">{caption ? `${caption.who}: ${caption.text}` : running ? "Listening…" : "Nothing yet"}</span>
-          <span className="ws-tbar-act">{tOpen ? "Hide" : "Show all"}</span>
-        </button>
-        {tOpen && (
-        <section className="panel transcript-panel">
-          <header>
-            <h2>{autoMode === "off" ? "Live transcript" : "Live transcript"}</h2>
-            <div className="panel-tools">
-              <div className="seg" role="group" aria-label="Automatic help">
-                <span className="seg-label">Auto</span>
-                {AUTO_OPTIONS.map(([m, label, title]) => (
-                  <button key={m} className={autoMode === m ? "active" : ""} title={title} aria-pressed={autoMode === m} onClick={() => onAutoChange(m)}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-              {running && status?.mic.enabled && devices.length > 0 && (
-                <select
-                  className="select-sm"
-                  aria-label="Microphone"
-                  value={devices.find((d) => d.name === status.mic.device)?.name ?? ""}
-                  onChange={(e) => api.switchMic(e.target.value || null).catch((err) => onError(errorText(err)))}
-                >
-                  <option value="">Default microphone</option>
-                  {devices.map((d) => (
-                    <option key={d.name} value={d.name}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              <button className="btn btn-ghost btn-sm" onClick={() => setNotesOpen((o) => !o)}>
-                {notesOpen ? "Hide notes" : "My notes"}
-              </button>
-            </div>
-          </header>
-          {notesOpen && (
-            <textarea
-              className="notes"
-              value={notes}
-              onChange={(e) => saveNotes(e.target.value)}
-              placeholder="Private notes for this meeting. Suggested replies may use them as facts about you."
-            />
-          )}
-          <div className="tsearch">
-            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search this transcript" aria-label="Search this transcript" />
-            {query.trim() && <span className="tsearch-count" role="status">{countMatches(live.transcript.finals, query)} found</span>}
-          </div>
-          <TranscriptView
-            query={query}
-            transcript={live.transcript}
-            emptyHint={running ? "Listening… speech will appear here." : "Start a meeting to see the live transcript."}
-          />
-        </section>
         )}
           </div>
         </div>
