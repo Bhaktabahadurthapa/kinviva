@@ -46,3 +46,47 @@ export function parseChart(body: string): ChartSpec | null {
     return null;
   }
 }
+
+const num = (s: string): number | null => {
+  const t = s.trim().replace(/^[$€£]/, "").replace(/%$/, "").replace(/(?<=\d),(?=\d{3}\b)/g, "").trim();
+  return t !== "" && /^-?\d*\.?\d+$/.test(t) ? Number(t) : null;
+};
+const splitLine = (l: string, d: string) => l.split(d).map((c) => c.trim().replace(/^"(.*)"$/, "$1"));
+const LOOKS_TIME = /^(\d{4}|q[1-4]|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|mon|tue|wed|thu|fri|sat|sun|week|\d{1,2}[/-]\d{1,2})/i;
+
+/** Reads a pasted table (from a spreadsheet, CSV or tab-separated text) into a chart. The numbers are exactly what was pasted. */
+export function parseTable(text: string): { spec: ChartSpec } | { error: string } {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return { error: "Paste at least a header row and one row of numbers." };
+  const delim = ["\t", ";", ",", "|"].map((d) => ({ d, n: lines[0].split(d).length })).sort((a, b) => b.n - a.n)[0];
+  if (delim.n < 2) return { error: "Separate the columns with tabs, commas or semicolons. Copying from a spreadsheet works." };
+  const rows = lines.map((l) => splitLine(l, delim.d));
+  const hasHeader = rows[0].slice(1).every((c) => num(c) === null);
+  const head = hasHeader ? rows[0] : rows[0].map((_, i) => (i === 0 ? "Label" : `Series ${i}`));
+  const body = hasHeader ? rows.slice(1) : rows;
+  const cols = head.length;
+  const series: ChartSeries[] = [];
+  const units = new Set<string>();
+  for (let c = 1; c < cols; c++) {
+    const pts: ChartPoint[] = [];
+    for (const r of body) {
+      const raw = r[c] ?? "";
+      const v = num(raw);
+      if (v === null || !r[0]) continue;
+      const u = /%$/.test(raw.trim()) ? "%" : /^[$€£]/.test(raw.trim()) ? raw.trim()[0] : "";
+      if (u) units.add(u);
+      pts.push({ label: r[0], value: v, quote: "", verified: false, edited: true });
+    }
+    if (pts.length) series.push({ name: head[c] || `Series ${c}`, points: pts.slice(0, 60) });
+  }
+  if (series.length === 0) return { error: "No numbers were found. Put the labels in the first column and the numbers in the columns after it." };
+  const time = body.slice(0, 3).every((r) => LOOKS_TIME.test(r[0] ?? ""));
+  return { spec: { title: hasHeader && head[0] ? `${series[0].name} by ${head[0].toLowerCase()}` : "Pasted data", type: time ? "line" : "bar", unit: units.size === 1 ? [...units][0] : "", series: series.slice(0, 6), illustrative: false } };
+}
+
+/** The chart's data as CSV, one row per label. */
+export function toCsv(spec: ChartSpec): string {
+  const q = (s: string | number) => (/[",\n]/.test(String(s)) ? `"${String(s).replace(/"/g, '""')}"` : String(s));
+  const rows = toRows(spec);
+  return [["Label", ...spec.series.map((s) => s.name)].map(q).join(","), ...rows.map((r) => [r.label, ...spec.series.map((s) => r[s.name] ?? "")].map(q).join(","))].join("\n");
+}

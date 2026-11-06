@@ -25,3 +25,27 @@ describe("charts", () => {
     expect(emptyChart().series[0].points[0].edited).toBe(true);
   });
 });
+
+import { parseTable, toCsv } from "./charts";
+describe("pasted tables", () => {
+  it("reads a spreadsheet paste with a header, keeps the numbers exactly and calls months a line chart", () => {
+    const r = parseTable("Month\tRevenue\tCost\nJan\t$1,200\t800\nFeb\t$1,500\t900\nMar\t$1,900\t950");
+    expect("spec" in r).toBe(true);
+    if (!("spec" in r)) return;
+    expect(r.spec.type).toBe("line");
+    expect(r.spec.unit).toBe("$");
+    expect(r.spec.series.map((s) => s.name)).toEqual(["Revenue", "Cost"]);
+    expect(r.spec.series[0].points.map((p) => p.value)).toEqual([1200, 1500, 1900]);
+    expect(r.spec.series[0].points.every((p) => p.edited && !p.verified)).toBe(true);
+  });
+  it("reads two plain columns without a header and rejects text with no numbers", () => {
+    const r = parseTable("EU, 40%\nUS, 60%");
+    expect("spec" in r && r.spec.series[0].points.length).toBe(2);
+    expect("error" in parseTable("a,b\nc,d")).toBe(true);
+    expect("error" in parseTable("just one line")).toBe(true);
+  });
+  it("exports the data as CSV with quoting", () => {
+    const csv = toCsv({ title: "t", type: "bar", unit: "", illustrative: false, series: [{ name: "S, one", points: [{ label: "A", value: 1, quote: "", verified: false, edited: true }] }] });
+    expect(csv).toBe('Label,"S, one"\nA,1');
+  });
+});

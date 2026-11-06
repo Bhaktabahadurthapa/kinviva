@@ -2110,3 +2110,23 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .iv-input > header h2 { margin: 0; }
 .app .iv-input > header { height: auto; min-height: 48px; }
 .app .iv-input > header { flex-shrink: 0; }
+
+/* Visuals & Diagrams */
+.vis-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.vis-tiles button { text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--c-line); border-radius: 14px; background: var(--c-surface); cursor: pointer; color: inherit; transition: border-color .15s, box-shadow .15s; }
+.vis-tiles button span { font-size: 13px; color: var(--c-text-2); }
+.vis-tiles button:hover { border-color: #b8c4fb; }
+.vis-tiles button.on { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); background: #f5f8ff; }
+.vis-pane { display: flex; flex-direction: column; gap: 10px; }
+.vis-pane textarea { font-family: var(--f-mono, ui-monospace, monospace); font-size: 13px; }
+.vis-data { margin: 4px 0; }
+.vis-data summary { cursor: pointer; font-weight: 600; color: var(--c-signal); }
+.vis-filter { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.vis-filter input { max-width: 280px; }
+.vis-lib { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.vis-lib button { width: 100%; text-align: left; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px solid var(--c-line); border-radius: 14px; background: var(--c-surface); cursor: pointer; color: inherit; }
+.vis-lib button:hover { border-color: #2563eb; box-shadow: var(--ds-e1); }
+.vis-kind { align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #e8eefe; color: #1d4ed8; }
+.vk-diagram { background: #efe9fe; color: #5b21b6; } .vk-board { background: #dff3e8; color: #23764a; }
+@media (max-width: 800px) { .vis-tiles { grid-template-columns: 1fr; } }
+.vis-edit input[type="color"] { width: 30px; height: 30px; padding: 2px; border-radius: 8px; cursor: pointer; }
