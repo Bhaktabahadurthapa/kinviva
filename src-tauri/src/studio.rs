@@ -31,6 +31,10 @@ pub enum Kind {
     BoardOps,
     Chart,
     SlideDeck,
+    CatchUp,
+    ClassItems,
+    Flashcards,
+    HomeworkHint,
 }
 
 impl Kind {
@@ -54,15 +58,19 @@ impl Kind {
             "board_ops" => Kind::BoardOps,
             "chart" => Kind::Chart,
             "slide_deck" => Kind::SlideDeck,
+            "catch_up" => Kind::CatchUp,
+            "class_items" => Kind::ClassItems,
+            "flashcards" => Kind::Flashcards,
+            "homework_hint" => Kind::HomeworkHint,
             _ => return None,
         })
     }
     pub fn is_json(self) -> bool {
-        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart | Kind::SlideDeck)
+        matches!(self, Kind::Troubleshoot | Kind::IncidentExtract | Kind::Decisions | Kind::Quiz | Kind::LearningPlan | Kind::BoardDiagram | Kind::BoardOps | Kind::Chart | Kind::SlideDeck | Kind::ClassItems | Kind::Flashcards)
     }
     /// Kinds that need conversation text to work from.
     pub fn needs_transcript(self) -> bool {
-        matches!(self, Kind::IncidentExtract | Kind::Decisions | Kind::LectureNotes | Kind::AudienceQa)
+        matches!(self, Kind::IncidentExtract | Kind::Decisions | Kind::LectureNotes | Kind::AudienceQa | Kind::CatchUp | Kind::ClassItems)
     }
 }
 
@@ -87,6 +95,10 @@ fn instructions(kind: Kind) -> &'static str {
         Kind::BoardOps => "The user wants to edit a whiteboard diagram. The current objects are listed in <input> as lines \"id: label\", followed by the user's request after a line \"REQUEST:\". Return ONE JSON object only: {\"ops\": [ ... ]} with at most 8 operations, each one of: {\"op\":\"add_node\",\"label\":string,\"near\":id or \"\"}, {\"op\":\"rename\",\"id\":id,\"label\":string}, {\"op\":\"remove\",\"id\":id}, {\"op\":\"connect\",\"from\":id,\"to\":id,\"label\":string}, {\"op\":\"highlight\",\"id\":id,\"reason\":string}, {\"op\":\"explain\",\"id\":id,\"text\":one to three simple sentences}. Use only ids from the list (for a new node use the id \"new1\", \"new2\" and so on in connect operations that follow). Do exactly what was asked and nothing more.",
         Kind::Chart => "Build a chart ONLY from numbers that really appear in the material (<transcript>, <documents>, <notes> or <input>). Return ONE JSON object only: {\"title\": string, \"type\": \"bar\"|\"line\"|\"pie\", \"unit\": string or \"\", \"series\": [{\"name\": string, \"points\": [{\"label\": string, \"value\": number, \"quote\": the exact words from the material that contain the number}]}]} with at most 4 series and 24 points each. Never estimate or invent a number. If the material has no usable numbers, return {\"series\": []}.",
         Kind::SlideDeck => "Plan a presentation from the information in <input> (and <documents> when they help). The first line of <input> may give the audience, the number of slides and the tone; the rest is the user's information. Return ONE JSON object only: {\"title\": string, \"subtitle\": string, \"slides\": [{\"layout\": \"bullets\"|\"two_column\"|\"stat\"|\"steps\"|\"quote\"|\"summary\", \"title\": a short message-style title (max 8 words, no full stop), \"bullets\": [max 5 short lines of max 14 words; for two_column the first half is the left column, the second half the right; for steps each line is one step in order], \"stat\": {\"value\": a number or short figure that appears in the material, \"label\": what it means} (only for layout stat, otherwise omit), \"notes\": 2 to 4 sentences the speaker can say}]}. Start with an opening slide idea in the title and subtitle, then one message per slide, then finish with a summary slide of next steps. Vary the layouts. Use only what the material says plus well-known general knowledge; never invent statistics, names, dates or results. If you have no real figure, do not use the stat layout.",
+        Kind::CatchUp => "The student got lost. Using only the END of the conversation (the last few minutes), explain what is being taught right now. Layout, headings on their own lines:\nRIGHT NOW\n2 to 3 short sentences in simple words.\nTHE IDEA BEHIND IT\n2 to 4 sentences with one everyday comparison.\nTERMS TO KNOW\nUp to 5 lines \"term: meaning in about 10 words\".\nASK THE TEACHER\nOne short, polite question the student can ask. Wrap the 1 to 3 most important words per paragraph in **double asterisks**. Never add facts the lecture did not say, except well-known definitions.",
+        Kind::ClassItems => "Find what the teacher announced for the students: homework, assignments, deadlines, exams or tests, readings, projects and other announcements. Return ONE JSON object only: {\"items\": [{\"type\": \"assignment\"|\"deadline\"|\"exam\"|\"reading\"|\"announcement\", \"text\": what the student must do or know, \"when\": a date or time ONLY if it was said, else \"\", \"quote\": the exact words from the transcript}]} (max 12). Only include what was really said. If nothing was announced, return {\"items\": []}.",
+        Kind::Flashcards => "Make study flashcards from the lecture, the documents or the topic in <input>. Return ONE JSON object only: {\"topic\": string, \"cards\": [{\"front\": a term, question or idea (max 12 words), \"back\": the answer in simple words (max 40 words)}]} with 8 to 20 cards. One idea per card, no trick cards, no invented facts.",
+        Kind::HomeworkHint => "The student is stuck on the problem in <input>. Teach, do not solve. Layout, headings on their own lines:\nWHAT IS BEING ASKED\nRestate the problem in simple words.\nWHAT YOU NEED TO KNOW\n2 to 4 bullets of the ideas or formulas involved, each explained briefly.\nHINT 1\nA small nudge.\nHINT 2\nA bigger nudge.\nHINT 3\nThe next step, still without the final answer.\nCHECK YOUR WORK\nHow the student can tell their own answer is right. Never give the final answer, never write the finished essay or code to hand in, and say so in one line if asked to.",
         Kind::Assistant => "The user's request is in <input>, starting with a mode in square brackets: [Ask], [Explain], [Summarize], [Plan] or [Code]. Do what the mode says. Ask: answer the question. Explain: explain it in simple words, then one deeper paragraph. Summarize: a short summary in bullets. Plan: a numbered plan of small steps. Code: a short, correct code example in a fenced block with a one-line note on how to run it. Use <documents> (the user's own files) when they are relevant and name the file in square brackets; say \"Not in your documents\" when you rely on general knowledge. Wrap the 1 to 3 most important words per paragraph in **double asterisks**.",
         Kind::ExplainItem => "Help the reader with the article or project described in <input>. Use only the title and summary given plus general knowledge; say plainly if the summary is too short to know more. Layout, headings on their own lines: IN SIMPLE WORDS, WHY IT MATTERS, TRY IT (one practical step), HARD WORDS (up to 5 lines \"term: meaning\"). Wrap key terms in **double asterisks**.",
     }
@@ -344,6 +356,27 @@ pub fn post(kind: Kind, raw: &str, transcript: &str) -> Result<String, String> {
             }
             json!({"title": clean(v.get("title").and_then(Value::as_str).unwrap_or("Chart"), 80), "type": pick(&v, "type", &["bar", "line", "pie"], "bar"), "unit": clean(v.get("unit").and_then(Value::as_str).unwrap_or(""), 20), "series": series, "illustrative": !verified_any})
         }
+        Kind::ClassItems => {
+            let t = norm(transcript);
+            let said = |q: &str| q.len() >= 6 && t.contains(&norm(q.trim_start_matches("Them:").trim_start_matches("Me:")));
+            let items: Vec<Value> = v.get("items").and_then(Value::as_array).into_iter().flatten().take(12)
+                .filter(|i| said(i.get("quote").and_then(Value::as_str).unwrap_or("")))
+                .map(|i| {
+                    let when = clean(i.get("when").and_then(Value::as_str).unwrap_or(""), 60);
+                    json!({"type": pick(i, "type", &["assignment", "deadline", "exam", "reading", "announcement"], "announcement"), "text": clean(i.get("text").and_then(Value::as_str).unwrap_or(""), 240), "when": if !when.is_empty() && t.contains(&norm(&when)) { when } else { String::new() }, "quote": clean(i.get("quote").and_then(Value::as_str).unwrap_or(""), 200)})
+                })
+                .filter(|i| !i["text"].as_str().unwrap_or("").is_empty()).collect();
+            json!({"items": items})
+        }
+        Kind::Flashcards => {
+            let cards: Vec<Value> = v.get("cards").and_then(Value::as_array).into_iter().flatten().take(24)
+                .map(|c| json!({"front": clean(c.get("front").and_then(Value::as_str).unwrap_or(""), 140), "back": clean(c.get("back").and_then(Value::as_str).unwrap_or(""), 400)}))
+                .filter(|c| !c["front"].as_str().unwrap_or("").is_empty() && !c["back"].as_str().unwrap_or("").is_empty()).collect();
+            if cards.len() < 3 {
+                return Err("There was not enough to make flashcards. Add a topic or run a longer lecture first.".into());
+            }
+            json!({"topic": clean(v.get("topic").and_then(Value::as_str).unwrap_or("Flashcards"), 80), "cards": cards})
+        }
         Kind::SlideDeck => {
             let layouts = ["bullets", "two_column", "stat", "steps", "quote", "summary"];
             let mut slides = Vec::new();
@@ -401,6 +434,18 @@ mod tests {
         assert_eq!(sl[1]["layout"], "bullets");
         assert!(sl[1]["stat"].is_null());
         assert!(post(Kind::SlideDeck, r#"{"slides":[{"title":"One","bullets":["a"]}]}"#, "x").is_err());
+    }
+
+    #[test]
+    fn class_items_need_a_real_quote_and_flashcards_need_enough_cards() {
+        let said = "Them: Homework three is due on Friday. The midterm covers chapters one to four.";
+        let raw = r#"{"items":[{"type":"assignment","text":"Finish homework three","when":"Friday","quote":"Homework three is due on Friday"},{"type":"exam","text":"Midterm","when":"next week","quote":"The final is in May"}]}"#;
+        let out: Value = serde_json::from_str(&post(Kind::ClassItems, raw, said).unwrap()).unwrap();
+        assert_eq!(out["items"].as_array().unwrap().len(), 1);
+        assert_eq!(out["items"][0]["when"], "Friday");
+        assert!(post(Kind::Flashcards, r#"{"cards":[{"front":"a","back":"b"}]}"#, "").is_err());
+        let ok = r#"{"topic":"T","cards":[{"front":"a","back":"1"},{"front":"b","back":"2"},{"front":"c","back":"3"}]}"#;
+        assert!(post(Kind::Flashcards, ok, "").is_ok());
     }
 
     #[test]
