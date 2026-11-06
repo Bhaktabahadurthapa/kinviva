@@ -2367,3 +2367,17 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .simple-stream .manual-answers .iv-ask-result { border-color: rgba(124, 58, 237, .35); }
 /* Room below the newest step so it can start at the top of the view and be read downward. */
 .simple-wrap > .simple-stream::after { content: ""; flex: none; min-height: 42vh; }
+
+/* macOS: the title bar takes the app's own colours; the window buttons sit on the navy logo cell. */
+.is-mac .topbar-brand { padding-left: 78px; gap: 8px; }
+.is-mac .topbar-brand .rail-toggle { order: 3; margin-left: auto; }
+.is-mac .topbar-brand svg { flex: none; }
+.is-mac .topbar-brand .brand-name { font-size: 16px; }
+.is-mac.is-mac .app.rail-collapsed .topbar-brand { width: 64px; padding-left: 0; align-items: flex-end; padding-bottom: 4px; justify-content: center; }
+.is-mac .app.rail-collapsed .topbar-brand .rail-toggle { margin: 0; }
+.is-mac .topbar { -webkit-user-select: none; user-select: none; }
+.is-mac .topbar input, .is-mac .topbar button, .is-mac .topbar select { -webkit-app-region: no-drag; }
+.is-mac .topbar-brand { padding-left: 74px; padding-right: 8px; }
+.is-mac .topbar-brand .rail-toggle { flex: none; width: 28px; height: 28px; }
+.is-mac .topbar-brand .brand-name { font-size: 15px; white-space: nowrap; }
+.is-mac .topbar-brand svg:not(.rail-toggle svg) { width: 26px; height: 26px; }

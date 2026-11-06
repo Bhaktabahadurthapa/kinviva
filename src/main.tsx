@@ -16,6 +16,7 @@ import "./styles.css";
 
 const label = inTauri ? getCurrentWindow().label : new URLSearchParams(location.search).get("view") ?? "main";
 document.documentElement.dataset.window = label;
+if (/Mac/i.test(navigator.platform) && label === "main") document.documentElement.classList.add("is-mac");
 if (label !== "overlay") applyAppearance(loadAppearance());
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

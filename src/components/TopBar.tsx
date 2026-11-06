@@ -77,8 +77,8 @@ export function TopBar({ settings, logo, collapsed, onToggle, onOpenHit, onSetti
 
   const initial = (settings?.profile_name || settings?.profile_role || "Me").trim().charAt(0).toUpperCase();
   return (
-    <header className="topbar">
-      <div className="topbar-brand">
+    <header className="topbar" data-tauri-drag-region>
+      <div className="topbar-brand" data-tauri-drag-region>
         <button className="rail-toggle" onClick={onToggle} aria-label={collapsed ? "Show the menu" : "Hide the menu"} aria-expanded={!collapsed} title={collapsed ? "Show the menu (Cmd/Ctrl+B)" : "Hide the menu (Cmd/Ctrl+B)"}>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
