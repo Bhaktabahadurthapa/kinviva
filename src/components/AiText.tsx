@@ -1,5 +1,5 @@
 import { renderMarked, renderTerm } from "../lib/highlight";
-const LABELS = ["Key points", "Expert addition", "Meaning", "Details", "Terms", "Hard words", "Answer", "Unclear", "Asking", "Points to cover"];
+const LABELS = ["In plain words", "Why it matters", "Words to know", "Continuing", "Key points", "Expert addition", "Meaning", "Details", "Terms", "Hard words", "Answer", "Unclear", "Asking", "Points to cover"];
 /** Headings of a meeting answer, alone on a line. */
 const HEADINGS = ["WHAT I SEE", "EXPLANATION", "YOU COULD SAY", "KEY TAKEAWAY", "HARD WORDS", "REMEMBER IT", "CHECK YOURSELF", "SOURCES", "CLARIFICATION"];
 const HEADING_RE = new RegExp(`^\\**(${HEADINGS.join("|")})\\**\\s*:?\\s*\\**$`, "i");
@@ -42,7 +42,7 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
       out.push(
         <ul key={`ul${out.length}`}>
           {list.map((t, i) => (
-            <li key={i}>{/^(hard words|terms)$/i.test(section) ? renderTerm(t) : renderMarked(t)}</li>
+            <li key={i}>{/^(hard words|terms|words to know)$/i.test(section) ? renderTerm(t) : renderMarked(t)}</li>
           ))}
         </ul>,
       );
@@ -58,7 +58,7 @@ export function AiText({ text, streaming }: { text: string; streaming?: boolean 
       out.push(
         <div key={i} className={cls}>
           <span className="ai-label-name">{b.label}</span>
-          {b.text && <p>{/^(hard words|terms)$/i.test(b.label) ? renderTerm(b.text) : renderMarked(b.text)}</p>}
+          {b.text && <p>{/^(hard words|terms|words to know)$/i.test(b.label) ? renderTerm(b.text) : renderMarked(b.text)}</p>}
         </div>,
       );
     } else if (/^check yourself$/i.test(section) && /^answer\s*:/i.test(b.text)) {

@@ -48,22 +48,22 @@ fn instructions(action: Action) -> &'static str {
     match action {
         Action::Explain => "Explain what the speaker just said (inside <latest>) the way a senior expert would teach it to a smart newcomer, in simple words.\n\
 Use exactly this layout:\n\
-Key points:\n\
-- 3 to 5 bullets, the most important first. Each bullet explains one idea the speaker raised: what it means, then why it matters or how it works, with a concrete example, number, tool or trade-off. Do not just repeat the speaker's words.\n\
-Expert addition:\n\
-- One bullet with the most useful thing an expert would add that was not said: a risk, a common mistake or the next question to ask. Leave this section out if you are not sure.\n\
-Hard words:\n\
-- Before you finish, reread your own answer and the speaker's words. For every word a 10-year-old may not know (technical terms, acronyms, tools, business words; even common ones like API, latency, deploy), write one line: the word, then a colon, then what it means in about 10 simple words. Cover at most 6 words, the hardest first. Leave this section out only if every word is easy.\n\
+In plain words:\n\
+- One or two short sentences with the idea the speaker just gave, in everyday words and in your own words. Keep their exact names, numbers and terms. Do not copy or reword their sentence.\n\
+Why it matters:\n\
+- One sentence on why this matters, what to do about it, or the risk or common mistake to watch for. Use a concrete number, tool or trade-off when it helps. Leave this section out if you have nothing useful to add.\n\
+Words to know:\n\
+- For every word in <latest> that a 10-year-old may not know (technical terms, acronyms, tools, business words; even common ones like API, latency, deploy), write one line: the word, then a colon, then what it means in about 10 simple words. At most 3 words, the hardest first. Leave this section out only if every word is easy.\n\
 Unclear: only if words were missing or garbled; say what is uncertain. Leave this line out otherwise.\n\
 Rules:\n\
-- If the speaker asked a question, output ONLY \"Answer:\" with the expert answer in 4 to 6 prioritised bullets (decisive first action first, each with its reason, tool or command). No Key points, and do not restate the question.\n\
+- If the speaker asked a question, output ONLY \"Answer:\" with the expert answer in 4 to 6 prioritised bullets (decisive first action first, each with its reason, tool or command). No In plain words section, and do not restate the question.\n\
 - Write in your own words. Keep the speaker's exact names, numbers and terms, but explain them; do not copy or reword the sentence.\n\
 - Use words a 10-year-old can understand: everyday words, short sentences (about 12 words), and a few simple words to explain any hard term. Sound like a person talking to a friend, not a textbook.\n\
 - Be accurate: explain the speaker's idea using general expert knowledge. Do not invent facts about this meeting, its people, or its numbers.\n\
 - When <document_excerpts> are present, use them only to add the user's own course or document detail, in your own words. Never copy their sentences.\n\
 - Use <transcript> only as background for understanding <latest>. Do not re-summarise the whole meeting.\n\
 - Explain ONLY what is new in <latest>. Everything earlier in <transcript> was already explained before: never explain it again and never repeat an earlier point, example, comparison or hard word. Your first bullet must come from a fact that is in <latest>.\n\
-- Hard words: only words that appear in <latest> or in your new bullets, never words from earlier lines.\n\
+- Words to know: only words that appear in <latest>, never words from earlier lines.\n\
 - If <latest> only repeats or continues an earlier point and adds nothing new, write just one line starting \"Continuing:\" with the new detail in plain words, and nothing else.",
         Action::Suggest => "Write the answer the user could say to the question in <latest> (if there is no <latest>, the most recent question from \"Them\").\n\
 Output exactly NO_ANSWER only when the question is clearly rhetorical, the speaker answers it themselves, \
@@ -300,8 +300,8 @@ mod tests {
         let u = &m[1].content;
         assert!(u.contains("(no speech transcribed yet)"));
         assert!(u.contains("Unclear:"));
-        assert!(u.contains("Key points:"));
-        assert!(u.contains("Do not just repeat the speaker") && u.contains("Expert addition:"));
+        assert!(u.contains("In plain words:") && u.contains("Why it matters:") && u.contains("Words to know:"));
+        assert!(u.contains("Do not copy or reword their sentence"));
         assert!(u.contains("Explain ONLY what is new in <latest>") && u.contains("Continuing:"));
         assert!(!u.contains("<document_excerpts>\n"), "no excerpt block when nothing was retrieved");
         assert!(u.contains("No notes or documents were provided"));
@@ -464,7 +464,7 @@ mod tests {
 
     #[test]
     fn answers_ask_the_model_to_check_and_explain_hard_words() {
-        for (action, heading) in [(Action::Suggest, "HARD WORDS"), (Action::Ask, "HARD WORDS"), (Action::Explain, "Hard words:")] {
+        for (action, heading) in [(Action::Suggest, "HARD WORDS"), (Action::Ask, "HARD WORDS"), (Action::Explain, "Words to know:")] {
             let m = build(&PromptInput { action, transcript: "Them: What is a cache?", notes: "", passages: &[], question: Some("What is a cache?"), focus: None, session: &Default::default() });
             assert!(m[1].content.contains(heading), "{action:?} needs a hard-words step");
         }

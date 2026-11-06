@@ -54,7 +54,7 @@ const maybeNoAnswer = (t: string) => "NO_ANSWER".startsWith(t.trim().toUpperCase
  * order they were spoken, none is skipped or moved, and the view follows the newest step until you scroll
  * up to read; then it stays put and offers a button to jump back.
  */
-export function SimpleStream({ finals, side, running }: { finals: Segment[]; side: Record<number, SideNote>; running: boolean }) {
+export function SimpleStream({ finals, side, running, extraKey = "", children }: { finals: Segment[]; side: Record<number, SideNote>; running: boolean; extraKey?: string; children?: React.ReactNode }) {
   const box = useRef<HTMLDivElement>(null);
   const [follow, setFollow] = useState(true);
 
@@ -85,7 +85,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
 
   // Follow the newest step while following is on, including while its text is still arriving.
   const lastNote = steps.length ? side[steps[steps.length - 1].id] : undefined;
-  const signature = `${steps.length}:${lastNote?.meaning?.text.length ?? 0}:${lastNote?.answer?.text.length ?? 0}`;
+  const signature = `${extraKey}|${steps.length}:${lastNote?.meaning?.text.length ?? 0}:${lastNote?.answer?.text.length ?? 0}`;
   useLayoutEffect(() => {
     const el = box.current;
     if (el && follow) el.scrollTop = el.scrollHeight;
@@ -158,6 +158,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
             </article>
           );
         })}
+        {children}
       </div>
       {!follow && steps.length > 0 && <button className="simple-jump" onClick={() => { setFollow(true); }}>Jump to latest ↓</button>}
     </div>

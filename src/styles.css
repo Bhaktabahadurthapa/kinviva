@@ -2358,3 +2358,10 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .overlay .step { background: rgba(9, 12, 26, .55); border-color: rgba(255, 255, 255, .2); }
 .overlay .step-said { background: rgba(255, 255, 255, .08); color: #d6defa; }
 @media (prefers-reduced-motion: reduce) { .step, .step-wait i { animation: none; } .simple-wrap > .simple-stream { scroll-behavior: auto; } }
+.ai-label.is-in-plain-words .ai-label-name { color: var(--c-signal); }
+.ai-label.is-why-it-matters .ai-label-name { color: #6d28d9; }
+.ai-label.is-words-to-know .ai-label-name { color: var(--c-warn); }
+.ai-label.is-words-to-know + ul li { color: var(--c-text-2); }
+.ai-label.is-continuing .ai-label-name { color: var(--c-text-2); }
+.simple-stream > .manual-answers { margin-top: 4px; }
+.simple-stream .manual-answers .iv-ask-result { border-color: rgba(124, 58, 237, .35); }
