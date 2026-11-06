@@ -246,6 +246,8 @@ pub fn run() {
             commands::video_open,
             commands::video_bounds,
             commands::video_close,
+            commands::clipboard_text,
+            commands::video_in_browser,
             commands::interview_skills,
             commands::list_meetings,
             commands::get_meeting,

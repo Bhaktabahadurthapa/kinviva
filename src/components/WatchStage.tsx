@@ -54,13 +54,13 @@ export function WatchStage({ caption }: { caption: { who: string; text: string }
   };
   const paste = async () => {
     try {
-      const t = (await navigator.clipboard.readText()).trim();
+      const t = (await api.clipboardText()).trim();
       if (t) {
         setLink(t);
         void play(t);
       }
     } catch {
-      setOnlineErr("Could not read the clipboard. Paste the link into the box instead.");
+      setOnlineErr("Could not read the clipboard. Paste the link into the box instead (Cmd+V).");
     }
   };
   // Keep the page exactly over its slot while the window or layout changes; close it when this screen goes away.
@@ -128,7 +128,9 @@ export function WatchStage({ caption }: { caption: { who: string; text: string }
             <button type="submit" className="btn btn-primary" disabled={!link.trim()}>Play</button>
             {live && <button type="button" className="btn btn-ghost" onClick={stop}>Close</button>}
           </form>
-          {onlineErr && <p className="ws-err-line" role="alert">{onlineErr}</p>}
+          {onlineErr && (
+            <p className="ws-err-line" role="alert">{onlineErr} {link.trim() && <button type="button" className="ws-linkbtn" onClick={() => void api.videoInBrowser(link).catch((e) => setOnlineErr(errorText(e)))}>Open in my browser instead</button>}</p>
+          )}
           {recent.length > 0 && !live && (
             <div className="ws-recent" aria-label="Recent links">{recent.map((r) => <button key={r} onClick={() => { setLink(r); void play(r); }} title={r}>{r.replace(/^https:\/\/(www\.)?/, "").slice(0, 38)}</button>)}</div>
           )}

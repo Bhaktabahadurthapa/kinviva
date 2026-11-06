@@ -508,6 +508,32 @@ pub fn video_close(app: AppHandle) -> R<()> {
     Ok(())
 }
 
+/// The text on the clipboard, for the "Paste" button (the web view itself is not allowed to read it).
+#[tauri::command]
+pub fn clipboard_text() -> R<String> {
+    #[cfg(target_os = "macos")]
+    let out = std::process::Command::new("pbpaste").output();
+    #[cfg(target_os = "windows")]
+    let out = std::process::Command::new("powershell").args(["-NoProfile", "-Command", "Get-Clipboard -Raw"]).output();
+    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
+    let out = std::process::Command::new("xclip").args(["-selection", "clipboard", "-o"]).output();
+    let out = out.map_err(|_| "The clipboard could not be read. Paste the link into the box instead.".to_string())?;
+    Ok(String::from_utf8_lossy(&out.stdout).trim().chars().take(2000).collect())
+}
+
+/// Opens a pasted video link in the default browser (a fallback when the in-app pane cannot play it).
+#[tauri::command]
+pub fn video_in_browser(url: String) -> R<()> {
+    let address = video_address(&url)?;
+    #[cfg(target_os = "macos")]
+    let mut cmd = std::process::Command::new("open");
+    #[cfg(target_os = "windows")]
+    let mut cmd = { let mut c = std::process::Command::new("rundll32"); c.arg("url.dll,FileProtocolHandler"); c };
+    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
+    let mut cmd = std::process::Command::new("xdg-open");
+    cmd.arg(&address).spawn().map(|_| ()).map_err(|e| format!("Could not open the link: {e}"))
+}
+
 #[tauri::command]
 pub fn interview_run(app: AppHandle, state: State<AppState>, request: crate::interview::Request) -> R<String> {
     crate::interview::start(&app, &state, request)
