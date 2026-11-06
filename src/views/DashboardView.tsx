@@ -67,6 +67,14 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
   const [tasks, setTasks] = useTasks();
   const [task, setTask] = useState("");
   const rid = useRef<string | null>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: Event) => { if (!(e.target as HTMLElement).closest?.(".d-new")) setMenu(false); };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setMenu(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", esc); };
+  }, [menu]);
 
   useEffect(() => {
     api.dashboardStats().then(setStats).catch((e) => onError(errorText(e)));
@@ -127,7 +135,7 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
             <button className="btn btn-primary btn-lg d-new-main" onClick={() => onNavigate("meeting")}>{running ? "Open running session" : "+ New session"}</button>
             <button className="btn btn-primary btn-lg d-new-more" aria-label="Choose a session type" aria-haspopup="menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>▾</button>
             {menu && (
-              <div className="d-menu" role="menu" onMouseLeave={() => setMenu(false)}>
+              <div className="d-menu" role="menu">
                 {([["meeting", "Meeting"], ["interview", "Interview practice"], ["classroom", "Classroom lecture"], ["presentation", "Presentation"], ["technical", "Technical discussion"]] as [Tab, string][]).map(([t, l]) => <button key={t} role="menuitem" onClick={() => { setMenu(false); onNavigate(t); }}>{l}</button>)}
               </div>
             )}
@@ -166,6 +174,15 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
         </section>
       )}
 
+      <section className="d-card d-quickrow">
+        <header><h2>Quick create</h2></header>
+        <div className="d-quick">
+          {([["Record meeting", "meeting", "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"], ["New board", "whiteboard", "M3 5h18v12H3zM8 21h8M12 17v4"], ["Generate diagram", "architecture", "M4 4h6v5H4zM14 4h6v5h-6zM9 15h6v5H9zM7 9v3h10V9M12 12v3"], ["Practice interview", "interview", "M4 5h16v10H9l-5 4zM8 9h8M8 12h5"], ["Import document", "documents", "M12 16V4M7 9l5-5 5 5M5 20h14"]] as [string, Tab, string][]).map(([l, t, d]) => (
+            <button key={l} className="d-quick-btn" onClick={() => onNavigate(t)}><span className="d-ico d-ico-sm tone-purple"><Icon d={d} size={18} /></span>{l}</button>
+          ))}
+        </div>
+      </section>
+
       <section className="d-card d-recent">
         <header><h2>Recent sessions</h2><button className="d-link" onClick={() => onNavigate("sessions")}>View all →</button></header>
         {stats && stats.recent.length === 0 && <p className="hint">No sessions yet. Press New session to start your first one.</p>}
@@ -195,14 +212,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
               <b>{p === null ? "–" : `${p}%`}</b>
             </div>
           ))}
-        </section>
-        <section className="d-card">
-          <header><h2>Quick create</h2></header>
-          <div className="d-quick">
-            {([["Record meeting", "meeting", "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"], ["New board", "whiteboard", "M3 5h18v12H3zM8 21h8M12 17v4"], ["Generate diagram", "architecture", "M4 4h6v5H4zM14 4h6v5h-6zM9 15h6v5H9zM7 9v3h10V9M12 12v3"], ["Practice interview", "interview", "M4 5h16v10H9l-5 4zM8 9h8M8 12h5"], ["Import document", "documents", "M12 16V4M7 9l5-5 5 5M5 20h14"]] as [string, Tab, string][]).map(([l, t, d]) => (
-              <button key={l} className="d-quick-btn" onClick={() => onNavigate(t)}><span className="d-ico d-ico-sm tone-purple"><Icon d={d} size={18} /></span>{l}</button>
-            ))}
-          </div>
         </section>
       </div>
 

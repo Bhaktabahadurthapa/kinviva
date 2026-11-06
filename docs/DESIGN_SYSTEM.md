@@ -64,3 +64,14 @@ caret pulse. Everything is disabled under `prefers-reduced-motion`.
 | Reply card | Ruled draft paper, editable, Copy |
 | Command dock | "?" ask field · Explain · Suggest reply (primary) · Recap |
 | Overlay | Compact console header with Assist/Transcript segmented control |
+
+## Tokens added in the November design pass
+
+| Token | Value | Use |
+|---|---|---|
+| `--ds-r-sm / md / lg` | 10 / 14 / 20 px | Controls, tiles, cards |
+| `--ds-e1` | soft two-layer shadow | Resting cards |
+| `--ds-e2` | larger soft shadow | Hover and raised cards |
+| `--ds-ease`, `--ds-t` | `cubic-bezier(.2,.7,.2,1)`, 180 ms | All hover and press motion |
+
+Colour: sidebar `#0B1735`, workspace `#FFFFFF`, headings `#101B3C`, body `#475569`, accents `#2563EB` and `#6D28D9`. Type: Inter (lining numerals, no slashed zero). Home grid: hero, five mode cards, activity line, quick-create row, then Recent sessions beside Continue learning, with the Assistant column on the right. Menus close on an outside click or Escape.

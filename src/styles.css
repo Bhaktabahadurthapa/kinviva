@@ -1594,7 +1594,7 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .app.rail-collapsed .rail-btn { width: 44px; }
 
 /* Dashboard */
-.dash2 { max-width: 1480px; margin: 0 auto; padding: 22px 28px 32px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(280px, 0.85fr); grid-template-areas: "hello hello right" "metrics metrics right" "strip strip right" "recent mid right" "discover discover discover"; align-items: start; }
+.dash2 { max-width: 1480px; margin: 0 auto; padding: 22px 28px 32px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(280px, 0.85fr); grid-template-areas: "hello hello right" "metrics metrics right" "strip strip right" "quick quick right" "recent mid right" "discover discover discover"; align-items: start; }
 .d-hello { grid-area: hello; display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); }
 .d-hello h1 { font-family: var(--f-ui); font-size: 28px; font-weight: 750; letter-spacing: -0.025em; margin: 0 0 2px; }
 .d-hello p { margin: 0; color: var(--c-text-2); }
@@ -1671,8 +1671,8 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .d-trend em { font-style: normal; font-weight: 700; font-size: 13px; } .d-trend em.up { color: var(--c-ok); } .d-trend em.down { color: var(--c-bad); }
 .d-off { display: flex; gap: var(--s-4); align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .d-off p { margin: 0; max-width: 62ch; color: var(--c-text-2); }
-@media (max-width: 1180px) { .dash2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "hello hello" "metrics metrics" "strip strip" "recent mid" "right right" "discover discover"; } .d-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } .d-disc-body { grid-template-columns: 1fr; } }
-@media (max-width: 800px) { .dash2 { grid-template-columns: 1fr; grid-template-areas: "hello" "metrics" "strip" "recent" "mid" "right" "discover"; } }
+@media (max-width: 1180px) { .dash2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "hello hello" "metrics metrics" "strip strip" "quick quick" "recent mid" "right right" "discover discover"; } .d-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } .d-disc-body { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .dash2 { grid-template-columns: 1fr; grid-template-areas: "hello" "metrics" "strip" "quick" "recent" "mid" "right" "discover"; } }
 .d-metric { padding: 14px; gap: 10px; }
 .d-metric .d-ico { width: 40px; height: 40px; }
 .d-metric-label, .d-week { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2057,3 +2057,20 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 @keyframes dp-float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(14px, 12px); } }
 @keyframes dp-shine { 0%, 55% { left: -60%; } 100% { left: 130%; } }
 @media (prefers-reduced-motion: reduce) { .dp-wave, .dp-wave i, .dp-orb, .dp-btn::after { animation: none; } .d-card.d-promo, .dp-btn { transition: none; } }
+
+/* Design system pass: tokens, balanced home grid, consistent cards, zero glyph. */
+:root { --ds-r-sm: 10px; --ds-r-md: 14px; --ds-r-lg: 20px; --ds-e1: 0 1px 2px rgba(16, 27, 60, .05), 0 4px 14px rgba(37, 52, 120, .05); --ds-e2: 0 8px 26px rgba(37, 52, 120, .12); --ds-ease: cubic-bezier(.2, .7, .2, 1); --ds-t: 180ms; }
+body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 0, "ss01" 0; font-variant-numeric: lining-nums; }
+.d-quickrow { grid-area: quick; padding: 14px 18px; }
+.d-quickrow header { display: none; }
+.d-quickrow .d-quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.d-quickrow .d-quick-btn { flex-direction: row; justify-content: flex-start; gap: 10px; padding: 10px 12px; text-align: left; font-size: 13.5px; background: var(--c-bg); border-radius: var(--ds-r-md); }
+.d-quickrow .d-quick-btn:hover { transform: translateY(-1px); box-shadow: var(--ds-e1); }
+.d-recent, .d-mid > .d-card { height: 100%; }
+.dash2 > .d-recent { align-self: stretch; }
+.d-card, .d-mode { transition: box-shadow var(--ds-t) var(--ds-ease), transform var(--ds-t) var(--ds-ease), border-color var(--ds-t) var(--ds-ease); }
+.d-card:not(.d-promo):hover { box-shadow: var(--ds-e2); }
+@media (max-width: 1180px) { .d-quickrow .d-quick { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .d-quickrow .d-quick { grid-template-columns: 1fr 1fr; } }
+.dash2 > .d-mid { align-self: stretch; }
+.d-mid > .d-card { height: auto; flex: 1; }
