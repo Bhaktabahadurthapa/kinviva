@@ -804,6 +804,10 @@ Dependency tree as installed (production). Where a package offers a choice of li
 
 PptxGenJS 4.0.1 (MIT License, Copyright Brent Ely) builds the PowerPoint files on this computer. Its dependency JSZip is MIT or GPL-3.0 dual-licensed; MeetingLens uses it under the MIT option.
 
+## TipTap and ProseMirror (Notes editor)
+
+The Notes editor uses TipTap 3 (`@tiptap/react`, `starter-kit` and the task list, task item, table, image and placeholder extensions) and ProseMirror (`@tiptap/pm`), all MIT licensed, unmodified.
+
 ## Bundled fonts
 
 | Font | Package | License |
