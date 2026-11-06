@@ -4,7 +4,7 @@ import { AiText } from "../components/AiText";
 import { api, errorText } from "../lib/api";
 import { sendToBoard } from "../lib/boardInbox";
 import { saveToNotes } from "../lib/notes";
-import { newId, SOURCES, TOPICS, type DiscoverItem, type Trend } from "../lib/platform";
+import { SOURCES, TOPICS, type DiscoverItem, type Trend } from "../lib/platform";
 import type { Settings } from "../lib/types";
 
 type Section = "for_you" | "news" | "repos" | "trends" | "learn" | "saved";
@@ -67,9 +67,6 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
     setNote(`Added “${name}”.${enabled ? " Fetching matching articles and projects…" : " Turn on Discover to see articles and projects for it."}`);
     if (enabled) void refresh();
   };
-  const learn = (name: string) =>
-    api.learningSave({ id: newId(), kind: "goal", title: `Learn ${name}`, status: "todo", source: "Discover" }).then(() => (setNote(`Added “Learn ${name}” to My Learning. Open it there and press Make a plan for the steps.`), onChanged())).catch((e) => onError(errorText(e)));
-
   const refresh = async () => {
     setBusy(true);
     setNote("");
@@ -100,8 +97,6 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
       onError(errorText(e));
     }
   };
-  const toLearning = (it: DiscoverItem) =>
-    api.learningSave({ id: newId(), kind: "resource", title: it.title, status: "todo", url: it.url, source: it.source, detail: it.summary }).then(() => (setNote("Added to My Learning."), onChanged())).catch((e) => onError(errorText(e)));
 
   const shown = items.filter((i) => (section === "news" ? i.kind === "news" : section === "repos" ? i.kind === "repo" : section === "saved" ? i.saved : true));
   const interests = settings?.interests ?? [];
@@ -128,7 +123,6 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
           {TOPICS.map((t) => <button key={t} className={`chip ${interests.includes(t) ? "on" : ""}`} aria-pressed={interests.includes(t)} onClick={() => void save({ interests: interests.includes(t) ? interests.filter((x) => x !== t) : [...interests, t] })}>{t}</button>)}
           {interests.filter((i) => !TOPICS.includes(i)).map((t) => (
             <span key={t} className="chip on chip-custom">{t}
-              <button className="chip-x" onClick={() => learn(t)} title={`Add “Learn ${t}” to My Learning`}>Learn</button>
               <button className="chip-x" aria-label={`Remove ${t}`} onClick={() => void save({ interests: interests.filter((x) => x !== t) })}>✕</button>
             </span>
           ))}
@@ -169,7 +163,6 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
                 <button className="btn btn-sm" onClick={() => void explainItem(it)}>Explain</button>
                 <button className="btn btn-sm" onClick={() => { sendToBoard(`${it.title}. ${it.summary}`); onBoard(); }}>Visualize</button>
                 <button className="btn btn-sm" onClick={() => void saveToNotes(`${it.title}\n${it.url}\n\n${it.summary}`, { title: it.title }).then(() => { setNote("Saved to notes."); onChanged(); })}>Save to notes</button>
-                <button className="btn btn-sm" onClick={() => void toLearning(it)}>Add to learning plan</button>
                 <button className="btn btn-sm btn-ghost" aria-pressed={it.saved} onClick={() => mark(it, "saved", !it.saved)}>{it.saved ? "Saved" : "Save for later"}</button>
                 <button className="btn btn-sm btn-ghost" onClick={() => mark(it, "read", !it.is_read)}>{it.is_read ? "Mark unread" : "Mark read"}</button>
               </div>

@@ -5,7 +5,7 @@ import { api, errorText } from "../lib/api";
 import { sendToBoard } from "../lib/boardInbox";
 import { saveToNotes } from "../lib/notes";
 import type { Tab } from "../lib/nav";
-import { greeting, minutes, percent, type DashboardStats, type DiscoverItem, type LearningItem, type Trend } from "../lib/platform";
+import { greeting, minutes, percent, type DashboardStats, type DiscoverItem, type Trend } from "../lib/platform";
 import type { Settings } from "../lib/types";
 
 const MODES = ["Ask", "Explain", "Summarize", "Visualize", "Plan", "Code"] as const;
@@ -55,7 +55,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
   settings: Settings | null; running: boolean; refreshKey: number; onNavigate: (t: Tab) => void; onOpenSession: (id: string) => void; onError: (m: string) => void; onSaved: () => void;
 }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [learning, setLearning] = useState<LearningItem[]>([]);
   const [disc, setDisc] = useState<DiscoverItem[]>([]);
   const [trends, setTrends] = useState<Trend[]>([]);
   const [dTab, setDTab] = useState<"for_you" | "news" | "repos" | "learn">("for_you");
@@ -78,7 +77,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
 
   useEffect(() => {
     api.dashboardStats().then(setStats).catch((e) => onError(errorText(e)));
-    api.learningList().then(setLearning).catch(() => {});
     if (settings?.discover_enabled) {
       api.discoverList(undefined, false).then(([l]) => setDisc(l)).catch(() => {});
       api.discoverTrends().then(setTrends).catch(() => {});
@@ -115,11 +113,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
   };
 
   const name = settings?.profile_name?.trim();
-  const steps = learning.filter((i) => i.kind === "lesson" || i.kind === "drill");
-  const goals = learning.filter((i) => i.kind === "goal").slice(0, 2).map((g) => {
-    const s = steps.filter((x) => x.parent_id === g.id);
-    return { g, p: percent(s.filter((x) => x.status === "done").length, s.length), next: s.find((x) => x.status === "doing") ?? s.find((x) => x.status === "todo") };
-  });
   const done = tasks.filter((t) => t.done).length;
   const shown = disc.filter((d) => (dTab === "news" ? d.kind === "news" : dTab === "repos" ? d.kind === "repo" : true)).slice(0, 4);
   const enabled = !!settings?.discover_enabled;
@@ -170,7 +163,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
           <button onClick={() => onNavigate("notes")}><b>{stats.notes}</b> notes</button>
           <button onClick={() => onNavigate("technical")}><b>{stats.diagrams}</b> diagrams</button>
           <button onClick={() => onNavigate("whiteboard")}><b>{stats.whiteboards}</b> boards</button>
-          <button onClick={() => onNavigate("learning")}><b>{stats.learning_done}</b>{stats.learning_total ? ` of ${stats.learning_total}` : ""} learning steps</button>
         </section>
       )}
 
@@ -201,19 +193,6 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
           })}
         </ul>
       </section>
-
-      <div className="d-mid">
-        <section className="d-card">
-          <header><h2>Continue learning</h2><button className="d-link" onClick={() => onNavigate("learning")}>View plan →</button></header>
-          {goals.length === 0 ? <p className="hint">No learning goals yet. Set one in My Learning and MeetingLens will suggest the steps.</p> : goals.map(({ g, p, next }) => (
-            <div key={g.id} className="d-goal">
-              <span className="d-ico tone-purple"><Icon d="M3 18V6a2 2 0 0 1 2-2h14v14H5a2 2 0 0 0-2 2zM8 8h7M8 12h5" /></span>
-              <div className="d-goal-main"><strong>{g.title}</strong>{next && <span>Next: {next.title}</span>}<div className="d-bar"><i style={{ width: `${p ?? 0}%` }} /></div></div>
-              <b>{p === null ? "–" : `${p}%`}</b>
-            </div>
-          ))}
-        </section>
-      </div>
 
       <aside className="d-right">
         <section className="d-card d-assistant">

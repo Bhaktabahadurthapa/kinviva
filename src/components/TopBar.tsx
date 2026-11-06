@@ -7,11 +7,11 @@ import type { Settings } from "../lib/types";
 
 const KIND_LABEL: Record<string, string> = {
   session: "Session", transcript: "Transcript", note: "Note", whiteboard: "Whiteboard", chart: "Chart", incident: "Incident",
-  diagram: "Diagram", document: "Document", learning: "Learning", discover: "Discover",
+  diagram: "Diagram", document: "Document", discover: "Discover",
 };
 export const HIT_TAB: Record<string, Tab> = {
   session: "sessions", transcript: "sessions", note: "notes", whiteboard: "whiteboard", chart: "visuals", incident: "technical",
-  diagram: "architecture", document: "documents", learning: "learning", discover: "discover",
+  diagram: "architecture", document: "documents", discover: "discover",
 };
 
 const THEMES: [Theme, string, string][] = [
@@ -64,7 +64,7 @@ export function TopBar({ settings, logo, collapsed, onToggle, onOpenHit, onSetti
       return;
     }
     const t = window.setTimeout(() => {
-      api.globalSearch(q).then((r) => mine === seq.current && setHits(r)).catch(() => mine === seq.current && setHits([]));
+      api.globalSearch(q).then((r) => mine === seq.current && setHits(r.filter((h) => h.kind !== "learning"))).catch(() => mine === seq.current && setHits([]));
     }, 180);
     return () => window.clearTimeout(t);
   }, [q]);

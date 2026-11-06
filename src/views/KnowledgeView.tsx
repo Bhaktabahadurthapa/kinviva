@@ -4,7 +4,7 @@ import type { SearchHit } from "../lib/platform";
 
 const LABEL: Record<string, string> = {
   session: "Sessions", transcript: "Transcripts", note: "Notes", whiteboard: "Whiteboards", chart: "Charts", incident: "Incidents",
-  diagram: "Diagrams", document: "Documents", learning: "Learning", discover: "Discover",
+  diagram: "Diagrams", document: "Documents", discover: "Discover",
 };
 
 /** One search box over everything stored on this computer. */
@@ -20,7 +20,7 @@ export function KnowledgeView({ onOpenHit, onError }: { onOpenHit: (h: SearchHit
     setDone(false);
     if (q.trim().length < 2) return void setHits([]);
     const t = window.setTimeout(() => {
-      api.globalSearch(q).then((r) => mine === seq.current && (setHits(r), setDone(true))).catch((e) => onError(errorText(e)));
+      api.globalSearch(q).then((r) => mine === seq.current && (setHits(r.filter((h) => h.kind !== "learning")), setDone(true))).catch((e) => onError(errorText(e)));
     }, 200);
     return () => window.clearTimeout(t);
   }, [q, onError]);
@@ -31,7 +31,7 @@ export function KnowledgeView({ onOpenHit, onError }: { onOpenHit: (h: SearchHit
     <div className="kb">
       <header>
         <h1>Knowledge Base</h1>
-        <p className="hint">Search your sessions, transcripts, notes, documents, diagrams, whiteboards and learning items in one place. Everything is searched on this computer.</p>
+        <p className="hint">Search your sessions, transcripts, notes, documents, diagrams, and whiteboards in one place. Everything is searched on this computer.</p>
       </header>
       <input className="kb-input" type="search" autoFocus value={q} onChange={(e) => { setQ(e.target.value); setKind("all"); }} placeholder="Search everything…" aria-label="Search everything" />
       {kinds.length > 1 && (

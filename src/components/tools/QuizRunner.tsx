@@ -5,7 +5,7 @@ import { latestGuard } from "../../lib/latest";
 interface Quiz { topic: string; questions: { q: string; choices: string[]; answer: number; explanation: string }[] }
 const guard = latestGuard();
 
-/** Practice questions: pick answers, see the score, and the result is recorded in My Learning progress. */
+/** Practice questions: pick answers, see the score, and the score is kept on this computer. */
 export function QuizRunner({ onError, onRecorded }: { onError: (m: string) => void; onRecorded: () => void }) {
   const [topic, setTopic] = useState("");
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -41,7 +41,7 @@ export function QuizRunner({ onError, onRecorded }: { onError: (m: string) => vo
   return (
     <section className="dash-card tool">
       <header><h2>Practice questions</h2></header>
-      <p className="hint">Multiple-choice questions on a topic, or on the lecture so far when the topic is empty. Your score is saved in My Learning.</p>
+      <p className="hint">Multiple-choice questions on a topic, or on the lecture so far when the topic is empty. Your score is saved on this computer.</p>
       <input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Topic, for example: Kubernetes services" aria-label="Quiz topic" maxLength={200} />
       <div className="tc-actions"><button className="btn btn-primary" onClick={() => void make()} disabled={busy}>{busy ? "Writing questions…" : "Make a quiz"}</button></div>
       {quiz && (
@@ -62,7 +62,7 @@ export function QuizRunner({ onError, onRecorded }: { onError: (m: string) => vo
         </ol>
       )}
       {quiz && !done && <button className="btn btn-primary" onClick={() => void finish()} disabled={picked.some((p) => p === null)}>Check my answers</button>}
-      {quiz && done && <p role="status"><strong>{score} of {quiz.questions.length} correct.</strong> Saved to My Learning.</p>}
+      {quiz && done && <p role="status"><strong>{score} of {quiz.questions.length} correct.</strong> Score saved.</p>}
     </section>
   );
 }

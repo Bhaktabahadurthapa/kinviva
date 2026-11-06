@@ -1594,7 +1594,7 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .app.rail-collapsed .rail-btn { width: 44px; }
 
 /* Dashboard */
-.dash2 { max-width: 1480px; margin: 0 auto; padding: 22px 28px 32px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(280px, 0.85fr); grid-template-areas: "hello hello right" "metrics metrics right" "strip strip right" "quick quick right" "recent mid right" "discover discover discover"; align-items: start; }
+.dash2 { max-width: 1480px; margin: 0 auto; padding: 22px 28px 32px; display: grid; gap: 18px; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(280px, 0.85fr); grid-template-areas: "hello hello right" "metrics metrics right" "strip strip right" "quick quick right" "recent recent right" "discover discover discover"; align-items: start; }
 .d-hello { grid-area: hello; display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); }
 .d-hello h1 { font-family: var(--f-ui); font-size: 28px; font-weight: 750; letter-spacing: -0.025em; margin: 0 0 2px; }
 .d-hello p { margin: 0; color: var(--c-text-2); }
@@ -1671,7 +1671,7 @@ input::placeholder, textarea::placeholder { color: var(--c-text-3); opacity: 0.7
 .d-trend em { font-style: normal; font-weight: 700; font-size: 13px; } .d-trend em.up { color: var(--c-ok); } .d-trend em.down { color: var(--c-bad); }
 .d-off { display: flex; gap: var(--s-4); align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .d-off p { margin: 0; max-width: 62ch; color: var(--c-text-2); }
-@media (max-width: 1180px) { .dash2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "hello hello" "metrics metrics" "strip strip" "quick quick" "recent mid" "right right" "discover discover"; } .d-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } .d-disc-body { grid-template-columns: 1fr; } }
+@media (max-width: 1180px) { .dash2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "hello hello" "metrics metrics" "strip strip" "quick quick" "recent recent" "right right" "discover discover"; } .d-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } .d-disc-body { grid-template-columns: 1fr; } }
 @media (max-width: 800px) { .dash2 { grid-template-columns: 1fr; grid-template-areas: "hello" "metrics" "strip" "quick" "recent" "mid" "right" "discover"; } }
 .d-metric { padding: 14px; gap: 10px; }
 .d-metric .d-ico { width: 40px; height: 40px; }
