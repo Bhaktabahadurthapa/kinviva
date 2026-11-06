@@ -2014,3 +2014,24 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .deck-stat { font-size: 13px; font-weight: 700; color: var(--c-heading); }
 .deck-b { display: block; font-size: 13px; color: var(--c-text-2); margin-top: 2px; }
 .deck-btns { display: flex; gap: 2px; }
+
+/* Side-by-side slide editor */
+.de { display: grid; grid-template-columns: 150px minmax(0, 1.5fr) minmax(260px, 1fr); gap: 16px; align-items: start; margin: 12px 0; }
+.de-thumbs { list-style: none; margin: 0; padding: 0 4px 0 0; display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; }
+.de-thumbs button { position: relative; display: block; width: 100%; padding: 0; background: none; border: 2px solid transparent; border-radius: 8px; cursor: pointer; }
+.de-thumbs button.on { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .18); }
+.de-no { position: absolute; left: 6px; top: 4px; z-index: 2; font-size: 11px; font-weight: 700; color: #fff; background: rgba(11, 23, 53, .75); border-radius: 6px; padding: 0 5px; }
+.de-main .sp { box-shadow: 0 8px 24px rgba(16, 27, 60, .18); }
+.sp { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; container-type: inline-size; text-align: left; }
+.sp-shape, .sp-text { position: absolute; box-sizing: border-box; }
+.sp-text { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; white-space: pre-line; }
+.de-form { display: flex; flex-direction: column; gap: 10px; }
+.de-form h3 { margin: 0; font-size: 16px; color: var(--c-heading); }
+.de-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--c-text-2); }
+.de-row { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.deck-again { margin: 4px 0 12px; }
+.deck-again label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--c-text-2); }
+@media (max-width: 1100px) { .de { grid-template-columns: 110px minmax(0, 1fr); } .de-form { grid-column: 1 / -1; } }
+.tools-page:has(.deck-maker) { max-width: 1240px; }
+.de-no { top: auto; bottom: 4px; }
+.de { grid-template-columns: 140px minmax(0, 1.6fr) minmax(270px, 1fr); }

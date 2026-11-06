@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { api, errorText } from "../../lib/api";
 import { chooseDeckPath, safeName } from "../../lib/download";
+import { DeckEditor } from "./DeckEditor";
 import { buildDeck, DECK_THEMES, parseDeck, type DeckPlan } from "../../lib/deck";
 import type { Settings } from "../../lib/types";
 
-const LAYOUT_LABEL: Record<string, string> = { bullets: "Key points", two_column: "Two columns", stat: "Big number", steps: "Steps", quote: "Statement", summary: "Summary" };
 const AUDIENCES = ["Colleagues", "Managers and leaders", "Customers", "Students", "Technical team"];
 const TONES = ["Clear and simple", "Formal", "Friendly", "Persuasive"];
 
@@ -18,14 +18,15 @@ export function DeckMaker({ settings, onError }: { settings: Settings | null; on
   const [plan, setPlan] = useState<DeckPlan | null>(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [wish, setWish] = useState("");
 
   const make = async () => {
     setBusy(true);
     setNote("");
-    setPlan(null);
     try {
+      const prev = plan ? `\nThe previous version had these slides: ${plan.slides.map((x) => x.title).join("; ")}.\nMake a DIFFERENT version.${wish.trim() ? ` Changes wanted: ${wish.trim()}` : ""}` : "";
       const head = `Audience: ${audience}. Tone: ${tone}. Slides after the opening slide: ${count}.\n`;
-      setPlan(parseDeck(await api.studioGenerate(crypto.randomUUID(), "slide_deck", head + info.trim())));
+      setPlan(parseDeck(await api.studioGenerate(crypto.randomUUID(), "slide_deck", head + info.trim() + prev)));
     } catch (e) {
       onError(errorText(e));
     } finally {
@@ -44,8 +45,6 @@ export function DeckMaker({ settings, onError }: { settings: Settings | null; on
       onError(errorText(e));
     }
   };
-  const move = (i: number, d: number) => plan && setPlan({ ...plan, slides: plan.slides.map((s, k, a) => (k === i ? a[i + d] : k === i + d ? a[i] : s)) });
-  const drop = (i: number) => plan && setPlan({ ...plan, slides: plan.slides.filter((_, k) => k !== i) });
 
   return (
     <section className="dash-card tool deck-maker">
@@ -63,22 +62,11 @@ export function DeckMaker({ settings, onError }: { settings: Settings | null; on
         <div className="tc-result">
           <h3 className="deck-title">{plan.title}</h3>
           {plan.subtitle && <p className="hint">{plan.subtitle}</p>}
-          <ol className="deck-list">
-            {plan.slides.map((s, i) => (
-              <li key={i}>
-                <span className="deck-n">{i + 1}</span>
-                <div><strong>{s.title}</strong><span className="deck-layout">{LAYOUT_LABEL[s.layout] ?? s.layout}</span>
-                  {s.stat && <span className="deck-stat">{s.stat.value} · {s.stat.label}</span>}
-                  {s.bullets.length > 0 && <span className="deck-b">{s.bullets.join(" · ")}</span>}</div>
-                <span className="deck-btns">
-                  <button className="btn btn-ghost btn-sm" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
-                  <button className="btn btn-ghost btn-sm" aria-label="Move down" disabled={i === plan.slides.length - 1} onClick={() => move(i, 1)}>↓</button>
-                  <button className="btn btn-ghost btn-sm" aria-label={`Remove slide ${i + 1}`} onClick={() => drop(i)}>✕</button>
-                </span>
-              </li>
-            ))}
-          </ol>
-          <div className="tc-actions"><button className="btn btn-primary" onClick={() => void download()} disabled={plan.slides.length < 2}>Download PowerPoint (.pptx)</button><button className="btn" onClick={() => void make()} disabled={busy}>Plan again</button></div>
+          <DeckEditor plan={plan} onChange={setPlan} themeId={theme} author={settings?.profile_name?.trim() ?? ""} />
+          <div className="deck-again">
+            <label>Not happy with it? Say what to change, then make another version<input value={wish} onChange={(e) => setWish(e.target.value)} maxLength={300} placeholder="For example: shorter, more about costs, add a slide on risks" /></label>
+          </div>
+          <div className="tc-actions"><button className="btn btn-primary" onClick={() => void download()} disabled={plan.slides.length < 2}>Download PowerPoint (.pptx)</button><button className="btn" onClick={() => void make()} disabled={busy}>{busy ? "Working…" : "Make another version"}</button></div>
         </div>
       )}
       {note && <div className="banner banner-ok">{note}</div>}
