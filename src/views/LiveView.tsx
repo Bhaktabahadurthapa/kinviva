@@ -4,7 +4,6 @@ import { ActionBar, useActions } from "../components/ActionBar";
 import { SimpleStream } from "../components/SimpleStream";
 import { ScreenAssist } from "../components/ScreenAssist";
 import { ManualAnswers } from "../components/ManualAnswers";
-import { ScriptReader } from "../components/ScriptReader";
 import { AnswerStyle } from "../components/AnswerStyle";
 import { WatchStage } from "../components/WatchStage";
 import { Splitter } from "../components/Splitter";
@@ -60,7 +59,6 @@ export function LiveView({
   const watchGrid = useRef<HTMLDivElement>(null);
   // The video is a layer above the window: it steps aside while the divider is dragged.
   const dragVideo = (dragging: boolean) => void api.videoVisible(!dragging).catch(() => {});
-  const [sideTab, setSideTab] = useState<"answers" | "script">("answers");
   const [tOpen, setTOpenState] = useState(() => {
     try {
       return localStorage.getItem("ml.watchTranscript") === "open";
@@ -137,15 +135,9 @@ export function LiveView({
       </div>
       {layout === "watch" ? (
         <div ref={watchGrid} className="live-watch" style={{ ["--wsplit" as string]: `minmax(0, ${wsplit}fr) 16px minmax(0, ${100 - wsplit}fr)` }}>
-          <WatchStage caption={caption} lines={live.transcript.finals.slice(-6).map((f) => ({ who: f.source === "system" ? "Them" : "Me", text: f.text }))} onAction={(a) => void act(a)} />
+          <WatchStage caption={caption} onAction={(a) => void act(a)} />
           <Splitter value={wsplit} onChange={setWsplit} container={watchGrid} reset={52} onStart={() => dragVideo(true)} onEnd={() => dragVideo(false)} />
           <div className="live-watch-side">
-            <div className="side-tabs" role="tablist" aria-label="Side panel">
-              <button role="tab" aria-selected={sideTab === "answers"} className={sideTab === "answers" ? "on" : ""} onClick={() => setSideTab("answers")}>Answers</button>
-              <button role="tab" aria-selected={sideTab === "script"} className={sideTab === "script" ? "on" : ""} onClick={() => setSideTab("script")}>Script</button>
-            </div>
-            {sideTab === "script" ? <ScriptReader onError={onError} /> : (
-              <>
         {autoMode === "off" ? (
           <div className="side">
             <AnswerStyle onError={onError} />
@@ -222,8 +214,6 @@ export function LiveView({
           />
         </section>
         )}
-              </>
-            )}
           </div>
         </div>
       ) : (

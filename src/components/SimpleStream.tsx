@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FeedSearch } from "../lib/answerLog";
 import type { SideNote } from "../lib/liveReducer";
 import type { AiSlot, Segment } from "../lib/types";
 import { AiText, isNoAnswer } from "./AiText";
@@ -61,6 +62,8 @@ export function SimpleStream({ finals, side, running, children }: { finals: Segm
     if (m && m.state !== "idle") return true;
     return !!n.answer && n.answer.state !== "idle" && !(n.answer.state === "done" && maybeNoAnswer(n.answer.text)) && !(n.answer.state === "cancelled" && !n.answer.text);
   };
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
   const steps = finals.filter((sg) => sg.source === "system" && active(side[sg.id]));
   const kept = new Set(dropRepeats(steps.map((sg) => sg.id), (id) => (hasAnswer(side[id]) || !isFinished(side[id]?.meaning) ? null : side[id]!.meaning!.text)));
   let lastKept = 0;
@@ -112,11 +115,20 @@ export function SimpleStream({ finals, side, running, children }: { finals: Segm
     );
   };
 
-  const newestSeg = steps.length ? steps[steps.length - 1] : null;
-  const earlier = steps.slice(0, -1).map((sg, i) => ({ sg, n: i + 1 })).reverse();
+  const textOf = (id: number) => `${byIdText(id)} ${side[id]?.meaning?.text ?? ""} ${side[id]?.answer?.text ?? ""}`.toLowerCase();
+  function byIdText(id: number) { return finals.find((f) => f.id === id)?.text ?? ""; }
+  // While searching, every matching step is listed (newest first), whatever its age.
+  const searching = q.length > 0;
+  const newestSeg = !searching && steps.length ? steps[steps.length - 1] : null;
+  const earlier = (searching ? steps : steps.slice(0, -1)).map((sg) => ({ sg, n: steps.indexOf(sg) + 1 })).filter(({ sg }) => !searching || textOf(sg.id).includes(q)).reverse();
 
   return (
     <div className="simple-wrap">
+      <div className="feed-search">
+        <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search everything said and explained so far" aria-label="Search results" />
+        {searching && <span className="hint" role="status">{earlier.length} step{earlier.length === 1 ? "" : "s"} found</span>}
+      </div>
+      <FeedSearch.Provider value={query}>
       <div className="simple-stream" aria-live="polite">
         {failure && (
           <div className="banner" role="alert">
@@ -147,10 +159,10 @@ export function SimpleStream({ finals, side, running, children }: { finals: Segm
         )}
         {children}
         {earlier.length > 0 && (
-          <section className="earlier" aria-label="Earlier steps">
-            <h3>Earlier <span>{earlier.length}</span></h3>
+          <section className="earlier" aria-label={searching ? "Matching steps" : "Earlier steps"}>
+            <h3>{searching ? "Matching steps" : "Earlier"} <span>{earlier.length}</span></h3>
             {earlier.map(({ sg, n }) => (
-              <details key={sg.id} className="step step-earlier">
+              <details key={sg.id} className="step step-earlier" open={searching}>
                 <summary>
                   <span className="step-n">{n}</span>
                   <span className="when">{fmt(sg.start_ms)}</span>
@@ -162,6 +174,7 @@ export function SimpleStream({ finals, side, running, children }: { finals: Segm
           </section>
         )}
       </div>
+      </FeedSearch.Provider>
     </div>
   );
 }

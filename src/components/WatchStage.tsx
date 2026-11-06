@@ -43,7 +43,7 @@ function RailBtn({ id, label, onClick, on, disabled }: { id: keyof typeof ICON; 
 }
 
 /** A theatre for videos: watch an online video or a file next to the live transcript and answers. Its sound is heard by MeetingLens like any other sound on this computer. */
-export function WatchStage({ caption, lines, onAction }: { caption: { who: string; text: string } | null; lines: { who: string; text: string }[]; onAction: (a: AiAction) => void }) {
+export function WatchStage({ caption, onAction }: { caption: { who: string; text: string } | null; onAction: (a: AiAction) => void }) {
   const [mode, setMode] = useState<"online" | "file">(() => {
     try {
       return localStorage.getItem("ml.videoMode") === "file" ? "file" : "online";
@@ -207,7 +207,7 @@ export function WatchStage({ caption, lines, onAction }: { caption: { who: strin
         <RailBtn id="reply" label="Reply" onClick={() => onAction("suggest")} />
         <RailBtn id="recap" label="Recap" onClick={() => onAction("recap")} />
         <span className="ws-rsep" />
-        <RailBtn id="captions" label="Captions" on={cc} onClick={toggleCc} />
+        {mode === "file" && <RailBtn id="captions" label="Captions" on={cc} onClick={toggleCc} />}
         {mode === "online" && <RailBtn id={fullPage ? "player" : "page"} label={fullPage ? "Player only" : "Full page"} on={fullPage} onClick={toggleFullPage} />}
         {mode === "online" && <RailBtn id="browser" label="Browser" disabled={!live && !link.trim()} onClick={() => void api.videoInBrowser(live ?? link).catch((e) => setOnlineErr(errorText(e)))} />}
         {mode === "file" && <RailBtn id="file" label="Change" onClick={() => input.current?.click()} />}
@@ -265,12 +265,6 @@ export function WatchStage({ caption, lines, onAction }: { caption: { who: strin
               {cc && caption && <div className="ws-cc" aria-live="polite"><span>{caption.who}</span>{caption.text}</div>}
             </div>
           </>
-        )}
-        {(mode === "online" ? !!live : !!src) && cc && !fullPage && (
-          <div className="ws-live" aria-live="polite">
-            <div className="ws-live-head">Being said now</div>
-            {lines.length === 0 ? <p className="ws-live-empty">Words appear here as they are spoken.</p> : lines.map((l, i) => <p key={i} className={i === lines.length - 1 ? "now" : ""}><span>{l.who}</span>{l.text}</p>)}
-          </div>
         )}
       </div>
     </section>
