@@ -21,14 +21,29 @@ export function ScriptReader({ onError, onSaved }: { onError: (m: string) => voi
     setNote("");
     setLines(parseScript(raw));
   };
-  const analyse = async () => {
+  const analyse = async (from = lines) => {
     setBusy(true);
     try {
-      setIns(parseInsights(await api.studioGenerate(crypto.randomUUID(), "script_highlights", forModel(lines))));
+      setIns(parseInsights(await api.studioGenerate(crypto.randomUUID(), "script_highlights", forModel(from))));
     } catch (e) {
       onError(errorText(e));
     } finally {
       setBusy(false);
+    }
+  };
+  // One click: take the copied transcript from the clipboard, build the script and highlight it.
+  const fromClipboard = async () => {
+    try {
+      const text = (await api.clipboardText()).trim();
+      const parsed = parseScript(text);
+      if (parsed.length < 3) return onError("The clipboard does not hold a transcript yet. On YouTube press …more, then Show transcript, select the text and copy it.");
+      setRaw(text);
+      setIns(null);
+      setNote("");
+      setLines(parsed);
+      await analyse(parsed);
+    } catch (e) {
+      onError(errorText(e));
     }
   };
   const imp = useMemo(() => new Set(ins?.important ?? []), [ins]);
@@ -57,11 +72,11 @@ export function ScriptReader({ onError, onSaved }: { onError: (m: string) => voi
           <ol>
             <li>On YouTube, under the video press <b>…more</b>, then <b>Show transcript</b>.</li>
             <li>Select the transcript text and copy it.</li>
-            <li>Paste it here. You get the complete script, with the important lines highlighted.</li>
+            <li>Press <b>Use copied transcript</b>. You get the complete script with the important lines highlighted, in one step.</li>
           </ol>
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} aria-label="Script title" placeholder="Title (optional)" />
           <textarea rows={9} value={raw} onChange={(e) => setRaw(e.target.value)} placeholder={"0:00\nare vector databases still needed\n0:05\nI ask because there is a good deal of discussion…"} aria-label="Pasted script" />
-          <div className="tc-actions"><button className="btn btn-primary" disabled={raw.trim().length < 30} onClick={make}>Make the script</button><span className="hint">Works with any transcript text, not only YouTube. Nothing is sent anywhere until you press Highlight.</span></div>
+          <div className="tc-actions"><button className="btn btn-primary" onClick={() => void fromClipboard()} title="Uses the transcript you copied, builds the script and highlights it in one step">Use copied transcript</button><button className="btn" disabled={raw.trim().length < 30} onClick={make}>Make the script</button><span className="hint">Works with any transcript text, not only YouTube. Nothing is sent anywhere until you press Highlight.</span></div>
         </div>
       ) : (
         <>
@@ -69,7 +84,7 @@ export function ScriptReader({ onError, onSaved }: { onError: (m: string) => voi
             <strong title={title}>{title}</strong>
             <span className="hint">{lines.length} lines · about {Math.max(1, Math.round(words / 230))} min to read</span>
             <span className="sr-actions">
-              <button className="btn btn-sm btn-primary" disabled={busy} onClick={() => void analyse()}>{busy ? "Reading it…" : ins ? "Highlight again" : "Highlight important points"}</button>
+              <button className="btn btn-sm btn-primary" disabled={busy} onClick={() => void analyse(lines)}>{busy ? "Reading it…" : ins ? "Highlight again" : "Highlight important points"}</button>
               <button className="btn btn-sm" onClick={() => void saveToNotes(md(), { title }).then(() => { setNote("Saved to notes."); onSaved?.(); })}>Save to notes</button>
               <button className="btn btn-sm" onClick={() => void download()}>Download</button>
               <button className="btn btn-sm btn-ghost" onClick={() => { setLines([]); setIns(null); }}>New script</button>
