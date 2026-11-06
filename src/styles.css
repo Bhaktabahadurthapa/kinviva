@@ -2091,3 +2091,22 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .fc-hint { font-size: 12px; color: #b6c2e6; }
 .fc-nav { align-items: center; justify-content: space-between; margin-top: 10px; }
 @media (prefers-reduced-motion: reduce) { .fc-card { transition: none; } }
+
+/* Interview: the interviewer's question sits in a bar above both columns. */
+.interview { grid-template-rows: auto minmax(0, 1fr); }
+.iv-qbar { grid-column: 1 / -1; margin-bottom: 14px; padding: 14px 20px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #14286b, #0b1735 70%); box-shadow: var(--ds-e2); display: flex; flex-direction: column; gap: 10px; }
+.iv-q-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #aebcf0; }
+.iv-q-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 0 rgba(52, 211, 153, .6); animation: iv-ping 1.8s infinite; }
+@keyframes iv-ping { 70% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); } }
+.iv-q-text { margin: 4px 0 0; font-size: 21px; line-height: 1.35; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+.iv-q-empty { margin: 4px 0 0; font-size: 15px; color: #b6c2e6; }
+.iv-q-list { list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; overflow-x: auto; }
+.iv-q-list button { white-space: nowrap; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(148, 163, 255, .35); background: rgba(148, 163, 255, .12); color: #dbe4ff; font-size: 13px; cursor: pointer; }
+.iv-q-list button:hover, .iv-q-list button.on { background: rgba(148, 163, 255, .3); color: #fff; }
+.iv-q-list b { color: #93c5fd; margin-right: 4px; }
+@media (prefers-reduced-motion: reduce) { .iv-q-dot { animation: none; } }
+.iv-input > header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; height: auto; padding-bottom: 10px; }
+.iv-input > header .seg { position: static; margin: 0; flex-wrap: wrap; }
+.iv-input > header h2 { margin: 0; }
+.app .iv-input > header { height: auto; min-height: 48px; }
+.app .iv-input > header { flex-shrink: 0; }

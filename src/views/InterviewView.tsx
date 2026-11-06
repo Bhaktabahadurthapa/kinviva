@@ -269,10 +269,45 @@ export function InterviewView({ live, onError, since, onNewSession }: { live: Li
     void autoRef.current.run("explain", q.text);
   }, [live.question?.at, autoLive, running, mode]);
 
+  // Every question the interviewer asks is kept in order, so it stays visible beside the answer.
+  const [asked, setAsked] = useState<{ at: number; text: string }[]>([]);
+  useEffect(() => {
+    const q = live.question;
+    if (q) setAsked((l) => (l.some((x) => x.at === q.at) ? l : [...l, { at: q.at, text: q.text }].slice(-30)));
+  }, [live.question?.at]);
+  useEffect(() => {
+    if (!running) return;
+    if (live.status?.started_at) setAsked((l) => l.filter((x) => x.at >= (live.status?.started_at ?? 0)));
+  }, [live.status?.started_at]);
+  const current = asked.length ? asked[asked.length - 1] : null;
+  const pick = (q: { at: number; text: string }) => {
+    autoRef.current.cancelRunning();
+    setQuestion(q.text);
+    setMode("explain");
+    void autoRef.current.run("explain", q.text);
+  };
+
   const fromMeeting = useMemo(() => latestQuestion(live.question?.text, live.transcript.finals), [live.question, live.transcript.finals]);
 
   return (
     <div ref={grid} className="interview" style={{ ["--split" as string]: `minmax(0, ${split}fr) 16px minmax(0, ${100 - split}fr)` }}>
+      <section className="iv-qbar" aria-label="Interviewer's questions" aria-live="polite">
+        <div className="iv-q-main">
+          <span className="iv-q-label">{running ? <><i className="iv-q-dot" /> Interviewer asked</> : "Interviewer's question"}</span>
+          {current ? (
+            <p className="iv-q-text">{current.text}</p>
+          ) : (
+            <p className="iv-q-empty">{running ? "Listening. The question appears here the moment the interviewer asks it." : "Press Start to listen. Each question the interviewer asks appears here, next to your answer."}</p>
+          )}
+        </div>
+        {asked.length > 1 && (
+          <ol className="iv-q-list" aria-label="Earlier questions">
+            {asked.slice(0, -1).map((q, i) => (
+              <li key={q.at}><button className={q.text === question ? "on" : ""} onClick={() => pick(q)} title="Answer this question again"><b>Q{i + 1}</b> {q.text.length > 70 ? `${q.text.slice(0, 70)}…` : q.text}</button></li>
+            ))}
+          </ol>
+        )}
+      </section>
       <section className="panel iv-input">
         <header>
           <h2>Interview practice</h2>
