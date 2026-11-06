@@ -281,7 +281,7 @@ export default function App() {
           </span>
           <button className="fb-engine" onClick={() => { void setFocus(false); setTab("settings"); }} title="The answer engine that writes your explanations and replies. Open settings to change it.">
             <b>Answer engine</b>
-            <span>{settings?.llm_model?.trim() || "Not set up"}</span>
+            <span>{settings?.llm_model?.trim() ? "Ready" : "Not set up"}</span>
           </button>
           <span className="fb-actions">
             {running && <button className="fb-btn" onClick={() => api.setPaused(!status?.paused).catch((e) => setError(errorText(e)))}>{status?.paused ? "Resume" : "Pause"}</button>}
