@@ -1904,7 +1904,7 @@ h1, h2, .d-hello h1 { letter-spacing: -0.025em; }
 .d-bar > i, .learn-bar > i { background: linear-gradient(90deg, #2563eb, #6d28d9); }
 /* sidebar */
 .app { --c-rail: #0b1735; }
-.app .rail, :root[data-theme="dark"] .app .rail { background: linear-gradient(180deg, #0e1c42 0%, #0b1735 45%, #091229 100%); border-right: 1px solid #070f24; }
+.app .rail, :root[data-theme="dark"] .app .rail { background: var(--mt-sidebar); border-right: 1px solid #070f24; }
 .app .rail-foot { background: #0b1735; border-top-color: rgba(148, 163, 220, 0.18); }
 .app .rail-btn { color: #e2e8f5; }
 .app .rail-btn:hover { background: rgba(148, 163, 220, 0.12); color: #ffffff; }
@@ -2130,3 +2130,50 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .vk-diagram { background: #efe9fe; color: #5b21b6; } .vk-board { background: #dff3e8; color: #23764a; }
 @media (max-width: 800px) { .vis-tiles { grid-template-columns: 1fr; } }
 .vis-edit input[type="color"] { width: 30px; height: 30px; padding: 2px; border-radius: 8px; cursor: pointer; }
+
+/* ===== Semantic design tokens (single source of truth for colour) ===== */
+:root {
+  --mt-sidebar: #0b1735;
+  --mt-sidebar-raised: #12214a;
+  --mt-sidebar-text: #e2e8f0;
+  --mt-sidebar-muted: #9fb0d3;
+  --mt-workspace: #f8fafc;
+  --mt-surface: #ffffff;
+  --mt-text: #0f172a;
+  --mt-text-2: #475569;
+  --mt-border: #e2e8f0;
+  --mt-primary: #2563eb;
+  --mt-primary-hover: #1d4ed8;
+  --mt-accent: #7c3aed;
+  --mt-success: #15803d;
+  --mt-warning: #b45309;
+  --mt-error: #b91c1c;
+  --mt-nav-active: linear-gradient(90deg, rgba(37, 99, 235, .30), rgba(124, 58, 237, .30));
+}
+/* Light theme maps the existing variables onto the tokens; dark themes keep their own rules (higher specificity). */
+:root {
+  --c-bg: var(--mt-workspace); --c-bg-2: var(--mt-workspace); --c-sunken: var(--mt-workspace);
+  --c-surface: var(--mt-surface); --c-raised: var(--mt-surface);
+  --c-line: var(--mt-border);
+  --c-heading: var(--mt-text); --c-text: var(--mt-text); --c-text-2: var(--mt-text-2);
+  --c-signal: var(--mt-primary); --c-signal-hover: var(--mt-primary-hover); --c-signal-soft: rgba(37, 99, 235, .10);
+  --c-accent2: var(--mt-accent);
+  --c-ok: var(--mt-success); --c-warn: var(--mt-warning); --c-bad: var(--mt-error);
+}
+/* Side menu */
+.app .rail { background: var(--mt-sidebar); color: var(--mt-sidebar-text); border-right: 1px solid rgba(255, 255, 255, .06); }
+.topbar-brand { background: var(--mt-sidebar); border-right-color: rgba(255, 255, 255, .06); }
+.app .rail .rail-btn { color: var(--mt-sidebar-text); }
+.app .rail .rail-btn:hover { background: rgba(148, 163, 255, .12); color: #fff; }
+.app .rail .rail-btn.active { background: var(--mt-nav-active); color: #fff; box-shadow: inset 3px 0 0 var(--mt-accent); }
+.app .rail .rail-btn.active::before { background: var(--mt-accent); }
+.app .rail .rail-heading { color: var(--mt-sidebar-muted); }
+.app .rail .rail-btn.active .nav-ico { background: linear-gradient(135deg, var(--mt-primary), var(--mt-accent)); }
+.app .rail-foot { background: var(--mt-sidebar); border-top-color: rgba(255, 255, 255, .08); }
+.app .rail-interests, .app .rail-foot { border-top-color: rgba(255, 255, 255, .08); }
+.rail-tag, .app .rail-tag { color: var(--mt-sidebar-muted); }
+.rail-chip { color: var(--mt-sidebar-text); }
+/* Status colours use the tokens everywhere they were hard-coded. */
+.banner-ok, .d-week.up { color: var(--mt-success); }
+.btn-danger { color: var(--mt-error); }
+:root .app .rail .rail-foot, :root[data-theme] .app .rail .rail-foot, :root:not([data-theme="light"]) .app .rail .rail-foot { background: var(--mt-sidebar); }

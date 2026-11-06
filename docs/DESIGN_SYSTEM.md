@@ -75,3 +75,18 @@ caret pulse. Everything is disabled under `prefers-reduced-motion`.
 | `--ds-ease`, `--ds-t` | `cubic-bezier(.2,.7,.2,1)`, 180 ms | All hover and press motion |
 
 Colour: sidebar `#0B1735`, workspace `#FFFFFF`, headings `#101B3C`, body `#475569`, accents `#2563EB` and `#6D28D9`. Type: Inter (lining numerals, no slashed zero). Home grid: hero, five mode cards, activity line, quick-create row, then Recent sessions beside Continue learning, with the Assistant column on the right. Menus close on an outside click or Escape.
+
+## Semantic colour tokens
+
+Defined once at the end of `src/styles.css` as `--mt-*` and mapped onto the older `--c-*` variables in the light theme (dark themes keep their own values).
+
+| Token | Value | Use |
+|---|---|---|
+| `--mt-sidebar` | `#0B1735` | Side menu and logo cell |
+| `--mt-workspace` | `#F8FAFC` | Page background |
+| `--mt-surface` | `#FFFFFF` | Cards and panels |
+| `--mt-text` / `--mt-text-2` | `#0F172A` / `#475569` | Primary and secondary text |
+| `--mt-border` | `#E2E8F0` | Borders and dividers |
+| `--mt-primary` | `#2563EB` | Primary buttons and links |
+| `--mt-accent` | `#7C3AED` | Purple accent, active menu marker |
+| `--mt-success` / `--mt-warning` / `--mt-error` | `#15803D` / `#B45309` / `#B91C1C` | Status |
