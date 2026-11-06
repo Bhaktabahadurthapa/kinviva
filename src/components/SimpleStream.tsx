@@ -18,6 +18,29 @@ export function pendingNotes(ready: number[], shown: number[]): number[] {
   return ready.filter((id) => !shown.includes(id) && !shown.includes(-id - 1));
 }
 
+const words = (t: string) => new Set(t.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w) => w.length >= 4));
+/** True when two explanations say nearly the same thing (most of their longer words are shared). */
+export function similarText(a: string, b: string): boolean {
+  const x = words(a);
+  const y = words(b);
+  if (x.size < 5 || y.size < 5) return false;
+  let shared = 0;
+  x.forEach((w) => y.has(w) && shared++);
+  return shared / (x.size + y.size - shared) >= 0.5;
+}
+/** Drops an explanation that repeats the one just before it, so the same points are not shown again and again. */
+export function dropRepeats(ids: number[], text: (id: number) => string | null): number[] {
+  const out: number[] = [];
+  let last: string | null = null;
+  for (const id of ids) {
+    const t = text(id);
+    if (t !== null && last !== null && similarText(t, last)) continue;
+    out.push(id);
+    if (t !== null) last = t;
+  }
+  return out;
+}
+
 function fmt(ms: number) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -42,7 +65,10 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
 
   // A line is worth showing once its key points or its answer is complete.
   const hasAnswer = (n?: SideNote) => isDone(n?.answer) && !maybeNoAnswer(n!.answer!.text);
-  const ready = finals.filter((s) => s.source === "system" && (isDone(side[s.id]?.meaning) || hasAnswer(side[s.id]))).map((s) => s.id);
+  const ready = dropRepeats(
+    finals.filter((s) => s.source === "system" && (isDone(side[s.id]?.meaning) || hasAnswer(side[s.id]))).map((s) => s.id),
+    (id) => (hasAnswer(side[id]) || !isFinished(side[id]?.meaning) ? null : side[id]!.meaning!.text),
+  );
   const writing = finals.some(
     (s) => s.source === "system" && (side[s.id]?.meaning?.state === "streaming" || side[s.id]?.answer?.state === "streaming") && !ready.includes(s.id),
   );

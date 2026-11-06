@@ -34,6 +34,8 @@ fn publish(app: &AppHandle, state: &AppState, slot: &str, f: impl FnOnce(&mut Ai
 
 /// Transcript characters sent with an automatic answer (clicks use the setting).
 const AUTO_CONTEXT_CHARS: usize = 1800;
+/// Background sent with an automatic explanation: just the few lines before the new sentence.
+const AUTO_EXPLAIN_CHARS: usize = 600;
 
 /// Automatic answers in flight per panel before the oldest is dropped.
 const MAX_AUTO_IN_FLIGHT: usize = 2;
@@ -92,6 +94,9 @@ pub fn start_with(
         // a shorter prompt starts answering sooner.
         let window = if action == Action::Recap || action == Action::Ask {
             settings.context_chars * 2
+        } else if auto_for.is_some() && action == Action::Explain {
+            // Only the newest words matter; a long background made explanations keep returning to the main topic.
+            AUTO_EXPLAIN_CHARS
         } else if auto_for.is_some() {
             settings.context_chars.min(AUTO_CONTEXT_CHARS)
         } else {
