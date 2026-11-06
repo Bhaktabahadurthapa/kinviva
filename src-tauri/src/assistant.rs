@@ -154,6 +154,11 @@ pub fn start_with(
             user.content.push_str(&note);
         }
     }
+    if let Some(note) = prompts::custom_note(&settings.about_me, &settings.screen_instructions, if session.is_class() { "classroom" } else { "meeting" }) {
+        if let Some(user) = messages.last_mut() {
+            user.content.push_str(&note);
+        }
+    }
 
     // A request the user asks for replaces the previous one in its panel.
     // Automatic ones answer different sentences, so they run side by side

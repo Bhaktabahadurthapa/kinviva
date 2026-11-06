@@ -475,7 +475,12 @@ pub fn start(app: &AppHandle, state: &AppState, req: Request) -> Result<String, 
     } else {
         Vec::new()
     };
-    let messages = build_messages(skill, &req, &notes, &passages);
+    let mut messages = build_messages(skill, &req, &notes, &passages);
+    if let Some(note) = crate::prompts::custom_note(&settings.about_me, &settings.screen_instructions, "interview") {
+        if let Some(system) = messages.first_mut() {
+            system.content.push_str(&note);
+        }
+    }
 
     let _ = app.emit("interview-event", progress_event(&request_id, req.category, req.mode, 0));
 

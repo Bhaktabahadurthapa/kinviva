@@ -4,7 +4,7 @@
 // or inside the real app.
 if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS__" in window) && location.search.includes("mock")) {
   const settings = {
-    onboarded: true, profile_name: "Bhakta", profile_role: "Cloud engineer", profile_level: "intermediate", interests: ["Kubernetes", "AWS"], discover_enabled: true, answer_level: "simple", answer_length: "normal", capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
+    onboarded: true, profile_name: "Bhakta", profile_role: "Cloud engineer", profile_level: "intermediate", interests: ["Kubernetes", "AWS"], discover_enabled: true, answer_level: "simple", about_me: "", screen_instructions: {}, answer_length: "normal", capture_mic: true, capture_system: true, mic_device: null, save_audio: false,
     stt_provider: "whisper_native", deepgram_model: "nova-3", deepgram_endpoint: "wss://api.deepgram.com/v1/listen",
     language: "en", whisper_cli_path: "whisper-cli", whisper_model_path: "", llm_base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
     llm_model: "gemini-3.8-flash", llm_use_api_key: true, llm_temperature: 0.3, llm_reasoning: "auto", context_chars: 6000, use_documents: true, web_search: false,

@@ -61,6 +61,7 @@ export const api = {
   videoBounds: (x: number, y: number, w: number, h: number) => invoke<void>("video_bounds", { x, y, w, h }),
   videoInfo: (url: string) => invoke<{ title: string; channel: string } | null>("video_info", { url }),
   videoVisible: (visible: boolean) => invoke<void>("video_visible", { visible }),
+  instructionsPreview: (screen: string) => invoke<string>("instructions_preview", { screen }),
   clipboardText: () => invoke<string>("clipboard_text"),
   videoInBrowser: (url: string) => invoke<void>("video_in_browser", { url }),
   videoClose: () => invoke<void>("video_close"),

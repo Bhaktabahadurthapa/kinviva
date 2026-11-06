@@ -112,6 +112,8 @@ export interface Settings {
   discover_enabled: boolean;
   answer_level: "simple" | "professional" | "student";
   answer_length: "short" | "normal" | "detailed";
+  about_me: string;
+  screen_instructions: Record<string, string>;
   capture_mic: boolean;
   capture_system: boolean;
   mic_device: string | null;

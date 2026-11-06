@@ -1,6 +1,7 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState } from "react";
 import { loadAppearance, saveAppearance, type Appearance } from "../lib/appearance";
+import { InstructionsPanel } from "../components/InstructionsPanel";
 import { api, errorText } from "../lib/api";
 import type { DeviceInfo, Settings, Shortcuts } from "../lib/types";
 
@@ -91,11 +92,12 @@ function AppearanceCard() {
   );
 }
 
-type SectionKey = "appearance" | "audio" | "speech" | "ai" | "assist" | "shortcuts" | "about";
+type SectionKey = "appearance" | "audio" | "speech" | "ai" | "instructions" | "assist" | "shortcuts" | "about";
 const SECTIONS: [SectionKey, string][] = [
   ["audio", "Audio"],
   ["speech", "Speech recognition"],
   ["ai", "Answer engine"],
+  ["instructions", "My instructions"],
   ["assist", "Assist"],
   ["shortcuts", "Overlay & shortcuts"],
   ["appearance", "Appearance"],
@@ -385,6 +387,8 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         )}
       </section>
       )}
+
+      {sec === "instructions" && <InstructionsPanel s={s} set={set} onSave={() => void persist(s)} />}
 
       {sec === "assist" && (
       <section className="card">

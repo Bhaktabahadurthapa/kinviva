@@ -40,6 +40,10 @@ pub struct Settings {
     pub answer_level: String,
     /// Length of answers: short | normal | detailed.
     pub answer_length: String,
+    /// Who the user is and what they want in every answer (kept on this computer, added to prompts).
+    pub about_me: String,
+    /// The user's own instructions for each screen: meeting, interview, classroom, technical, presentation.
+    pub screen_instructions: std::collections::BTreeMap<String, String>,
     // Audio
     pub capture_mic: bool,
     pub capture_system: bool,
@@ -94,6 +98,8 @@ impl Default for Settings {
             discover_enabled: false,
             answer_level: "simple".into(),
             answer_length: "normal".into(),
+            about_me: String::new(),
+            screen_instructions: Default::default(),
             capture_mic: true,
             capture_system: true,
             mic_device: None,

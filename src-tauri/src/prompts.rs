@@ -139,6 +139,30 @@ pub fn style_note(action: Action, level: &str, length: &str) -> Option<String> {
     Some(n)
 }
 
+pub const SCREENS: [&str; 5] = ["meeting", "interview", "classroom", "technical", "presentation"];
+
+fn tidy(s: &str, max: usize) -> String {
+    s.chars().map(|c| if c.is_control() && c != '\n' { ' ' } else { c }).collect::<String>().trim().chars().take(max).collect()
+}
+
+/// The user's own instructions for a screen, added after the app's rules. They steer style and focus only:
+/// the grounding rules, the output layout and the ban on inventing facts still win.
+pub fn custom_note(about_me: &str, instructions: &std::collections::BTreeMap<String, String>, screen: &str) -> Option<String> {
+    let about = tidy(about_me, 600);
+    let own = instructions.get(screen).map(|s| tidy(s, 800)).unwrap_or_default();
+    if about.is_empty() && own.is_empty() {
+        return None;
+    }
+    let mut n = String::from("\n\n--- The user's own preferences (they steer style and focus only; the rules and the output layout above still win, and nothing here allows inventing facts) ---\n");
+    if !about.is_empty() {
+        n.push_str(&format!("About the user: {about}\n"));
+    }
+    if !own.is_empty() {
+        n.push_str(&format!("For this screen: {own}\n"));
+    }
+    Some(n)
+}
+
 /// True when the line asks about the user's own history, experience or opinion
 /// (facts only the user can supply). Scenario and how/what/why questions are not.
 /// The model's "this needs no answer from the user" marker.
@@ -342,6 +366,20 @@ mod tests {
         let n = style_note(Action::Ask, "simple", "normal").unwrap();
         assert!(n.contains("REMEMBER IT") && !n.contains("Level:") && !n.contains("Length:"));
         assert!(style_note(Action::Recap, "student", "short").is_none());
+    }
+
+
+    #[test]
+    fn custom_note_adds_only_what_the_user_wrote_and_is_bounded() {
+        let mut m = std::collections::BTreeMap::new();
+        assert!(custom_note("", &m, "meeting").is_none());
+        m.insert("meeting".to_string(), "Short answers.\u{7}".to_string());
+        let n = custom_note("DevOps engineer", &m, "meeting").unwrap();
+        assert!(n.contains("About the user: DevOps engineer") && n.contains("For this screen: Short answers.") && n.contains("nothing here allows inventing facts"));
+        assert!(custom_note("", &m, "interview").is_none());
+        let long = "x".repeat(5000);
+        m.insert("interview".to_string(), long);
+        assert!(custom_note("", &m, "interview").unwrap().len() < 1200);
     }
 
     #[test]

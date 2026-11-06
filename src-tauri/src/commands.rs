@@ -256,7 +256,12 @@ pub async fn studio_generate(state: State<'_, AppState>, request_id: String, kin
     } else {
         Vec::new()
     };
-    let messages = crate::studio::build_messages(kind, &transcript, &notes, &passages, &input);
+    let mut messages = crate::studio::build_messages(kind, &transcript, &notes, &passages, &input);
+    if let Some(note) = crate::prompts::custom_note(&settings.about_me, &settings.screen_instructions, kind.screen()) {
+        if let Some(system) = messages.first_mut() {
+            system.content.push_str(&note);
+        }
+    }
     let cancel = tokio_util::sync::CancellationToken::new();
     state.ai_tasks.lock().unwrap().insert(request_id.clone(), cancel.clone());
     let result = crate::llm::stream_chat(&cfg, messages, cancel, |_| {}).await;
@@ -614,6 +619,20 @@ pub fn video_in_browser(url: String) -> R<()> {
     #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
     let mut cmd = std::process::Command::new("xdg-open");
     cmd.arg(&address).spawn().map(|_| ()).map_err(|e| format!("Could not open the link: {e}"))
+}
+
+/// What MeetingLens adds to the prompts of a screen because of the user's own instructions, so nothing is hidden.
+#[tauri::command]
+pub fn instructions_preview(state: State<AppState>, screen: String) -> R<String> {
+    let s = state.settings();
+    if !crate::prompts::SCREENS.contains(&screen.as_str()) {
+        return Err("Unknown screen.".into());
+    }
+    let mut out = crate::prompts::custom_note(&s.about_me, &s.screen_instructions, &screen).unwrap_or_default();
+    if screen == "meeting" || screen == "classroom" {
+        out.push_str(&format!("\n\nAnswer level: {}. Answer length: {}.", s.answer_level, s.answer_length));
+    }
+    Ok(if out.trim().is_empty() { "Nothing is added. Answers use MeetingLens's own rules only.".to_string() } else { out.trim().to_string() })
 }
 
 #[tauri::command]
