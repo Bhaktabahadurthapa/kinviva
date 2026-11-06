@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
 import { AiText } from "../components/AiText";
 import { api, errorText } from "../lib/api";
@@ -75,6 +76,15 @@ export function DashboardView({ settings, running, refreshKey, onNavigate, onOpe
       api.discoverTrends().then(setTrends).catch(() => {});
     }
   }, [refreshKey, onError, settings?.discover_enabled]);
+
+  useEffect(() => {
+    if (!settings?.discover_enabled) return;
+    const un = listen("discover-updated", () => {
+      api.discoverList(undefined, false).then(([l]) => setDisc(l)).catch(() => {});
+      api.discoverTrends().then(setTrends).catch(() => {});
+    });
+    return () => void un.then((f) => f()).catch(() => {});
+  }, [settings?.discover_enabled]);
 
   const ask = async () => {
     if (!q.trim() || busy) return;

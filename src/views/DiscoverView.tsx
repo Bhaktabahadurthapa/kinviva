@@ -1,3 +1,4 @@
+import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useState } from "react";
 import { AiText } from "../components/AiText";
 import { api, errorText } from "../lib/api";
@@ -40,6 +41,10 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
     api.discoverTrends().then(setTrends).catch(() => {});
   }, [onError]);
   useEffect(() => load(), [load]);
+  useEffect(() => {
+    const un = listen("discover-updated", () => load());
+    return () => void un.then((f) => f()).catch(() => {});
+  }, [load]);
 
   const save = async (patch: Partial<Settings>) => {
     if (!settings) return;
@@ -105,7 +110,7 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
     <div className="disc">
       <header className="disc-head">
         <div><h1>Discover</h1><p className="hint">Real articles and repositories from official engineering sources, ranked on this computer for your interests. Nothing is made up: every item links to its source with the date the source gave.</p></div>
-        {enabled && <div className="tc-actions"><button className="btn btn-primary" onClick={() => void refresh()} disabled={busy}>{busy ? "Refreshing…" : "Refresh"}</button><span className="hint">{last ? `Updated ${new Date(last).toLocaleString()}` : "Not refreshed yet"}</span></div>}
+        {enabled && <div className="tc-actions"><button className="btn btn-primary" onClick={() => void refresh()} disabled={busy}>{busy ? "Refreshing…" : "Refresh"}</button><span className="hint">{last ? `Updated ${new Date(last).toLocaleString()}` : "Not refreshed yet"}</span><span className="hint">Refreshes itself every hour while MeetingLens is open.</span></div>}
       </header>
 
       {!enabled && (

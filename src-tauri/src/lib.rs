@@ -30,7 +30,7 @@ pub mod websearch;
 
 use state::AppState;
 use std::sync::{Arc, Mutex};
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 /// Loads the bundled speech engine once in the background so macOS compiles
 /// its GPU shaders now (about 15 s on the very first run) instead of during
@@ -100,6 +100,35 @@ impl OverlayWatch {
     }
 }
 
+/// Refreshes Discover in the background about once an hour while it is turned on,
+/// so new articles for the user's interests arrive without pressing Refresh.
+fn auto_refresh_discover(app: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        const HOUR_MS: i64 = 3_600_000;
+        let mut last_run: Option<std::time::Instant> = None;
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(120)).await;
+            let state = app.state::<AppState>();
+            let settings = state.settings();
+            if !settings.discover_enabled {
+                continue;
+            }
+            let now = commands::now_ms();
+            let due = match last_run {
+                Some(t) => t.elapsed() >= std::time::Duration::from_millis(HOUR_MS as u64),
+                None => state.db.last_discover_fetch().ok().flatten().is_none_or(|t| now - t >= HOUR_MS),
+            };
+            if !due {
+                continue;
+            }
+            last_run = Some(std::time::Instant::now());
+            let report = discover::refresh(&state.db, &settings.interests, now).await;
+            log::info!("Discover auto-refresh: {} new", report.added);
+            let _ = app.emit("discover-updated", report.added);
+        }
+    });
+}
+
 /// Shows the answer overlay while the main window is minimized or hidden, and
 /// hides it again when the window returns. An overlay the user opened by hand is left alone.
 fn watch_main_window(app: tauri::AppHandle) {
@@ -163,6 +192,7 @@ pub fn run() {
                 commands::apply_content_protection(app.handle(), true);
             }
             watch_main_window(app.handle().clone());
+            auto_refresh_discover(app.handle().clone());
             for err in shortcuts::apply(app.handle(), &settings.shortcuts) {
                 eprintln!("shortcut: {err}");
             }
