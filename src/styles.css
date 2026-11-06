@@ -2273,3 +2273,17 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .live-watch > .splitter { margin: 0; }
 .live-size em { margin-left: 10px; font-style: normal; font-size: 12px; color: var(--c-text-3); }
 @media (max-width: 1000px) { .live-watch, .live-watch.vs-s, .live-watch.vs-l { grid-template-columns: 1fr !important; } .live-watch > .splitter { display: none; } }
+
+/* Full-screen watching: the bars step away so the video and the answers get the whole window. */
+:root[data-focus] .app { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) !important; }
+:root[data-focus] .app > .topbar, :root[data-focus] .app > .rail, :root[data-focus] header.console, :root[data-focus] .meeting-area > .subnav, :root[data-focus] .session-banner,
+:root[data-focus] .live-layout, :root[data-focus] .live > .actionbar, :root[data-focus] .live > .screen-assist, :root[data-focus] .live > .iv-ask-bar { display: none !important; }
+:root[data-focus] .app > main { grid-column: 1 !important; grid-row: 1 !important; }
+:root[data-focus] .live-watch { padding-top: var(--s-3); }
+.ws-exit { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 60; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid rgba(148, 163, 255, .4); border-radius: 999px; background: rgba(11, 23, 53, .92); color: #fff; font: 600 13px var(--f-ui); cursor: pointer; opacity: .55; transition: opacity .2s; backdrop-filter: blur(6px); }
+.ws-exit:hover, .ws-exit:focus-visible { opacity: 1; }
+.ws-exit kbd { padding: 1px 6px; border-radius: 5px; background: rgba(255, 255, 255, .15); font: 600 11px var(--f-ui); }
+.ws-auto { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 6px; padding: 4px 2px; font-size: 10px; color: #aebcf0; text-align: center; cursor: pointer; line-height: 1.15; }
+.ws-auto input { accent-color: #7c3aed; }
+:root[data-focus] .live-watch { padding-top: 46px; }
+.ws-exit { top: 8px; }

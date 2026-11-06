@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
+import { isFocus, setFocus } from "../lib/focus";
 import type { AiAction } from "./actionTypes";
 
 const RECENT_KEY = "ml.videoRecent";
@@ -27,6 +28,8 @@ const ICON: Record<string, string> = {
   browser: "M14 4h6v6M20 4l-9 9M18 14v5H5V6h5",
   close: "M6 6l12 12M18 6L6 18",
   file: "M12 16V4M7 9l5-5 5 5M5 20h14",
+  full: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
+  exit: "M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5",
 };
 function RailBtn({ id, label, onClick, on, disabled }: { id: keyof typeof ICON; label: string; onClick: () => void; on?: boolean; disabled?: boolean }) {
   return (
@@ -50,6 +53,24 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     setMode(m);
     try { localStorage.setItem("ml.videoMode", m); } catch { /* not essential */ }
   };
+  const [full, setFull] = useState(isFocus());
+  const [autoHide, setAutoHide] = useState(() => flag("ml.videoAutoHide", true));
+  const toggleFull = (on: boolean) => {
+    setFull(on);
+    void setFocus(on);
+  };
+  const toggleAuto = () => setAutoHide((v) => {
+    try { localStorage.setItem("ml.videoAutoHide", v ? "off" : "on"); } catch { /* not essential */ }
+    return !v;
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && isFocus() && toggleFull(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (isFocus()) void setFocus(false);
+    };
+  }, []);
   const [cc, setCc] = useState(() => flag("ml.watchCc", true));
   const toggleCc = () => setCc((v) => {
     try { localStorage.setItem("ml.watchCc", v ? "off" : "on"); } catch { /* not essential */ }
@@ -158,10 +179,15 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
   };
 
   const showing = mode === "online" ? !!live : !!src;
+  useEffect(() => {
+    if (showing && autoHide) toggleFull(true);
+    if (!showing && isFocus()) toggleFull(false);
+  }, [showing]);
   const close = () => (mode === "online" ? stopOnline() : setSrc(null));
 
   return (
     <section className="ws" aria-label="Video">
+      {full && <button className="ws-exit" onClick={() => toggleFull(false)}>Exit full screen <kbd>Esc</kbd></button>}
       <input ref={input} type="file" accept="video/*,audio/*,.mkv" hidden onChange={(e) => { load(e.target.files?.[0]); e.target.value = ""; }} />
       <nav className="ws-rail" aria-label="Video tools">
         <RailBtn id="explain" label="Explain" onClick={() => onAction("explain")} />
@@ -171,7 +197,9 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
         <RailBtn id="captions" label="Captions" on={cc} onClick={toggleCc} />
         {mode === "online" && <RailBtn id="browser" label="Browser" disabled={!live && !link.trim()} onClick={() => void api.videoInBrowser(live ?? link).catch((e) => setOnlineErr(errorText(e)))} />}
         {mode === "file" && <RailBtn id="file" label="Change" onClick={() => input.current?.click()} />}
+        <RailBtn id={full ? "exit" : "full"} label={full ? "Exit full" : "Full screen"} on={full} onClick={() => toggleFull(!full)} />
         <RailBtn id="close" label="Close" disabled={!showing} onClick={close} />
+        <label className="ws-auto" title="Hide the bars around the video automatically when it starts playing"><input type="checkbox" checked={autoHide} onChange={toggleAuto} /><span>Auto-hide bars</span></label>
       </nav>
       <div className="ws-main">
         <div className="ws-modes" role="group" aria-label="Video source">
