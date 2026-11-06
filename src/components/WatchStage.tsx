@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
-import { isFocus, setFocus } from "../lib/focus";
+import { isFocus, setFocus, useFocus } from "../lib/focus";
 import type { AiAction } from "./actionTypes";
 
 const RECENT_KEY = "ml.videoRecent";
@@ -53,10 +53,9 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
     setMode(m);
     try { localStorage.setItem("ml.videoMode", m); } catch { /* not essential */ }
   };
-  const [full, setFull] = useState(isFocus());
+  const full = useFocus();
   const [autoHide, setAutoHide] = useState(() => flag("ml.videoAutoHide", true));
   const toggleFull = (on: boolean) => {
-    setFull(on);
     void setFocus(on);
   };
   const toggleAuto = () => setAutoHide((v) => {
@@ -187,7 +186,6 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
 
   return (
     <section className="ws" aria-label="Video">
-      {full && <button className="ws-exit" onClick={() => toggleFull(false)}>Exit full screen <kbd>Esc</kbd></button>}
       <input ref={input} type="file" accept="video/*,audio/*,.mkv" hidden onChange={(e) => { load(e.target.files?.[0]); e.target.value = ""; }} />
       <nav className="ws-rail" aria-label="Video tools">
         <RailBtn id="explain" label="Explain" onClick={() => onAction("explain")} />

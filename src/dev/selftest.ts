@@ -29,7 +29,7 @@ export async function runSelfTest(mode: string) {
     // Hands-free check: start, then wait for automatic notes with no clicks.
     await wait(1500);
     clickButton("Live");
-    clickButton("Start meeting");
+    clickButton("Begin session");
     await until(() => !!document.querySelector(".rec"), 15000);
     await step("listening");
     const answered = await until(
@@ -70,7 +70,7 @@ export async function runSelfTest(mode: string) {
     await wait(1500);
     clickButton("Live");
     await step("start");
-    clickButton("Start meeting");
+    clickButton("Begin session");
     await until(() => !!document.querySelector(".rec"), 15000);
     await step("listening");
     // Audio is played externally during this window.

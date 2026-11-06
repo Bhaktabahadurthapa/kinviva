@@ -112,7 +112,7 @@ export function SimpleStream({ finals, side, running }: { finals: Segment[]; sid
         <div className="how">
           <p className="empty">Simple explanations appear here automatically.</p>
           <ol className="how-steps">
-            <li><b>Start meeting</b><span>MeetingLens listens to the call and your microphone.</span></li>
+            <li><b>Begin session</b><span>MeetingLens listens to the call and your microphone.</span></li>
             <li><b>They speak</b><span>Each finished thought is explained in plain words.</span></li>
             <li><b>You reply</b><span>A short answer you could say is drafted when a question is asked.</span></li>
           </ol>

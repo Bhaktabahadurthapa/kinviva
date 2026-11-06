@@ -20,6 +20,7 @@ import { SavedDialog } from "./components/SavedDialog";
 import { chooseSavePath, safeName, type NotesFormat } from "./lib/download";
 import { defaultSession, loadSession, saveSession, sessionProblem, type SessionChoice } from "./lib/session";
 import type { Course } from "./lib/types";
+import { setFocus, useFocus } from "./lib/focus";
 
 /** The two primary areas. Settings is a utility button, not a primary item. */
 
@@ -197,6 +198,7 @@ export default function App() {
     return () => subs.forEach((p) => p.then((u) => u()));
   }, []);
 
+  const focused = useFocus();
   const toggleMeeting = async () => {
     setError(null);
     try {
@@ -270,6 +272,24 @@ export default function App() {
           <span className="rail-tag rail-label">local-first{version && ` · v${version}`}</span>
         </div>
       </nav>
+      {focused && (
+        <div className="focus-bar" role="toolbar" aria-label="Session controls">
+          <span className={`fb-state ${running ? "live" : ""}`}>
+            <i />
+            {running ? (status?.paused ? "Paused" : "Listening") : "Ready"}
+            {running && status?.started_at ? <Elapsed since={status.started_at} /> : null}
+          </span>
+          <button className="fb-engine" onClick={() => { void setFocus(false); setTab("settings"); }} title="The answer engine that writes your explanations and replies. Open settings to change it.">
+            <b>Answer engine</b>
+            <span>{settings?.llm_model?.trim() || "Not set up"}</span>
+          </button>
+          <span className="fb-actions">
+            {running && <button className="fb-btn" onClick={() => api.setPaused(!status?.paused).catch((e) => setError(errorText(e)))}>{status?.paused ? "Resume" : "Pause"}</button>}
+            <button className={`fb-btn ${running ? "danger" : "primary"}`} onClick={toggleMeeting} disabled={busy}>{running ? "End session" : tab === "interview" ? "Begin interview" : "Begin session"}</button>
+            <button className="fb-btn ghost" onClick={() => void setFocus(false)}>Exit full screen <kbd>Esc</kbd></button>
+          </span>
+        </div>
+      )}
       <main>
         {(SESSION_TABS.has(tab) || running || busy) && (
         <header className="console">
@@ -312,7 +332,7 @@ export default function App() {
             </button>
           )}
           <button className={`btn btn-lg ${running ? "btn-danger" : "btn-primary"}`} onClick={toggleMeeting} disabled={busy}>
-            {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Stopping…" : running ? "Stop" : tab === "interview" ? "Start interview" : "Start meeting"}
+            {status?.state === "starting" ? "Starting…" : status?.state === "stopping" ? "Ending…" : running ? "End session" : tab === "interview" ? "Begin interview" : "Begin session"}
           </button>
           </div>
         </header>
