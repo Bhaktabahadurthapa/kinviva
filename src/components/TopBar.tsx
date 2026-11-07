@@ -83,7 +83,7 @@ export function TopBar({ settings, logo, collapsed, onToggle, onOpenHit, onSetti
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
         {logo}
-        <span className="brand-name">Meeting<em>Lens</em></span>
+        <span className="brand-name">Kin<em>viva</em></span>
       </div>
       <div className="topbar-search" ref={box}>
         <svg className="search-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
