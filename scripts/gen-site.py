@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """Generates the whole Kinviva website in site/ (home, features, technical, whiteboard, discover,
 interview, video, privacy, download). Only site files are written. Run: python3 scripts/gen-site.py"""
-import html, os, pathlib
+import hashlib, html, os, pathlib
 
 SITE = pathlib.Path(__file__).resolve().parent.parent / "site"
+
+def asset_v(name):
+    """Short content hash, so browsers fetch a changed CSS or JS file instead of using a cached copy."""
+    try:
+        return hashlib.sha256((SITE / name).read_bytes()).hexdigest()[:10]
+    except OSError:
+        return "0"
 GH = "https://github.com/Bhaktabahadurthapa/kinviva"
 REL = GH + "/releases"
 INSTALLER = "0.1.5"   # the version people can download today (the first one named Kinviva)
@@ -74,7 +81,7 @@ def head(title, desc, page, og=OG):
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v={asset_v("style.css")}">
   <script>document.documentElement.className = "js";</script>
 </head>
 <body>
@@ -121,7 +128,7 @@ def foot():
       <div class="legal"><p>&copy; 2026 Bhakta Thapa &middot; Built by BKT AI</p><p>Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p></div>
     </div>
   </footer>
-  <script src="site.js"></script>
+  <script src="site.js?v={asset_v("site.js")}"></script>
 </body>
 </html>
 '''
