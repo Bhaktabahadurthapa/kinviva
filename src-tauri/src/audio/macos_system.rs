@@ -52,8 +52,9 @@ pub fn start(sink: CaptureSink) -> Result<CaptureHandle, String> {
                 let Some(buf) = list.get(0) else { return };
                 let bytes = buf.data();
                 let samples: Vec<f32> = bytes
-                    .chunks_exact(4)
-                    .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+                    .chunks(4)
+                    .filter_map(|b| <[u8; 4]>::try_from(b).ok())
+                    .map(f32::from_le_bytes)
                     .collect();
                 let out = resampler.lock().unwrap().process(&samples);
                 audio_sink.push(to_i16(&out));
