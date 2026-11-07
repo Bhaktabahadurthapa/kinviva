@@ -228,7 +228,7 @@ export const Outro: React.FC = () => {
 						background: c.surface,
 					}}
 				>
-					github.com/Bhaktabahadurthapa/meetinglens
+					github.com/Bhaktabahadurthapa/kinviva
 				</div>
 				<div style={{marginTop: 54, opacity: d, display: 'flex', alignItems: 'center', gap: 18, fontSize: 34, color: c.text2}}>
 					Made by

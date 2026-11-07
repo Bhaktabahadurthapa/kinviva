@@ -4,13 +4,13 @@ interview, video, privacy, download). Only site files are written. Run: python3 
 import html, pathlib
 
 SITE = pathlib.Path(__file__).resolve().parent.parent / "site"
-GH = "https://github.com/Bhaktabahadurthapa/meetinglens"
+GH = "https://github.com/Bhaktabahadurthapa/kinviva"
 REL = GH + "/releases"
 INSTALLER = "0.1.4"   # the version people can download today
 NEXT = "0.1.5"        # the next installer, which includes the new workspace
-DMG = REL + "/latest/download/MeetingLens.dmg"
-EXE = REL + "/latest/download/MeetingLens-Windows-Setup.exe"
-OG = "https://bhaktathapa.com.np/meetinglens/media/v2-dashboard.jpg"
+DMG = REL + "/latest/download/Kinviva.dmg"
+EXE = REL + "/latest/download/Kinviva-Windows-Setup.exe"
+OG = "https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg"
 
 NAV = [("features.html", "Features"), ("technical.html", "Technical"), ("whiteboard.html", "Whiteboard"), ("discover.html", "Discover"), ("interview.html", "Interview"), ("privacy.html", "Privacy"), ("video.html", "Video")]
 
@@ -89,7 +89,7 @@ def foot():
           <p>Hear it. Understand it. Visualize it. Keep it.</p>
           <p>Local-first, free, with no account.</p>
         </div>
-        <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; learning</a></div>
+        <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; skills</a></div>
         <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
         <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="{GH}">Source on GitHub</a><a href="{GH}/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
@@ -130,7 +130,7 @@ def cta(title="Free, local-first, and yours.", lead=f"Download Kinviva for Mac o
 def write(name, content):
     (SITE / name).write_text(content)
 
-NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can download today is <b>{INSTALLER}</b>. The new workspace on these pages (Dashboard, Technical Copilot, Whiteboard, Discover, My Learning and more) is built and in the source code, and arrives in the next installer, <b>{NEXT}</b>. Each feature below says which one it belongs to.</p></div>'''
+NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can download today is <b>{INSTALLER}</b>. The new workspace on these pages (Dashboard, Technical Copilot, Whiteboard, Discover and more) is built and in the source code, and arrives in the next installer, <b>{NEXT}</b>. Each feature below says which one it belongs to.</p></div>'''
 
 # ------------------------------------------------------------------ Home
 def home():
@@ -140,7 +140,7 @@ def home():
       <div class="wrap">
         <p class="eyebrow">Free · Local-first · No account</p>
         <h1>Hear it. Understand it. <span>Visualize it.</span></h1>
-        <p class="lead">Kinviva listens to your meetings, interviews and lectures, explains every point in plain words, and turns what was said into diagrams, whiteboards, notes and a learning plan. It all stays on your computer.</p>
+        <p class="lead">Kinviva listens to your meetings, interviews and lectures, explains every point in plain words, and turns what was said into diagrams, whiteboards, notes and notes. It all stays on your computer.</p>
         <div class="cta"><a class="btn btn-primary btn-big" href="download.html">Download for free</a><a class="btn btn-ghost btn-big" href="features.html">See every feature</a></div>
         <p class="fine">Mac and Windows · Current installer {INSTALLER} · New workspace arrives in {NEXT} · <a href="{GH}">Source on GitHub</a></p>
         <div class="stage">
@@ -149,7 +149,7 @@ def home():
             <button role="tab" id="tab-dark" aria-selected="false" aria-controls="p-dark" tabindex="-1">Dark</button>
           </div>
           <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>Kinviva · Dashboard (sample data)</span></div>
-            <div id="p-light" class="panel" role="tabpanel" aria-labelledby="tab-light"><img src="media/v2-dashboard.jpg" alt="The Kinviva Dashboard in light mode: activity counts, recent sessions, learning, an assistant and discover cards" width="1800" height="1125"></div>
+            <div id="p-light" class="panel" role="tabpanel" aria-labelledby="tab-light"><img src="media/v2-dashboard.jpg" alt="The Kinviva Dashboard in light mode: activity counts, recent sessions, an assistant and discover cards" width="1800" height="1125"></div>
             <div id="p-dark" class="panel" role="tabpanel" aria-labelledby="tab-dark" hidden><img src="media/v2-dashboard-dark.jpg" alt="The Kinviva Dashboard in dark mode" width="1800" height="1125" loading="lazy"></div>
           </div>
         </div>
@@ -172,7 +172,6 @@ def home():
           {card("board", "blue", "Whiteboard", "An editable board with diagrams drawn from your sessions. Change them in words, with a preview first.", "whiteboard.html", "next")}
           {card("chart", "rose", "Charts", "Bar, line and pie charts built only from numbers that really appear in your material.", "whiteboard.html#charts", "next")}
           {card("compass", "purple", "Discover", "Real articles and projects from official engineering sources, matched to the skills you follow.", "discover.html", "next")}
-          {card("book", "green", "My Learning", "Goals, steps and progress that come only from what you do. Quiz scores show your gaps.", "discover.html#learning", "next")}
           {card("cap", "green", "Classroom", "Lecture notes, study guides and practice quizzes from the lecture and your course files.", "features.html#classroom", "next")}
           {card("present", "amber", "Presentation", "Speaker notes, rehearsal feedback and answers to audience questions, from your own slides.", "features.html#presentation", "next")}
         </div>
@@ -206,7 +205,7 @@ def home():
         <div class="steps">
           <div class="step reveal"><h3>Start</h3><p>Press Start. Kinviva listens to the call and your microphone and writes the transcript on your computer.</p></div>
           <div class="step reveal"><h3>Understand</h3><p>Each finished thought is explained in plain words. Ask a question, get a reply to say, or request a recap.</p></div>
-          <div class="step reveal"><h3>Keep and use</h3><p>Save notes, draw a diagram, make a quiz, or add a skill to your learning plan. It is all searchable.</p></div>
+          <div class="step reveal"><h3>Keep and use</h3><p>Save notes, draw a diagram, make a quiz. It is all searchable.</p></div>
         </div>
       </div>
     </section>
@@ -263,7 +262,7 @@ GROUPS = [
  ("classroom", "Classroom", "cap", "green", "next", "Study help from the lecture and your course files.", [
    ("Lecture notes", "Clean notes with definitions, examples and review questions.", "next"),
    ("Study guides", "Key concepts and self-check questions. A reminder says it is study help, not finished coursework.", "next"),
-   ("Practice quizzes", "Multiple choice questions with explanations. Your score is saved in My Learning.", "next"),
+   ("Practice quizzes", "Multiple choice questions with explanations. Your score stays on your computer.", "next"),
    ("Course sessions", "Choose a course and a week, and answers cite your files by name and page.", "now")]),
  ("presentation", "Presentation", "present", "amber", "next", "Prepare, rehearse and handle questions.", [
    ("Speaker notes", "Notes for every slide, transitions and likely questions, only from your own material.", "next"),
@@ -276,12 +275,11 @@ GROUPS = [
    ("Charts with sources", "Bar, line and pie charts built only from numbers in your material, each marked as sourced or entered by you.", "next")]),
  ("knowledge", "Knowledge", "search", "teal", "next", "Find anything you kept.", [
    ("All Notes", "Autosaved notes. Save any answer, plan or decision to notes in one click.", "next"),
-   ("Global search", "One search over sessions, transcripts, notes, documents, diagrams, boards and learning items.", "next"),
+   ("Global search", "One search over sessions, transcripts, notes, documents, diagrams and boards.", "next"),
    ("Documents", "Add PDF, Word, text or Markdown files. Answers cite the file and page, checked by the app.", "now")]),
- ("discover", "Discover &amp; learning", "compass", "purple", "next", "Learn the skills you choose.", [
+ ("discover", "Discover &amp; skills", "compass", "purple", "next", "Learn the skills you choose.", [
    ("Discover", "Articles with pictures and projects from official sources, ranked for the skills you follow.", "next"),
-   ("Your own skills", "Add any skill or topic. It matches articles and searches GitHub for it.", "next"),
-   ("My Learning", "Goals, steps and progress from what you actually mark done, plus knowledge gaps from your quiz results.", "next")]),
+   ("Your own skills", "Add any skill or topic. It matches articles and searches GitHub for it.", "next")]),
  ("control", "Comfort &amp; control", "sun", "amber", "now", "Make it look and work the way you like.", [
    ("Light, dark or match your Mac", "One-click switch in the top bar.", "next"),
    ("Hide the menu, full screen", "Collapse the menu (Cmd/Ctrl+B) and take the whiteboard or notes full screen.", "next"),
@@ -290,7 +288,7 @@ GROUPS = [
    ("Text size and fonts", "Small, normal or large text, and an easy-to-read font.", "now")]),
 ]
 def features():
-    o = head("Features · Kinviva", "Every Kinviva feature: meetings, interviews, Technical Copilot, Classroom, Presentation, Whiteboard, charts, Discover, My Learning, notes and search.", "features.html")
+    o = head("Features · Kinviva", "Every Kinviva feature: meetings, interviews, Technical Copilot, Classroom, Presentation, Whiteboard, charts, Discover, notes and search.", "features.html")
     o += page_head("Features", "Everything Kinviva does.", "Nine areas, one workspace. Each feature says whether it is in the current installer or arrives in the next one.", [(g[0], g[1]) for g in GROUPS])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n'
     for i, (gid, name, ic, tone, badge, tag, items) in enumerate(GROUPS):
@@ -317,7 +315,7 @@ def features():
 
 # ------------------------------------------------------------------ Technical
 def technical():
-    o = head("Technical Copilot · Kinviva", "Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.", "technical.html", "https://bhaktathapa.com.np/meetinglens/media/v2-troubleshoot.jpg")
+    o = head("Technical Copilot · Kinviva", "Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.", "technical.html", "https://bhaktathapa.com.np/kinviva/media/v2-troubleshoot.jpg")
     o += page_head("Technical Copilot", "Understand and solve engineering problems, safely.", "For Kubernetes, AWS, Azure, Linux, networking, Terraform, CI/CD, databases, monitoring and more. It explains, it plans, it draws, and it never touches your systems.", [("explain", "Explain"), ("troubleshoot", "Troubleshoot"), ("incidents", "Incidents"), ("architecture", "Architecture")])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n'
     o += f'''    <section id="explain" style="padding-top:20px;padding-bottom:20px"><div class="wrap"><div class="grid g3">
@@ -359,7 +357,7 @@ def technical():
 
 # ------------------------------------------------------------------ Whiteboard
 def whiteboard():
-    o = head("Whiteboard & charts · Kinviva", "An editable whiteboard that turns meetings, interviews and lectures into diagrams, with previewed edits, versions, export, and charts built from real numbers.", "whiteboard.html", "https://bhaktathapa.com.np/meetinglens/media/v2-whiteboard.jpg")
+    o = head("Whiteboard & charts · Kinviva", "An editable whiteboard that turns meetings, interviews and lectures into diagrams, with previewed edits, versions, export, and charts built from real numbers.", "whiteboard.html", "https://bhaktathapa.com.np/kinviva/media/v2-whiteboard.jpg")
     o += page_head("Whiteboard &amp; charts", "Turn what was said into something you can see.", "A real whiteboard, with diagrams drawn from your sessions. Edit them by hand or with a sentence, and never lose your own work.", [("board", "Whiteboard"), ("ai", "Edit with words"), ("charts", "Charts"), ("export", "Export")])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n    <section id="board" style="padding-top:20px"><div class="wrap">\n'
     o += spot("v2-whiteboard.jpg", "Whiteboard with a generated flowchart and generation tools on the right", "Whiteboard", "A canvas that starts with your conversation.", "Open Visuals &amp; Diagrams, pick a live meeting, interview, lecture or saved session, and press one button. The diagram appears on a new board, ready to edit.", ["Flowchart, concept map, decision tree, timeline or sequence", "Every object is editable: move, resize, rename, add arrows, sticky notes and handwriting", "Mouse, trackpad and keyboard, and a stylus. Apple Pencil works through Sidecar or a compatible iPad", "Autosave, <b>full screen</b>, and an uncluttered tool panel"], False, "next")
@@ -392,8 +390,8 @@ def whiteboard():
 
 # ------------------------------------------------------------------ Discover
 def discover():
-    o = head("Discover & learning · Kinviva", "Real articles and projects from official engineering sources for the skills you choose, plus learning goals with progress that comes only from what you do.", "discover.html", "https://bhaktathapa.com.np/meetinglens/media/v2-discover.jpg")
-    o += page_head("Discover &amp; learning", "Keep growing the skills you care about.", "Real articles and open-source projects from official sources, ranked on your computer for the interests you pick. Then turn them into goals and steps.", [("discover", "Discover"), ("sources", "Sources"), ("learning", "My Learning")])
+    o = head("Discover & skills · Kinviva", "Real articles and projects from official engineering sources for the skills you choose.", "discover.html", "https://bhaktathapa.com.np/kinviva/media/v2-discover.jpg")
+    o += page_head("Discover &amp; skills", "Keep growing the skills you care about.", "Real articles and open-source projects from official sources, ranked on your computer for the interests you pick.", [("discover", "Discover"), ("sources", "Sources")])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n    <section id="discover" style="padding-top:20px"><div class="wrap">\n'
     o += spot("v2-discover.jpg", "Discover with interest chips and news items with pictures", "Discover", "Your interests, your feed.", "Choose from twelve topics or add any skill of your own, such as Rust, Terraform or Prompt engineering. Discover matches articles and GitHub projects for it.", ["<b>Pictures</b> from the articles and project logos, saved as small thumbnails on your computer", "<b>Ranked locally</b> by freshness, source quality and your interests", "<b>Explain, draw it, save to notes</b> or <b>add to a learning plan</b> on every item", "Mark read, save for later, and see trending topics counted from real posts"], False, "next")
     o += '''      </div></section>
@@ -409,15 +407,6 @@ def discover():
       </tbody></table>
     </div></section>
 '''
-    o += f'''    <section id="learning"><div class="wrap">
-{spot("v2-learning.jpg", "My Learning with goals, steps and progress bars", "My Learning", "Progress you can believe.", "Set a goal and let Kinviva suggest the steps, or write your own. Mark steps in progress or done. Progress is just the share you finished.", ["<b>Goals with lessons and drills</b>, with a clear next step on your Dashboard", "<b>Quiz scores</b> from Classroom feed your accuracy, and topics under 70% become suggested review steps", "<b>Saved resources</b> from Discover, in one list", "Nothing is estimated and nothing is invented"], True, "next")}
-      <div class="grid g3" style="margin-top:60px">
-        {card("star", "amber", "Real activity only", "A step is done when you say so. Quiz scores are the answers you gave.")}
-        {card("book", "green", "From any source", "Add a step from an article, a lecture or an interview drill.")}
-        {card("clock", "blue", "Today's focus", "A short list of your own tasks on the Dashboard.")}
-      </div>
-    </div></section>
-{cta()}'''
     o += foot()
     write("discover.html", o)
 
@@ -429,7 +418,7 @@ STYLES = [
  ("star", "STAR", "For behavioral questions. Uses only your own notes.", "Situation: [from your notes] Task: [from your notes] Action: [from your notes] Result: [from your notes]. If your notes do not hold the facts, Kinviva does not invent any. It tells you what to fill in from your real experience."),
 ]
 def interview():
-    o = head("Interview · Kinviva", "Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.", "interview.html", "https://bhaktathapa.com.np/meetinglens/media/v2-interview.jpg")
+    o = head("Interview · Kinviva", "Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.", "interview.html", "https://bhaktathapa.com.np/kinviva/media/v2-interview.jpg")
     o += page_head("Interview", "Practise, and answer, like an expert.", "Interview has its own screen. Start it, and each question the interviewer asks is answered as it is asked, in the style you choose.")
     o += '    <section><div class="wrap">\n'
     o += spot("v2-interview.jpg", "Interview screen with answer controls on the left and Say it and Understand it cards on the right", "Interview", "The answer, and the reasoning behind it.", "Questions are detected from the other side's audio. Each answer has what to say, how to understand it, the trade-offs, hard words and a likely follow-up.", ["Press <b>Start interview</b> and stay on the Interview screen", "<b>Ask, Explain, Suggest reply and Recap</b> are at the bottom of the answers (new in " + NEXT + ")", "<b>Notes</b> download as Word, Markdown or text", "Use it for practice and preparation, and follow the rules of your interviewer or employer"], False, "now")
@@ -468,7 +457,7 @@ def interview():
 # ------------------------------------------------------------------ Video
 CH = [(0, "Meeting", "Live transcript and answers in simple words"), (5, "Interview", "Automatic answers to the interviewer's question"), (10, "Read my screen", "A command shown on screen, explained"), (15, "Overlay", "A see-through window beside your call")]
 def video():
-    o = head("Video · Kinviva", "Watch Kinviva: a short walkthrough of Meeting, Interview, Read my screen and the overlay, plus the original real-call demo.", "video.html", "https://bhaktathapa.com.np/meetinglens/media/kinviva-walkthrough-poster.jpg")
+    o = head("Video · Kinviva", "Watch Kinviva: a short walkthrough of Meeting, Interview, Read my screen and the overlay, plus the original real-call demo.", "video.html", "https://bhaktathapa.com.np/kinviva/media/kinviva-walkthrough-poster.jpg")
     o += page_head("Video", "See Kinviva in action.", f"A short walkthrough of the {INSTALLER} interface, and the original recording of a real call.")
     o += '''    <section><div class="wrap">
       <div class="player" data-player>
@@ -513,7 +502,7 @@ def privacy():
       <div class="sec-head"><p class="eyebrow">New workspace</p><h2>The new features, and what they send.</h2></div>
       <table class="table reveal"><thead><tr><th>Feature</th><th>What happens</th></tr></thead><tbody>
         <tr><td><b>Discover</b></td><td>Off until you turn it on. Then it downloads headlines from the listed official sources and searches GitHub for your interests (the search includes the topic names). Pictures are saved as small thumbnails on your computer, and no remote image is loaded while you browse.</td></tr>
-        <tr><td><b>Whiteboard, charts, notes, learning</b></td><td>Stored in your local database. Generating or editing sends only the text needed, to your answer engine.</td></tr>
+        <tr><td><b>Whiteboard, charts, notes</b></td><td>Stored in your local database. Generating or editing sends only the text needed, to your answer engine.</td></tr>
         <tr><td><b>Technical Copilot</b></td><td>Never runs a command. Suggested commands are read-only and are only copied by you.</td></tr>
         <tr><td><b>Diagrams</b></td><td>Diagram source is checked and cleaned before it is drawn: no links, scripts or HTML.</td></tr>
       </tbody></table>
@@ -558,7 +547,7 @@ def download():
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
           <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
-          <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download MeetingLens.dmg</a></p>
+          <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download Kinviva.dmg</a></p>
           <p class="muted">Version {INSTALLER} · about 9.5 MB</p>
           <ol class="steps-ol">
             <li>Open the downloaded <code>.dmg</code> and drag <b>Kinviva</b> onto <b>Applications</b>.</li>
@@ -597,7 +586,7 @@ def download():
         {card("mic", "rose", "Speech recognition", "The built-in whisper.cpp engine on Mac, or Deepgram if you prefer the cloud.")}
         {card("shield", "teal", "Permissions", "Microphone and, on Mac, Screen &amp; System Audio Recording. Kinviva never changes your system permissions for you.")}
       </div>
-      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/MeetingLens.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
+      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/Kinviva.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
     </div></section>
     <div class="toast" id="started" role="status" hidden><b>Your download has started.</b><span>Open it from your Downloads and follow the steps on this page.</span><button type="button" aria-label="Close">×</button></div>
 '''

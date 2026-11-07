@@ -8,7 +8,7 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Download · Kinviva">
   <meta property="og:description" content="Download Kinviva 0.1.4 for Mac or Windows. Free, no account. Build the full new workspace from source today.">
-  <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/v2-dashboard.jpg">
+  <meta property="og:image" content="https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -36,7 +36,7 @@
   <main id="main">
     <div class="page-head"><div class="wrap"><p class="eyebrow">Download</p><h1>Get Kinviva.</h1><p class="lead">Version 0.1.4. Free for Mac and, as an experiment, Windows. No account.</p></div></div>
     <section><div class="wrap">
-      <div class="notice"><b>About versions</b><p>The installer you can download today is <b>0.1.4</b>. The new workspace on these pages (Dashboard, Technical Copilot, Whiteboard, Discover, My Learning and more) is built and in the source code, and arrives in the next installer, <b>0.1.5</b>. The Features pages say which one each feature belongs to.</p></div>
+      <div class="notice"><b>About versions</b><p>The installer you can download today is <b>0.1.4</b>. The new workspace on these pages (Dashboard, Technical Copilot, Whiteboard, Discover and more) is built and in the source code, and arrives in the next installer, <b>0.1.5</b>. The Features pages say which one each feature belongs to.</p></div>
       <div style="height:28px"></div>
       <div data-tabs data-auto-os>
         <div class="tabs" role="tablist" aria-label="Operating system">
@@ -45,7 +45,7 @@
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
           <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
-          <p><a class="btn btn-primary btn-big" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg" data-download>Download MeetingLens.dmg</a></p>
+          <p><a class="btn btn-primary btn-big" href="https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg" data-download>Download Kinviva.dmg</a></p>
           <p class="muted">Version 0.1.4 · about 9.5 MB</p>
           <ol class="steps-ol">
             <li>Open the downloaded <code>.dmg</code> and drag <b>Kinviva</b> onto <b>Applications</b>.</li>
@@ -57,7 +57,7 @@
         </div>
         <div id="p-win" class="panel card os-card" role="tabpanel" aria-labelledby="os-win" hidden>
           <h3>Kinviva for Windows <span class="badge b-exp">experimental</span></h3><p class="muted">Windows 10 or 11, 64-bit</p>
-          <p><a class="btn btn-primary btn-big" href="https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe" data-download>Download for Windows</a></p>
+          <p><a class="btn btn-primary btn-big" href="https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva-Windows-Setup.exe" data-download>Download for Windows</a></p>
           <p class="muted">Version 0.1.4 · about 6 MB · built and unit-tested on a Windows server, not yet tried on a real laptop. Read my screen is Mac-only for now.</p>
           <ol class="steps-ol">
             <li>Run the installer. Windows shows “Windows protected your PC” because it isn't signed yet: click <b>More info → Run anyway</b>. It installs for your user only.</li>
@@ -72,7 +72,7 @@
       <div class="sec-head"><p class="eyebrow">Want the new workspace now?</p><h2>Build it from source.</h2><p class="lead">Everything on the Features pages is in the source code. If you are comfortable with developer tools, you can build version 0.1.5 yourself today.</p></div>
       <div class="card reveal"><ol class="steps-ol">
         <li>Install <b>Node.js</b> and <b>Rust</b> (rustup).</li>
-        <li><code>git clone https://github.com/Bhaktabahadurthapa/meetinglens.git</code> and open the folder.</li>
+        <li><code>git clone https://github.com/Bhaktabahadurthapa/kinviva.git</code> and open the folder.</li>
         <li><code>npm install</code></li>
         <li><code>npm run tauri build</code> builds the app for your computer. The README has the details, including the macOS permissions note.</li>
       </ol></div>
@@ -84,7 +84,7 @@
         <article class="card reveal"><span class="ico t-rose"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><h3>Speech recognition</h3><p>The built-in whisper.cpp engine on Mac, or Deepgram if you prefer the cloud.</p></article>
         <article class="card reveal"><span class="ico t-teal"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/></svg></span><h3>Permissions</h3><p>Microphone and, on Mac, Screen &amp; System Audio Recording. Kinviva never changes your system permissions for you.</p></article>
       </div>
-      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/MeetingLens.dmg</code></p><p><a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases">Release notes and checksums</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens/releases">All releases</a> · <a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source code</a></p></div>
+      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/Kinviva.dmg</code></p><p><a href="https://github.com/Bhaktabahadurthapa/kinviva/releases">Release notes and checksums</a> · <a href="https://github.com/Bhaktabahadurthapa/kinviva/releases">All releases</a> · <a href="https://github.com/Bhaktabahadurthapa/kinviva">Source code</a></p></div>
     </div></section>
     <div class="toast" id="started" role="status" hidden><b>Your download has started.</b><span>Open it from your Downloads and follow the steps on this page.</span><button type="button" aria-label="Close">×</button></div>
   </main>
@@ -96,9 +96,9 @@
           <p>Hear it. Understand it. Visualize it. Keep it.</p>
           <p>Local-first, free, with no account.</p>
         </div>
-        <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; learning</a></div>
+        <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; skills</a></div>
         <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
-        <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
+        <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="https://github.com/Bhaktabahadurthapa/kinviva">Source on GitHub</a><a href="https://github.com/Bhaktabahadurthapa/kinviva/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
       <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p>
     </div>

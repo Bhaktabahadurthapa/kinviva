@@ -16,7 +16,7 @@
 ![local-first](https://img.shields.io/badge/local--first-whisper.cpp%20%2B%20Ollama-ff5f2e?style=flat-square&labelColor=110f0d)
 ![license](https://img.shields.io/badge/license-proprietary-463e34?style=flat-square&labelColor=110f0d)
 
-**[⬇ Download](https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg)** · **[Website](https://bhaktathapa.com.np/meetinglens/)** · **[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
+**[⬇ Download](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg)** · **[Website](https://bhaktathapa.com.np/kinviva/)** · **[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
 
 </div>
 
@@ -83,7 +83,7 @@ account. Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 **Requirements:** macOS 13+, Rust stable, Node 20+, Xcode Command Line Tools.
 
 ```bash
-git clone https://github.com/Bhaktabahadurthapa/meetinglens.git
+git clone https://github.com/Bhaktabahadurthapa/kinviva.git
 ```
 
 ```bash
@@ -117,10 +117,10 @@ DEMO, so you can try the AI actions.
 
 ## Install as a Mac app
 
-**Just want the app?** **[⬇ Download MeetingLens.dmg](https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens.dmg)**
+**Just want the app?** **[⬇ Download Kinviva.dmg](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg)**
 (direct download, 7.9 MB, Apple Silicon). Checksums and notes are on the
-[release page](https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest);
-the [website](https://bhaktathapa.com.np/meetinglens/) has the same button.
+[release page](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest);
+the [website](https://bhaktathapa.com.np/kinviva/) has the same button.
 
 To build it yourself instead, create a normal app you can drag into Applications (Apple Silicon Mac, macOS 13+):
 
@@ -143,7 +143,7 @@ Audio Recording** permission; allow both, then quit and reopen the app once.
 
 ### Windows (experimental)
 
-**[⬇ Download MeetingLens-Windows-Setup.exe](https://github.com/Bhaktabahadurthapa/meetinglens/releases/latest/download/MeetingLens-Windows-Setup.exe)**
+**[⬇ Download Kinviva-Windows-Setup.exe](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva-Windows-Setup.exe)**
 (5.5 MB, Windows 10/11 64-bit). This first Windows build compiles and passes
 its unit tests on a Windows build server, but has **not been tried on a real
 Windows laptop yet**, so expect rough edges, especially audio capture.

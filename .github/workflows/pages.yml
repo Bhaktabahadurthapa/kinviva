@@ -1,5 +1,5 @@
 # Publishes the website in site/ to GitHub Pages:
-# https://bhaktathapa.com.np/meetinglens/
+# https://bhaktathapa.com.np/kinviva/
 name: Deploy website
 
 on:
