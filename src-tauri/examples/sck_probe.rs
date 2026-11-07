@@ -29,8 +29,8 @@ fn main() {
         }
         if let Some(l) = s.audio_buffer_list() {
             for b in l.iter() {
-                for c in b.data().chunks_exact(4) {
-                    let v = f32::from_le_bytes([c[0], c[1], c[2], c[3]]).abs();
+                for c in b.data().chunks(4).filter_map(|c| <[u8; 4]>::try_from(c).ok()) {
+                    let v = f32::from_le_bytes(c).abs();
                     p2.fetch_max((v * 1e6) as u32, Ordering::Relaxed);
                 }
             }
