@@ -24,3 +24,11 @@ then the site download buttons work. Until then the live downloads are v0.1.4 na
 The bundle id and keychain service are still `app.kinviva.desktop`, and the data file is `meetinglens.sqlite`.
 Change them only together with a first-launch migration (copy the data folder, re-save the API keys) and tell users to grant
 microphone and screen recording again.
+
+## Release commands for 0.1.5 (run when you are ready to publish)
+```bash
+git tag -a v0.1.5 -m "Kinviva 0.1.5" && git push origin v0.1.5
+gh release create v0.1.5 --title "Kinviva 0.1.5" --notes-file docs/kinviva-launch/RELEASE-0.1.5.md dist-mac/Kinviva.dmg dist-mac/Kinviva_0.1.5_aarch64.dmg
+gh workflow run windows.yml -f release_tag=v0.1.5   # builds and attaches the Windows installer
+```
+After the assets exist: set `INSTALLER = "0.1.5"` in `scripts/gen-site.py`, switch the site and README links to `Kinviva.dmg` / `Kinviva-Windows-Setup.exe`, regenerate the site and push.
