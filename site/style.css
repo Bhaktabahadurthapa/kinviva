@@ -221,7 +221,7 @@ footer p { margin: 0 0 8px; font-size: 15px; } footer b { color: #fff; }
   .foot-grid { grid-template-columns: 1fr 1fr; }
   .player { grid-template-columns: 1fr; }
 }
-@media (max-width: 800px) {
+@media (max-width: 980px) {
   .nav-toggle { display: flex; }
   .nav nav { display: none; position: absolute; inset: 68px 0 auto 0; flex-direction: column; align-items: stretch; background: var(--navy); padding: 14px 24px 22px; border-bottom: 1px solid rgba(255, 255, 255, .1); box-shadow: var(--shadow); margin: 0; gap: 4px; }
   .nav nav.is-open { display: flex; }
@@ -259,3 +259,14 @@ footer p { margin: 0 0 8px; font-size: 15px; } footer b { color: #fff; }
 .doc-list li { border-top-color: var(--line); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 .foot-links { align-content: start; } .foot-links p { margin-bottom: 4px; }
+
+/* UX pass: 44px touch targets, no wrapping nav labels, readable focus on dark */
+.nav nav a:not(.btn) { white-space: nowrap; min-height: 44px; display: inline-flex; align-items: center; }
+.brand { min-height: 44px; }
+.btn-small { min-height: 44px; }
+.foot-links a { display: flex; align-items: center; min-height: 44px; }
+.faq summary { min-height: 44px; align-items: center; }
+.tabs button { min-height: 44px; }
+.os-title { font-size: 24px; letter-spacing: -0.02em; line-height: 1.2; }
+.nav a:focus-visible, footer a:focus-visible, .hero a:focus-visible, .dark a:focus-visible { outline-color: #93C5FD; }
+.btn:active { transform: none; }

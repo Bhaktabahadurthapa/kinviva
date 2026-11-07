@@ -72,6 +72,7 @@ def head(title, desc, page, og=OG):
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script>document.documentElement.className = "js";</script>
 </head>
@@ -163,6 +164,7 @@ NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can d
 def home():
     o = head("Kinviva: your local-first workspace for important conversations",
              "Kinviva listens to meetings, interviews and lectures, explains them in plain words, draws diagrams and whiteboards, and helps you learn. Free for Mac and Windows, no account.", "index.html")
+    o = o.replace("</head>", '  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Kinviva","applicationCategory":"BusinessApplication","operatingSystem":"macOS, Windows","description":"A privacy-first, local-first AI copilot for meetings, technical discussions, interviews and learning.","url":"' + BASE + '"}</script>\n</head>', 1)
     o += f'''    <section class="hero">
       <div class="wrap">
         <p class="eyebrow">Privacy-first AI copilot</p>
@@ -540,7 +542,7 @@ def download():
           <button role="tab" id="os-win" aria-selected="false" aria-controls="p-win" tabindex="-1">Windows <span class="badge b-exp">experimental</span></button>
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
-          <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
+          <h2 class="os-title">Kinviva for Mac</h2><p class="muted">macOS 13 or later, Apple silicon</p>
           <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download Kinviva.dmg</a></p>
           <p class="muted">Version {INSTALLER} · about 9.5 MB</p>
           <ol class="steps-ol">
@@ -552,7 +554,7 @@ def download():
           </ol>
         </div>
         <div id="p-win" class="panel card os-card" role="tabpanel" aria-labelledby="os-win" hidden>
-          <h3>Kinviva for Windows <span class="badge b-exp">experimental</span></h3><p class="muted">Windows 10 or 11, 64-bit</p>
+          <h2 class="os-title">Kinviva for Windows <span class="badge b-exp">experimental</span></h2><p class="muted">Windows 10 or 11, 64-bit</p>
           <p><a class="btn btn-primary btn-big" href="{EXE}" data-download>Download for Windows</a></p>
           <p class="muted">Version {INSTALLER} · about 6 MB · built and unit-tested on a Windows server, not yet tried on a real laptop. Read my screen is Mac-only for now.</p>
           <ol class="steps-ol">

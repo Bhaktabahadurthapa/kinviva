@@ -14,6 +14,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script>document.documentElement.className = "js";</script>
 </head>
@@ -45,7 +46,7 @@
           <button role="tab" id="os-win" aria-selected="false" aria-controls="p-win" tabindex="-1">Windows <span class="badge b-exp">experimental</span></button>
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
-          <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
+          <h2 class="os-title">Kinviva for Mac</h2><p class="muted">macOS 13 or later, Apple silicon</p>
           <p><a class="btn btn-primary btn-big" href="https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg" data-download>Download Kinviva.dmg</a></p>
           <p class="muted">Version 0.1.5 · about 9.5 MB</p>
           <ol class="steps-ol">
@@ -57,7 +58,7 @@
           </ol>
         </div>
         <div id="p-win" class="panel card os-card" role="tabpanel" aria-labelledby="os-win" hidden>
-          <h3>Kinviva for Windows <span class="badge b-exp">experimental</span></h3><p class="muted">Windows 10 or 11, 64-bit</p>
+          <h2 class="os-title">Kinviva for Windows <span class="badge b-exp">experimental</span></h2><p class="muted">Windows 10 or 11, 64-bit</p>
           <p><a class="btn btn-primary btn-big" href="https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva-Windows-Setup.exe" data-download>Download for Windows</a></p>
           <p class="muted">Version 0.1.5 · about 6 MB · built and unit-tested on a Windows server, not yet tried on a real laptop. Read my screen is Mac-only for now.</p>
           <ol class="steps-ol">
