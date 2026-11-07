@@ -69,7 +69,7 @@ const STYLE = {
   plain: { backgroundColor: "#f3f4f8", strokeColor: "#4b5262", strokeStyle: "solid" },
 } as const;
 
-/** Tag kept on every object MeetingLens creates, so later edits know what is theirs and what the user drew. */
+/** Tag kept on every object Kinviva creates, so later edits know what is theirs and what the user drew. */
 export interface MlTag { ai: true; node?: string; evidence?: string; note?: string; ref?: string }
 
 /** Excalidraw "skeleton" objects (converted by the library into real, editable elements). */

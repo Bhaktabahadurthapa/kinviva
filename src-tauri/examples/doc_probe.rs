@@ -5,7 +5,7 @@ use std::time::Instant;
 fn main() {
     let a: Vec<String> = std::env::args().collect();
     let t = Instant::now();
-    match meetinglens_lib::docs::extract(std::path::Path::new(&a[1])) {
+    match kinviva_lib::docs::extract(std::path::Path::new(&a[1])) {
         Ok(x) => {
             println!("OK {} ms, {} chars", t.elapsed().as_millis(), x.text.chars().count());
             if a.get(2).map(String::as_str) == Some("--print") {

@@ -1,6 +1,6 @@
 # Third-party notices
 
-MeetingLens is proprietary software (see LICENSE). It includes or depends on the open-source packages below, each under its own license. Generated from `cargo metadata` (normal dependencies for the host target) and `npm ls --omit=dev`. Full license texts ship inside each package.
+Kinviva is proprietary software (see LICENSE). It includes or depends on the open-source packages below, each under its own license. Generated from `cargo metadata` (normal dependencies for the host target) and `npm ls --omit=dev`. Full license texts ship inside each package.
 
 ## Rust crates
 
@@ -364,7 +364,7 @@ MeetingLens is proprietary software (see LICENSE). It includes or depends on the
 
 ## Mermaid (Architecture panel)
 
-MeetingLens loads the official `mermaid` npm package (MIT) on demand to draw architecture diagrams. It is used as published, with no source changes. Its licence notice:
+Kinviva loads the official `mermaid` npm package (MIT) on demand to draw architecture diagrams. It is used as published, with no source changes. Its licence notice:
 
 ```
 The MIT License (MIT)
@@ -390,7 +390,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-Mermaid and its dependencies as installed (production dependency tree). Where a package offers a choice of licences, MeetingLens uses it under the permissive option: `elkjs` under EPL-2.0 and `dompurify` under Apache-2.0. `khroma` ships its MIT licence file without a `license` field.
+Mermaid and its dependencies as installed (production dependency tree). Where a package offers a choice of licences, Kinviva uses it under the permissive option: `elkjs` under EPL-2.0 and `dompurify` under Apache-2.0. `khroma` ships its MIT licence file without a `license` field.
 
 | Package | Version | License |
 |---|---|---|
@@ -512,7 +512,7 @@ Mermaid and its dependencies as installed (production dependency tree). Where a 
 
 ## Excalidraw and Recharts (Whiteboard and charts)
 
-MeetingLens bundles `@excalidraw/excalidraw` (MIT) for the editable Whiteboard and `recharts` (MIT) for charts, unmodified. Their fonts (Excalifont, Virgil, Nunito, Cascadia Code, Lilita One, Comic Shanns, Liberation Sans, Assistant) are copied from the Excalidraw package under the licences shipped with it (open font licences or MIT); the large CJK font Xiaolai is not included. Discover reads RSS/Atom with the `quick-xml` crate (MIT).
+Kinviva bundles `@excalidraw/excalidraw` (MIT) for the editable Whiteboard and `recharts` (MIT) for charts, unmodified. Their fonts (Excalifont, Virgil, Nunito, Cascadia Code, Lilita One, Comic Shanns, Liberation Sans, Assistant) are copied from the Excalidraw package under the licences shipped with it (open font licences or MIT); the large CJK font Xiaolai is not included. Discover reads RSS/Atom with the `quick-xml` crate (MIT).
 
 Recharts licence notice:
 
@@ -540,7 +540,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-Dependency tree as installed (production). Where a package offers a choice of licences, MeetingLens uses it under the permissive option.
+Dependency tree as installed (production). Where a package offers a choice of licences, Kinviva uses it under the permissive option.
 
 | Package | Version | License |
 |---|---|---|
@@ -802,7 +802,7 @@ Dependency tree as installed (production). Where a package offers a choice of li
 
 ## PptxGenJS (Presentation maker)
 
-PptxGenJS 4.0.1 (MIT License, Copyright Brent Ely) builds the PowerPoint files on this computer. Its dependency JSZip is MIT or GPL-3.0 dual-licensed; MeetingLens uses it under the MIT option.
+PptxGenJS 4.0.1 (MIT License, Copyright Brent Ely) builds the PowerPoint files on this computer. Its dependency JSZip is MIT or GPL-3.0 dual-licensed; Kinviva uses it under the MIT option.
 
 ## TipTap and ProseMirror (Notes editor)
 
@@ -819,7 +819,7 @@ The Notes editor uses TipTap 3 (`@tiptap/react`, `starter-kit` and the task list
 
 ## Bundled native code (speech engine)
 
-The Mac app contains `meetinglens-whisperd`, a small C++ program (MeetingLens
+The Mac app contains `kinviva-whisperd`, a small C++ program (Kinviva
 code) statically linked with the following third-party code. All are MIT
 licensed; the license text below must accompany every copy.
 
@@ -863,4 +863,4 @@ SOFTWARE.
 
 ## Interview skills
 
-The bundled interview skills (`src-tauri/skills/`) are original to MeetingLens. They follow the Agent Skills file layout (a `SKILL.md` with `name` and `description` frontmatter) described in https://github.com/anthropics/skills; no text or code from that repository is included.
+The bundled interview skills (`src-tauri/skills/`) are original to Kinviva. They follow the Agent Skills file layout (a `SKILL.md` with `name` and `description` frontmatter) described in https://github.com/anthropics/skills; no text or code from that repository is included.

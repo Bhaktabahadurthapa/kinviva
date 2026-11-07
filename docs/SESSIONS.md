@@ -1,6 +1,6 @@
 # Meeting sessions and navigation
 
-MeetingLens has two primary areas: **Meeting** and **Interview**. Settings and the overlay are utility buttons at the bottom of the left rail, not primary items.
+Kinviva has two primary areas: **Meeting** and **Interview**. Settings and the overlay are utility buttons at the bottom of the left rail, not primary items.
 
 ## Meeting
 
@@ -18,7 +18,7 @@ Above Live, a **Session** selector chooses what the next meeting is for. It is l
 
 1. **Resources → Courses**: save a course (name, optional code). Add files to it for a chosen week (.pdf, .docx, .md, .txt), or to "no week" for whole-course files such as the syllabus.
 2. **Meeting → Live → Session = Class**: choose the course and, optionally, the week, then start the meeting as usual. Audio capture and transcription are unchanged.
-3. When the other side asks something or you ask for an answer, MeetingLens searches only that course's active resources. Files for the selected week rank first, then the rest by relevance.
+3. When the other side asks something or you ask for an answer, Kinviva searches only that course's active resources. Files for the selected week rank first, then the rest by relevance.
 4. The model labels each excerpt S1, S2, ... and is told to cite them. The app replaces each marker with the real source, such as `week2.pdf, p. 4` (text files show `notes.md, part 2`). A marker that matches no retrieved excerpt is shown as `[unverified source]`, so an invented citation is never displayed as real.
 5. Answers combine the AI model's own expertise with your course resources, so they are complete even when your files are thin. Parts that use a resource carry a citation; parts from the model's knowledge carry none. If nothing in the course matches, the answer is written from the model's knowledge and says once that your resources did not cover it.
 
@@ -59,4 +59,4 @@ Migration 3 adds `courses`, and `course_id`/`week` on documents, `page` on chunk
 ## Read my screen
 The **Read my screen** button (Meeting, Interview and overlay) and its shortcut (default Cmd/Ctrl+Shift+S) take a screenshot of the main display, shrink it, and send it with the last ~1,500 characters of transcript to the configured AI provider, which must accept images (for example Gemini Flash). The explanation (what is on screen, a simple explanation, what you could say, hard words) streams into the overlay or the page. The image is deleted right after it is read and is never stored.
 
-Optional **automatic** mode (Settings → Assist, off by default) starts a read when the other person says things like "explain what is on the screen" or "look at this code", at most once every 20 seconds. macOS needs Screen & System Audio Recording permission, which MeetingLens already uses for system audio. Capture is macOS-only in this version.
+Optional **automatic** mode (Settings → Assist, off by default) starts a read when the other person says things like "explain what is on the screen" or "look at this code", at most once every 20 seconds. macOS needs Screen & System Audio Recording permission, which Kinviva already uses for system audio. Capture is macOS-only in this version.

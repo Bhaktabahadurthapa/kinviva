@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Technical Copilot · MeetingLens</title>
+  <title>Technical Copilot · Kinviva</title>
   <meta name="description" content="Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Technical Copilot · MeetingLens">
+  <meta property="og:title" content="Technical Copilot · Kinviva">
   <meta property="og:description" content="Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.">
   <meta property="og:image" content="https://bhaktathapa.com.np/meetinglens/media/v2-troubleshoot.jpg">
   <meta name="twitter:card" content="summary_large_image">
@@ -19,7 +19,7 @@
   <a class="skip" href="#main">Skip to content</a>
   <header class="nav">
     <div class="wrap">
-      <a class="brand" href="index.html" aria-label="MeetingLens home"><img src="logo.svg" width="34" height="34" alt=""><span>Meeting<em>Lens</em></span></a>
+      <a class="brand" href="index.html" aria-label="Kinviva home"><img src="logo.svg" width="34" height="34" alt=""><span>Kin<em>viva</em></span></a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
       <nav id="site-nav" aria-label="Primary">
         <a href="features.html">Features</a>
@@ -43,7 +43,7 @@
     </div></div></section>
     <section id="troubleshoot" style="padding-top:20px"><div class="wrap">
         <div class="spot reveal">
-          <div class="spot-text"><p class="eyebrow">Troubleshoot</p><span class="badge b-next">New in 0.1.5</span><h2>A plan you can trust, not a guess.</h2><p class="lead">Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.</p><ul><li>Causes are labelled <b>hypotheses, not confirmed</b></li><li>Each command shows its purpose, what to expect and a risk level</li><li>A command that could change anything is <b>removed and counted</b></li><li>MeetingLens <b>never runs a command</b>. You review it and run it yourself</li><li>Save the plan to notes, or track it as an incident</li></ul></div>
+          <div class="spot-text"><p class="eyebrow">Troubleshoot</p><span class="badge b-next">New in 0.1.5</span><h2>A plan you can trust, not a guess.</h2><p class="lead">Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.</p><ul><li>Causes are labelled <b>hypotheses, not confirmed</b></li><li>Each command shows its purpose, what to expect and a risk level</li><li>A command that could change anything is <b>removed and counted</b></li><li>Kinviva <b>never runs a command</b>. You review it and run it yourself</li><li>Save the plan to notes, or track it as an incident</li></ul></div>
           <figure class="shot"><img src="media/v2-troubleshoot.jpg" alt="A troubleshooting plan with hypotheses and read-only commands" loading="lazy" width="1800" height="1125"><figcaption>Sample data</figcaption></figure>
         </div>
       </div></section>
@@ -63,24 +63,24 @@
     </div></section>
     <section class="alt" id="architecture"><div class="wrap">
         <div class="spot reveal flip">
-          <div class="spot-text"><p class="eyebrow">Architecture</p><span class="badge b-next">New in 0.1.5</span><h2>Draw the system people describe.</h2><p class="lead">Say it out loud: a load balancer, an ingress controller, Kubernetes services and PostgreSQL. MeetingLens drafts the diagram and explains it in simple words.</p><ul><li>Flowcharts and sequence diagrams from the conversation</li><li>Zoom, pan, full screen, edit the Mermaid source, export SVG or PNG</li><li>Saved with your session, with plain-English concerns such as single points of failure</li><li>Updates while you talk, only after a quiet moment and never more than every 45 seconds</li></ul></div>
+          <div class="spot-text"><p class="eyebrow">Architecture</p><span class="badge b-next">New in 0.1.5</span><h2>Draw the system people describe.</h2><p class="lead">Say it out loud: a load balancer, an ingress controller, Kubernetes services and PostgreSQL. Kinviva drafts the diagram and explains it in simple words.</p><ul><li>Flowcharts and sequence diagrams from the conversation</li><li>Zoom, pan, full screen, edit the Mermaid source, export SVG or PNG</li><li>Saved with your session, with plain-English concerns such as single points of failure</li><li>Updates while you talk, only after a quiet moment and never more than every 45 seconds</li></ul></div>
           <figure class="shot"><img src="media/v2-architecture.jpg" alt="An architecture diagram of a load balancer, ingress, services and a database with an explanation panel" loading="lazy" width="1800" height="1125"><figcaption>Sample data</figcaption></figure>
         </div>
 
       <div class="sec-head center" style="margin-top:80px"><h2>Facts and guesses are never mixed.</h2><p class="lead">The label on each part is decided by code that checks the transcript and your documents.</p></div>
-      <div class="legend reveal"><div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div><div class="ev m"><b>Mentioned</b><p>The conversation used those words.</p></div><div class="ev i"><b>Inferred</b><p>MeetingLens suggests it. Dashed, with a warning when there is little evidence.</p></div></div>
+      <div class="legend reveal"><div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div><div class="ev m"><b>Mentioned</b><p>The conversation used those words.</p></div><div class="ev i"><b>Inferred</b><p>Kinviva suggests it. Dashed, with a warning when there is little evidence.</p></div></div>
       <div class="grid g2" style="margin-top:20px">
         <article class="card reveal"><span class="ico t-purple"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3"/></svg></span><h3>Locked down</h3><p>Diagram source is checked before it is drawn: no links, scripts, HTML or directives, and a size limit. The picture is cleaned again before it is shown.</p></article>
         <article class="card reveal"><span class="ico t-teal"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4"/></svg></span><h3>Illustrative when thin</h3><p>If there is little evidence, the diagram is clearly marked illustrative and confidence is lowered.</p></article>
       </div>
     </div></section>
-    <section><div class="wrap"><div class="cta-band reveal"><h2>Bring a real problem.</h2><p class="lead">Download MeetingLens for Mac or Windows. No account, no subscription.</p><a class="btn btn-primary btn-big" href="download.html">Download MeetingLens</a></div></div></section>
+    <section><div class="wrap"><div class="cta-band reveal"><h2>Bring a real problem.</h2><p class="lead">Download Kinviva for Mac or Windows. No account, no subscription.</p><a class="btn btn-primary btn-big" href="download.html">Download Kinviva</a></div></div></section>
   </main>
   <footer>
     <div class="wrap">
       <div class="foot-grid">
         <div>
-          <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>MeetingLens</b></p>
+          <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>Kinviva</b></p>
           <p>Hear it. Understand it. Visualize it. Keep it.</p>
           <p>Local-first, free, with no account.</p>
         </div>
@@ -88,7 +88,7 @@
         <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
         <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens">Source on GitHub</a><a href="https://github.com/Bhaktabahadurthapa/meetinglens/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
-      <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use MeetingLens within the rules of your school, employer and local law on recording.</p>
+      <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p>
     </div>
   </footer>
   <script src="site.js"></script>

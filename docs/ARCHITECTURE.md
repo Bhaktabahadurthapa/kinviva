@@ -1,4 +1,4 @@
-# MeetingLens architecture
+# Kinviva architecture
 
 One Tauri 2 desktop application. There is no server, cloud backend or account.
 The only network traffic goes to the speech and AI providers the user configures.
@@ -42,11 +42,11 @@ to each other.
 
 ## Product identity (separate from the reference app)
 
-| Item | MeetingLens | Notes |
+| Item | Kinviva | Notes |
 |---|---|---|
 | Bundle identifier | `app.meetinglens.desktop` | NexQ uses `com.nexq.app` |
 | Data + database | `~/Library/Application Support/app.meetinglens.desktop/meetinglens.sqlite` | NexQ's `com.nexq.app` folder, caches and WebKit data are never read, written, migrated or deleted |
-| Settings | `settings` table in the MeetingLens database | |
+| Settings | `settings` table in the Kinviva database | |
 | Credentials | Keychain / Credential Manager service `app.meetinglens.desktop` (`deepgram_api_key`, `llm_api_key`) | |
 | Updates | None configured: no updater plugin, endpoint or signing key; the app never checks for updates | Add one deliberately before any public release |
 
@@ -62,7 +62,7 @@ lost.
 
 ```
 audio chunks ─► stt::local loop ─► Engine::Cli     (new whisper-cli process per clip)
-                  (VAD, partials,  Engine::Native  ─► NativeHub ─► meetinglens-whisperd (C++, whisper.cpp)
+                  (VAD, partials,  Engine::Native  ─► NativeHub ─► kinviva-whisperd (C++, whisper.cpp)
                    finals, filter)                       │  JSON lines + binary PCM over stdin/stdout
                                                          └─ one process per meeting, one state per channel
 ```

@@ -1,6 +1,6 @@
 # Design analysis
 
-| Source | Pattern observed | Why | MeetingLens implementation | Compatibility / accessibility / license |
+| Source | Pattern observed | Why | Kinviva implementation | Compatibility / accessibility / license |
 |---|---|---|---|---|
 | Impeccable detector (Apache-2.0) | Flags thick one-sided colored card borders and decorative grid backgrounds as generated-UI tells | Objective critique before polish | Removed all four `border-left` accents and the full-window grid overlay from `styles.css` | Regex scan only on source (undercount); run again against the dev server for contrast and tiny-text rules |
 | Linear / Raycast style (observation, no code) | Dense, quiet lists; one accent; text hierarchy by weight and colour | Reading answers during a call needs calm UI | Single blue accent token; 14px body; 6/8/10px radii; no decorative badges or glow | Contrast tokens chosen to keep body text above 4.5:1 |

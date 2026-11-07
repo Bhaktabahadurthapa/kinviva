@@ -46,7 +46,7 @@ function RailBtn({ id, label, onClick, on, disabled }: { id: keyof typeof ICON; 
   );
 }
 
-/** A theatre for videos: watch an online video or a file next to the live transcript and answers. Its sound is heard by MeetingLens like any other sound on this computer. */
+/** A theatre for videos: watch an online video or a file next to the live transcript and answers. Its sound is heard by Kinviva like any other sound on this computer. */
 export function WatchStage({ caption, onAction }: { caption: { who: string; text: string } | null; onAction: (a: AiAction) => void }) {
   const [mode, setMode] = useState<"online" | "file">(() => {
     try {
@@ -270,8 +270,8 @@ export function WatchStage({ caption, onAction }: { caption: { who: string; text
                 <div className="ws-empty">
                   <span className="ws-play" aria-hidden><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M8 5.5v13l11-6.5z" /></svg></span>
                   <h3>Watch it here</h3>
-                  <p>Paste the link of any video page. It plays inside MeetingLens, and the transcript and answers stay beside it.</p>
-                  <p className="ws-tip">Sign in to the video site once inside this pane if it asks. MeetingLens hears the sound and writes the transcript.</p>
+                  <p>Paste the link of any video page. It plays inside Kinviva, and the transcript and answers stay beside it.</p>
+                  <p className="ws-tip">Sign in to the video site once inside this pane if it asks. Kinviva hears the sound and writes the transcript.</p>
                 </div>
               )}
             </div>

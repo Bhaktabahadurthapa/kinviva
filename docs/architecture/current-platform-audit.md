@@ -19,11 +19,11 @@ Audit of the repository as it stands on `main` at commit `d9ebacb` (version 0.1.
 Size: about 7.7k lines of Rust in `src-tauri/src`, about 5.5k lines of TypeScript/TSX, installed app about 26 MB.
 
 ## 2. Identity and data (must be preserved)
-- Product name `MeetingLens`, bundle identifier `app.meetinglens.desktop`.
+- Product name `Kinviva`, bundle identifier `app.meetinglens.desktop`.
 - Data directory `~/Library/Application Support/app.meetinglens.desktop/` with `meetinglens.sqlite` (+ WAL) and `tmp/`.
 - Schema versions 1 to 5 in `db.rs` (`PRAGMA user_version`). Tables: `settings`, `meetings`, `segments`, `ai_messages`, `documents`, `doc_chunks` (+ FTS5 index), `courses`, `interview_entries`, `diagrams`. Migrations are append-only and tested for idempotence and re-open.
 - Secrets: only `deepgram_api_key`, `llm_api_key`, `web_search_key` are allowed names (`secrets.rs`), stored in the Keychain, never in SQLite.
-- Local code signing certificate "MeetingLens Dev" keeps microphone/screen/Keychain permissions stable across rebuilds (`scripts/build-mac-app.sh`).
+- Local code signing certificate "Kinviva Dev" keeps microphone/screen/Keychain permissions stable across rebuilds (`scripts/build-mac-app.sh`).
 
 ## 3. Audio and transcription pipeline (existing, working)
 - `audio/cpal_capture.rs` (microphone), `audio/macos_system.rs` (ScreenCaptureKit system audio), `audio/resample.rs`.
@@ -61,7 +61,7 @@ Size: about 7.7k lines of Rust in `src-tauri/src`, about 5.5k lines of TypeScrip
 ## 7. Security posture
 - CSP: `default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost`. Any feature that fetches from the internet from the web view (Discover, GitHub) must go through Rust commands, not the CSP.
 - Tauri capabilities are minimal (`core:default`, window actions, dialog open/save). Entitlement: audio input.
-- Untrusted-data rules in every prompt; model output is re-validated (interview JSON, architecture model); Mermaid locked down and its link-rendering behaviour covered by MeetingLens' own checks.
+- Untrusted-data rules in every prompt; model output is re-validated (interview JSON, architecture model); Mermaid locked down and its link-rendering behaviour covered by Kinviva' own checks.
 
 ## 8. Gap analysis against the brief
 Legend: ✅ exists, 🟡 partly, ❌ missing.

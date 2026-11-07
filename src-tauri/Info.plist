@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
   <key>NSMicrophoneUsageDescription</key>
-  <string>MeetingLens transcribes your microphone during meetings you start.</string>
+  <string>Kinviva transcribes your microphone during meetings you start.</string>
   <key>NSAudioCaptureUsageDescription</key>
-  <string>MeetingLens transcribes other participants by capturing system audio during meetings you start.</string>
+  <string>Kinviva transcribes other participants by capturing system audio during meetings you start.</string>
 </dict>
 </plist>

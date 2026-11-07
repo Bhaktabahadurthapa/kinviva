@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds meetinglens-whisperd (static whisper.cpp) and copies it to
+# Builds kinviva-whisperd (static whisper.cpp) and copies it to
 # native/whisperd/dist/ with the target-triple name Tauri expects for sidecars.
 #   ./native/whisperd/build.sh
 # Needs: cmake, a C++17 compiler, git, network access (fetches whisper.cpp).
@@ -18,15 +18,15 @@ case "$TRIPLE" in
   *windows*)
     # Visual Studio generator (multi-config); the sidecar needs the .exe suffix.
     cmake -S . -B build -A x64 >/dev/null
-    cmake --build build --config Release --target meetinglens-whisperd
-    OUT="dist/meetinglens-whisperd-$TRIPLE.exe"
-    cp build/Release/meetinglens-whisperd.exe "$OUT"
+    cmake --build build --config Release --target kinviva-whisperd
+    OUT="dist/kinviva-whisperd-$TRIPLE.exe"
+    cp build/Release/kinviva-whisperd.exe "$OUT"
     ;;
   *)
     cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release >/dev/null
-    cmake --build build --target meetinglens-whisperd -j
-    OUT="dist/meetinglens-whisperd-$TRIPLE"
-    cp build/meetinglens-whisperd "$OUT"
+    cmake --build build --target kinviva-whisperd -j
+    OUT="dist/kinviva-whisperd-$TRIPLE"
+    cp build/kinviva-whisperd "$OUT"
     strip -x "$OUT" 2>/dev/null || true
     ;;
 esac

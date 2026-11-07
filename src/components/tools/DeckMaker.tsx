@@ -49,7 +49,7 @@ export function DeckMaker({ settings, onError }: { settings: Settings | null; on
   return (
     <section className="dash-card tool deck-maker">
       <header><h2>Create a presentation</h2></header>
-      <p className="hint">Type or paste what the talk is about. MeetingLens plans the slides, then saves a PowerPoint file you can edit. It only uses what you write here and your Documents. It does not invent figures.</p>
+      <p className="hint">Type or paste what the talk is about. Kinviva plans the slides, then saves a PowerPoint file you can edit. It only uses what you write here and your Documents. It does not invent figures.</p>
       <textarea rows={6} value={info} onChange={(e) => setInfo(e.target.value)} maxLength={5800} placeholder="Example: Quarterly update for the platform team. We moved 12 services to Kubernetes, deploys are faster, next quarter we start on databases…" aria-label="What the presentation is about" />
       <div className="deck-opts">
         <label>Audience<select value={audience} onChange={(e) => setAudience(e.target.value)}>{AUDIENCES.map((a) => <option key={a}>{a}</option>)}</select></label>

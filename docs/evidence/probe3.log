@@ -11,4 +11,4 @@ They want the user to explain how the new export feature affects onboarding.
 I'd be happy to help you walk through how the new export feature affects onboarding. Can you elaborate on what you mean by "affects onboarding" and how the export feature is integrated into the sign-up and activation process?
 [ai] cancel after 3 deltas -> Some(Cancelled) in 242 ms, deltas seen 3
 [db] reopened: 1 segments, 2 ai messages
-[export] markdown contains every segment and response: true (/var/folders/07/wsth8l1s6hl17_0cs7zk0k500000gn/T/meetinglens-probe/probe.md)
+[export] markdown contains every segment and response: true (/var/folders/07/wsth8l1s6hl17_0cs7zk0k500000gn/T/kinviva-probe/probe.md)

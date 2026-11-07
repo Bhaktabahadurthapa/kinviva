@@ -268,7 +268,7 @@ export function ArchitecturePanel({ live, onError }: { live: LiveState; onError:
             {empty ? (
               <div className="arch-empty">
                 <h3>No diagram yet</h3>
-                <p>{hasTranscript ? "Press Generate from conversation. MeetingLens reads the transcript so far and draws the system people described." : "Start a meeting or open a saved session in Sessions. Then come back and press Generate."}</p>
+                <p>{hasTranscript ? "Press Generate from conversation. Kinviva reads the transcript so far and draws the system people described." : "Start a meeting or open a saved session in Sessions. Then come back and press Generate."}</p>
                 <p className="hint">Works for Kubernetes, AWS and Azure setups, microservices, CI/CD pipelines, databases and incident flows.</p>
               </div>
             ) : (

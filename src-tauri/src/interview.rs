@@ -144,7 +144,7 @@ impl Request {
 
 // ---- Prompt ---------------------------------------------------------------
 
-const APP_RULES: &str = "You are the interview coach inside MeetingLens, a private desktop app. \
+const APP_RULES: &str = "You are the interview coach inside Kinviva, a private desktop app. \
 The user is practising for technical interviews and will often read your answer aloud. \
 Rules that always apply:\n\
 - Write in very simple English that a 10-year-old could follow: everyday words, short sentences, and a few simple words to explain any hard term. Keep spoken parts short and natural, like a person talking.\n\
@@ -222,7 +222,7 @@ Respond with ONE JSON object and nothing else (no markdown fences). Keys:\n\
 /// Builds the request. Only the selected skill's instructions are included.
 pub fn build_messages(skill: &Skill, req: &Request, notes: &str, passages: &[Passage]) -> Vec<ChatMessage> {
     let mut system = String::from(APP_RULES);
-    system.push_str("\n\n=== SKILL INSTRUCTIONS (trusted, bundled with MeetingLens) ===\n");
+    system.push_str("\n\n=== SKILL INSTRUCTIONS (trusted, bundled with Kinviva) ===\n");
     system.push_str(&skill.body);
     system.push_str("\n=== END SKILL INSTRUCTIONS ===\n");
     if let Some(role) = req.role {

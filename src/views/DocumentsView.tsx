@@ -36,7 +36,7 @@ export function DocumentsView({ onError, embedded }: { onError: (m: string) => v
           {!embedded && <h1>Context documents</h1>}
           <p className="lead">
             Notes, a résumé or an agenda (.txt, .md, .pdf, .docx) for Work and General sessions and Interview practice. When you use an assistant action,
-            MeetingLens searches active documents for passages matching the recent conversation and includes up to four of them. Course files are kept separate (above).
+            Kinviva searches active documents for passages matching the recent conversation and includes up to four of them. Course files are kept separate (above).
           </p>
         </div>
         <button className="btn btn-primary" onClick={add}>

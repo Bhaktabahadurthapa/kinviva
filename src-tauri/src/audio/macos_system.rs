@@ -2,7 +2,7 @@
 //!
 //! ScreenCaptureKit requires the Screen & System Audio Recording permission.
 //! We request a tiny video surface and only consume the audio output.
-//! MeetingLens plays no audio, so nothing is excluded. (Excluding the
+//! Kinviva plays no audio, so nothing is excluded. (Excluding the
 //! "current process" also silenced audio from child processes of the same
 //! responsible app during testing.)
 
@@ -63,7 +63,7 @@ pub fn start(sink: CaptureSink) -> Result<CaptureHandle, String> {
         if let Err(e) = stream.start_capture() {
             return ready(Err(format!(
                 "Could not start system-audio capture. Grant Screen & System Audio \
-                 Recording permission and restart MeetingLens. Details: {e}"
+                 Recording permission and restart Kinviva. Details: {e}"
             )));
         }
         ready(Ok("System audio (ScreenCaptureKit)".into()));

@@ -1,9 +1,9 @@
-//! Developer tool: creates a MeetingLens database (running the real
+//! Developer tool: creates a Kinviva database (running the real
 //! migrations) in `<dir>` and stores the given settings JSON in it. Used to
 //! give an isolated test copy of the app a known configuration.
 //!   cargo run --example seed_settings -- <dir> '<settings json>'
-use meetinglens_lib::db::Db;
-use meetinglens_lib::settings::Settings;
+use kinviva_lib::db::Db;
+use kinviva_lib::settings::Settings;
 
 fn main() {
     let a: Vec<String> = std::env::args().collect();

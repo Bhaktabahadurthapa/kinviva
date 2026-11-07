@@ -79,4 +79,4 @@ npm test
 
 ## Licensing
 
-The skills are written for MeetingLens. Only the file format (`SKILL.md` with `name` and `description` frontmatter) follows the open Agent Skills pattern. No text or code from the upstream repository is copied, so none of its mixed Apache-2.0 / source-available content is reused.
+The skills are written for Kinviva. Only the file format (`SKILL.md` with `name` and `description` frontmatter) follows the open Agent Skills pattern. No text or code from the upstream repository is copied, so none of its mixed Apache-2.0 / source-available content is reused.

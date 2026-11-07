@@ -29,7 +29,7 @@ pub struct ScreenEvent {
     pub error: Option<String>,
 }
 
-const RULES: &str = "You are MeetingLens. The user is in a live conversation (an interview or a meeting) and has shared a screenshot of their screen. \
+const RULES: &str = "You are Kinviva. The user is in a live conversation (an interview or a meeting) and has shared a screenshot of their screen. \
 Find what the speaker is asking about on the screen: a coding problem, a command, an error message, a diagram or a written question. \
 The recent transcript says what the speaker asked; answer exactly that.\n\
 Rules:\n\
@@ -70,7 +70,7 @@ pub fn capture(dir: &std::path::Path) -> Result<Vec<u8>, String> {
     let out = Command::new("/usr/sbin/screencapture").args(["-x", "-t", "jpg"]).arg(&path).output().map_err(|e| format!("Could not start the screenshot tool: {e}"))?;
     let result = (|| {
         if !out.status.success() || !path.is_file() {
-            return Err("Could not capture the screen. Allow MeetingLens under System Settings → Privacy & Security → Screen & System Audio Recording, then try again.".to_string());
+            return Err("Could not capture the screen. Allow Kinviva under System Settings → Privacy & Security → Screen & System Audio Recording, then try again.".to_string());
         }
         // Shrink so the request stays small and fast.
         let _ = Command::new("/usr/bin/sips").args(["-Z", MAX_SIDE, "--setProperty", "formatOptions", "70"]).arg(&path).output();

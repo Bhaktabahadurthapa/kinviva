@@ -452,7 +452,7 @@ pub struct RefreshReport {
 }
 
 fn client() -> Result<reqwest::Client, String> {
-    reqwest::Client::builder().timeout(std::time::Duration::from_secs(15)).user_agent("MeetingLens").build().map_err(|x| x.to_string())
+    reqwest::Client::builder().timeout(std::time::Duration::from_secs(15)).user_agent("Kinviva").build().map_err(|x| x.to_string())
 }
 
 async fn get_text(c: &reqwest::Client, url: &str) -> Result<String, String> {

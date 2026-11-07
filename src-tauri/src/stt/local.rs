@@ -226,7 +226,7 @@ mod tests {
                 model: "unused".into(),
                 language: "en".into(),
                 threads: 2,
-                env: vec![("MEETINGLENS_WHISPERD_FAKE".into(), "1".into())],
+                env: vec![("KINVIVA_WHISPERD_FAKE".into(), "1".into())],
                 extra_load: json!({}),
             },
             1,

@@ -1,4 +1,4 @@
-# How MeetingLens writes answers
+# How Kinviva writes answers
 
 ## Meeting answers
 

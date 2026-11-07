@@ -40,5 +40,5 @@ const Demo: React.FC = () => (
 );
 
 export const Root: React.FC = () => (
-	<Composition id="MeetingLensDemo" component={Demo} durationInFrames={TOTAL} fps={FPS} width={1920} height={1080} />
+	<Composition id="KinvivaDemo" component={Demo} durationInFrames={TOTAL} fps={FPS} width={1920} height={1080} />
 );

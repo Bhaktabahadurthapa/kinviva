@@ -7,7 +7,7 @@ import { saveToNotes } from "../../lib/notes";
 const guard = latestGuard();
 const RISK = { low: "Low risk", medium: "Medium risk", high: "High risk" } as const;
 
-/** A safe plan: causes are hypotheses, commands are read-only and never run by MeetingLens. */
+/** A safe plan: causes are hypotheses, commands are read-only and never run by Kinviva. */
 export function TroubleshootTool({ onError, onSaved, onToIncident }: { onError: (m: string) => void; onSaved: () => void; onToIncident: (plan: TroubleshootPlan, symptom: string) => void }) {
   const [symptom, setSymptom] = useState("");
   const [plan, setPlan] = useState<TroubleshootPlan | null>(null);
@@ -39,7 +39,7 @@ export function TroubleshootTool({ onError, onSaved, onToIncident }: { onError: 
 
   return (
     <div className="tc-tool">
-      <p className="banner banner-info">MeetingLens only suggests read-only checks and <strong>never runs a command</strong>. Review each command, then run it yourself.</p>
+      <p className="banner banner-info">Kinviva only suggests read-only checks and <strong>never runs a command</strong>. Review each command, then run it yourself.</p>
       <label className="tc-label" htmlFor="tc-symptom">What is going wrong?</label>
       <textarea id="tc-symptom" value={symptom} onChange={(e) => setSymptom(e.target.value)} rows={4} maxLength={4000} placeholder="For example: pods in the payments namespace restart every few minutes since the last deploy." />
       <div className="tc-actions">

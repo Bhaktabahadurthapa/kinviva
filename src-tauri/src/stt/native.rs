@@ -1,4 +1,4 @@
-//! Client for the bundled C++ speech helper, `meetinglens-whisperd`.
+//! Client for the bundled C++ speech helper, `kinviva-whisperd`.
 //!
 //! The helper is an application-owned child process that keeps one
 //! whisper.cpp model loaded for the whole meeting (one state per audio
@@ -62,13 +62,13 @@ pub struct Config {
 }
 
 /// Where the helper lives: next to the app executable in a bundle, or the
-/// development build output. `MEETINGLENS_WHISPERD` overrides both.
+/// development build output. `KINVIVA_WHISPERD` overrides both.
 pub fn locate_helper() -> Option<PathBuf> {
-    locate_in(std::env::var("MEETINGLENS_WHISPERD").ok())
+    locate_in(std::env::var("KINVIVA_WHISPERD").ok())
 }
 
 fn locate_in(override_path: Option<String>) -> Option<PathBuf> {
-    let name = if cfg!(windows) { "meetinglens-whisperd.exe" } else { "meetinglens-whisperd" };
+    let name = if cfg!(windows) { "kinviva-whisperd.exe" } else { "kinviva-whisperd" };
     if let Some(p) = override_path {
         let p = PathBuf::from(p);
         if p.is_file() {
@@ -86,7 +86,7 @@ fn locate_in(override_path: Option<String>) -> Option<PathBuf> {
         let triple = if cfg!(target_arch = "aarch64") { "aarch64-apple-darwin" } else { "x86_64-apple-darwin" };
         let p = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../native/whisperd/dist")
-            .join(format!("meetinglens-whisperd-{triple}"));
+            .join(format!("kinviva-whisperd-{triple}"));
         if p.is_file() {
             return Some(p);
         }
@@ -510,7 +510,7 @@ mod tests {
             model: "unused".into(),
             language: "en".into(),
             threads: 2,
-            env: vec![("MEETINGLENS_WHISPERD_FAKE".into(), "1".into())],
+            env: vec![("KINVIVA_WHISPERD_FAKE".into(), "1".into())],
             extra_load: json!({}),
         })
     }
@@ -671,7 +671,7 @@ mod tests {
     #[tokio::test]
     async fn a_missing_helper_is_a_clear_fatal_error() {
         let hub = NativeHub::new(
-            Config { path: "/nonexistent/meetinglens-whisperd".into(), model: "x".into(), language: "en".into(), threads: 1, env: vec![], extra_load: json!({}) },
+            Config { path: "/nonexistent/kinviva-whisperd".into(), model: "x".into(), language: "en".into(), threads: 1, env: vec![], extra_load: json!({}) },
             1,
         );
         match hub.ensure_started().await {

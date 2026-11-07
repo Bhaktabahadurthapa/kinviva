@@ -112,8 +112,8 @@ export async function buildDeck(plan: DeckPlan, theme: DeckTheme, author: string
   const p = new Pptx();
   p.layout = "LAYOUT_16x9";
   p.title = plan.title;
-  p.author = author || "MeetingLens";
-  p.company = "MeetingLens";
+  p.author = author || "Kinviva";
+  p.company = "Kinviva";
   for (const f of allFrames(plan, author, theme)) {
     const s = p.addSlide();
     s.background = { color: f.background };

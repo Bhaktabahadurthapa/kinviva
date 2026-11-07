@@ -159,7 +159,7 @@ impl SseParser {
                         }
                     }
                 }
-                Err(_) => return Err("The provider sent a response MeetingLens could not read.".into()),
+                Err(_) => return Err("The provider sent a response Kinviva could not read.".into()),
             }
         }
         Ok(out)

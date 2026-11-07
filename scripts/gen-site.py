@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the whole MeetingLens website in site/ (home, features, technical, whiteboard, discover,
+"""Generates the whole Kinviva website in site/ (home, features, technical, whiteboard, discover,
 interview, video, privacy, download). Only site files are written. Run: python3 scripts/gen-site.py"""
 import html, pathlib
 
@@ -68,7 +68,7 @@ def head(title, desc, page, og=OG):
   <a class="skip" href="#main">Skip to content</a>
   <header class="nav">
     <div class="wrap">
-      <a class="brand" href="index.html" aria-label="MeetingLens home"><img src="logo.svg" width="34" height="34" alt=""><span>Meeting<em>Lens</em></span></a>
+      <a class="brand" href="index.html" aria-label="Kinviva home"><img src="logo.svg" width="34" height="34" alt=""><span>Kin<em>viva</em></span></a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
       <nav id="site-nav" aria-label="Primary">
 {links}
@@ -85,7 +85,7 @@ def foot():
     <div class="wrap">
       <div class="foot-grid">
         <div>
-          <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>MeetingLens</b></p>
+          <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>Kinviva</b></p>
           <p>Hear it. Understand it. Visualize it. Keep it.</p>
           <p>Local-first, free, with no account.</p>
         </div>
@@ -93,7 +93,7 @@ def foot():
         <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
         <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="{GH}">Source on GitHub</a><a href="{GH}/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
-      <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use MeetingLens within the rules of your school, employer and local law on recording.</p>
+      <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p>
     </div>
   </footer>
   <script src="site.js"></script>
@@ -123,8 +123,8 @@ def spot(img, alt, eyebrow, title, text, bullets, flip=False, badge=None, captio
         </div>
 '''
 
-def cta(title="Free, local-first, and yours.", lead=f"Download MeetingLens for Mac or Windows. No account, no subscription."):
-    return f'''    <section><div class="wrap"><div class="cta-band reveal"><h2>{title}</h2><p class="lead">{lead}</p><a class="btn btn-primary btn-big" href="download.html">Download MeetingLens</a></div></div></section>
+def cta(title="Free, local-first, and yours.", lead=f"Download Kinviva for Mac or Windows. No account, no subscription."):
+    return f'''    <section><div class="wrap"><div class="cta-band reveal"><h2>{title}</h2><p class="lead">{lead}</p><a class="btn btn-primary btn-big" href="download.html">Download Kinviva</a></div></div></section>
 '''
 
 def write(name, content):
@@ -134,13 +134,13 @@ NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can d
 
 # ------------------------------------------------------------------ Home
 def home():
-    o = head("MeetingLens: your local-first workspace for important conversations",
-             "MeetingLens listens to meetings, interviews and lectures, explains them in plain words, draws diagrams and whiteboards, and helps you learn. Free for Mac and Windows, no account.", "index.html")
+    o = head("Kinviva: your local-first workspace for important conversations",
+             "Kinviva listens to meetings, interviews and lectures, explains them in plain words, draws diagrams and whiteboards, and helps you learn. Free for Mac and Windows, no account.", "index.html")
     o += f'''    <section class="hero">
       <div class="wrap">
         <p class="eyebrow">Free · Local-first · No account</p>
         <h1>Hear it. Understand it. <span>Visualize it.</span></h1>
-        <p class="lead">MeetingLens listens to your meetings, interviews and lectures, explains every point in plain words, and turns what was said into diagrams, whiteboards, notes and a learning plan. It all stays on your computer.</p>
+        <p class="lead">Kinviva listens to your meetings, interviews and lectures, explains every point in plain words, and turns what was said into diagrams, whiteboards, notes and a learning plan. It all stays on your computer.</p>
         <div class="cta"><a class="btn btn-primary btn-big" href="download.html">Download for free</a><a class="btn btn-ghost btn-big" href="features.html">See every feature</a></div>
         <p class="fine">Mac and Windows · Current installer {INSTALLER} · New workspace arrives in {NEXT} · <a href="{GH}">Source on GitHub</a></p>
         <div class="stage">
@@ -148,9 +148,9 @@ def home():
             <button role="tab" id="tab-light" aria-selected="true" aria-controls="p-light">Light</button>
             <button role="tab" id="tab-dark" aria-selected="false" aria-controls="p-dark" tabindex="-1">Dark</button>
           </div>
-          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>MeetingLens · Dashboard (sample data)</span></div>
-            <div id="p-light" class="panel" role="tabpanel" aria-labelledby="tab-light"><img src="media/v2-dashboard.jpg" alt="The MeetingLens Dashboard in light mode: activity counts, recent sessions, learning, an assistant and discover cards" width="1800" height="1125"></div>
-            <div id="p-dark" class="panel" role="tabpanel" aria-labelledby="tab-dark" hidden><img src="media/v2-dashboard-dark.jpg" alt="The MeetingLens Dashboard in dark mode" width="1800" height="1125" loading="lazy"></div>
+          <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>Kinviva · Dashboard (sample data)</span></div>
+            <div id="p-light" class="panel" role="tabpanel" aria-labelledby="tab-light"><img src="media/v2-dashboard.jpg" alt="The Kinviva Dashboard in light mode: activity counts, recent sessions, learning, an assistant and discover cards" width="1800" height="1125"></div>
+            <div id="p-dark" class="panel" role="tabpanel" aria-labelledby="tab-dark" hidden><img src="media/v2-dashboard-dark.jpg" alt="The Kinviva Dashboard in dark mode" width="1800" height="1125" loading="lazy"></div>
           </div>
         </div>
       </div>
@@ -185,17 +185,17 @@ def home():
 {spot("v2-meeting.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript on one side and plain-English insights on the other. Hard words are explained, and your answers come out ready to say.", ["<b>Explain, Suggest reply, Recap and Ask</b> from the bar at the bottom", "<b>Decisions &amp; actions</b>: a decision needs a real quote, an owner only if someone said it", "<b>Important words are highlighted</b> so you can scan an answer in a second"], False, None, f"Sample data. Decisions and highlights arrive in {NEXT}.")}
 {spot("v2-troubleshoot.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes marked as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Never runs a command</b> and removes any that could change something", "<b>Incident tracker</b> with a root cause that stays locked until the evidence supports it", "<b>Architecture diagrams</b> with verified, mentioned and inferred parts clearly marked"], True, "next", link=("technical.html", "Explore Technical Copilot"))}
 {spot("v2-whiteboard.jpg", "An editable whiteboard with a flowchart generated from a conversation and an AI panel on the right", "Whiteboard", "Draw it, then make it yours.", "Turn a meeting, an interview or a lecture into an editable diagram on a real whiteboard. Move it, rename it, and extend it with a sentence.", ["<b>Changes are previewed</b> in plain words before anything is applied", "<b>Your drawings are never overwritten</b>, and versions are saved before every change", "<b>Export</b> to PNG, SVG, an editable file or Mermaid text"], False, "next", link=("whiteboard.html", "Explore the Whiteboard"))}
-{spot("v2-discover.jpg", "Discover page with interests and news items with pictures", "Discover", "Keep learning what matters to you.", "Add any skill you want to grow. MeetingLens finds real articles and open-source projects from official sources and ranks them for you, on your computer.", ["<b>Real sources only</b>: eight official engineering blogs and GitHub", "<b>Any skill or topic</b>, not just a fixed list", "<b>Explain, save to notes, draw it or add it to a learning plan</b>"], True, "next", link=("discover.html", "Explore Discover"))}
+{spot("v2-discover.jpg", "Discover page with interests and news items with pictures", "Discover", "Keep learning what matters to you.", "Add any skill you want to grow. Kinviva finds real articles and open-source projects from official sources and ranks them for you, on your computer.", ["<b>Real sources only</b>: eight official engineering blogs and GitHub", "<b>Any skill or topic</b>, not just a fixed list", "<b>Explain, save to notes, draw it or add it to a learning plan</b>"], True, "next", link=("discover.html", "Explore Discover"))}
       </div>
     </section>
 
     <section>
       <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">Honest by design</p><h2>Every part of a diagram says where it came from.</h2><p class="lead">MeetingLens never presents a guess as a fact. When it draws your architecture, each box and line carries one of three labels, decided by code, not by the model.</p></div>
+        <div class="sec-head center"><p class="eyebrow">Honest by design</p><h2>Every part of a diagram says where it came from.</h2><p class="lead">Kinviva never presents a guess as a fact. When it draws your architecture, each box and line carries one of three labels, decided by code, not by the model.</p></div>
         <div class="legend reveal">
           <div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div>
           <div class="ev m"><b>Mentioned</b><p>Someone in the conversation said it, in those words.</p></div>
-          <div class="ev i"><b>Inferred</b><p>MeetingLens suggests it. Drawn dashed, never called a fact.</p></div>
+          <div class="ev i"><b>Inferred</b><p>Kinviva suggests it. Drawn dashed, never called a fact.</p></div>
         </div>
       </div>
     </section>
@@ -204,7 +204,7 @@ def home():
       <div class="wrap">
         <div class="sec-head center"><p class="eyebrow">How it works</p><h2>Three steps. Nothing to set up first.</h2></div>
         <div class="steps">
-          <div class="step reveal"><h3>Start</h3><p>Press Start. MeetingLens listens to the call and your microphone and writes the transcript on your computer.</p></div>
+          <div class="step reveal"><h3>Start</h3><p>Press Start. Kinviva listens to the call and your microphone and writes the transcript on your computer.</p></div>
           <div class="step reveal"><h3>Understand</h3><p>Each finished thought is explained in plain words. Ask a question, get a reply to say, or request a recap.</p></div>
           <div class="step reveal"><h3>Keep and use</h3><p>Save notes, draw a diagram, make a quiz, or add a skill to your learning plan. It is all searchable.</p></div>
         </div>
@@ -228,10 +228,10 @@ def home():
       <div class="wrap">
         <div class="sec-head center"><p class="eyebrow">Questions</p><h2>Straight answers.</h2></div>
         <div class="faq">
-          <details><summary>Is MeetingLens really free?</summary><p>Yes. There is no account, no subscription and no paid tier. You only pay for any cloud AI service you choose to connect, such as Gemini. You can also use a local model for free.</p></details>
+          <details><summary>Is Kinviva really free?</summary><p>Yes. There is no account, no subscription and no paid tier. You only pay for any cloud AI service you choose to connect, such as Gemini. You can also use a local model for free.</p></details>
           <details><summary>What can I download today?</summary><p>The current installer is {INSTALLER}. It includes Meetings, Interviews, Read my screen and the overlay. The new workspace shown on this site is in the source code and arrives in {NEXT}. Advanced users can build it from source now.</p></details>
           <details><summary>Does it record my calls?</summary><p>Not unless you turn on "Save audio recordings" in Settings. By default it saves text, not audio.</p></details>
-          <details><summary>Is it accurate?</summary><p>Answers are suggestions from the AI service you connect and can be wrong. MeetingLens labels what it knows and what it guesses, and never invents your own experience, but you decide what to say or do.</p></details>
+          <details><summary>Is it accurate?</summary><p>Answers are suggestions from the AI service you connect and can be wrong. Kinviva labels what it knows and what it guesses, and never invents your own experience, but you decide what to say or do.</p></details>
           <details><summary>Which computers does it run on?</summary><p>Macs with Apple silicon (macOS 13 or later). A Windows installer is available as an experiment.</p></details>
         </div>
       </div>
@@ -290,8 +290,8 @@ GROUPS = [
    ("Text size and fonts", "Small, normal or large text, and an easy-to-read font.", "now")]),
 ]
 def features():
-    o = head("Features · MeetingLens", "Every MeetingLens feature: meetings, interviews, Technical Copilot, Classroom, Presentation, Whiteboard, charts, Discover, My Learning, notes and search.", "features.html")
-    o += page_head("Features", "Everything MeetingLens does.", "Nine areas, one workspace. Each feature says whether it is in the current installer or arrives in the next one.", [(g[0], g[1]) for g in GROUPS])
+    o = head("Features · Kinviva", "Every Kinviva feature: meetings, interviews, Technical Copilot, Classroom, Presentation, Whiteboard, charts, Discover, My Learning, notes and search.", "features.html")
+    o += page_head("Features", "Everything Kinviva does.", "Nine areas, one workspace. Each feature says whether it is in the current installer or arrives in the next one.", [(g[0], g[1]) for g in GROUPS])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n'
     for i, (gid, name, ic, tone, badge, tag, items) in enumerate(GROUPS):
         o += f'''    <section id="{gid}"{' class="alt"' if i % 2 == 0 else ""} style="padding:72px 0"><div class="wrap">
@@ -317,7 +317,7 @@ def features():
 
 # ------------------------------------------------------------------ Technical
 def technical():
-    o = head("Technical Copilot · MeetingLens", "Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.", "technical.html", "https://bhaktathapa.com.np/meetinglens/media/v2-troubleshoot.jpg")
+    o = head("Technical Copilot · Kinviva", "Explain engineering terms, plan safe read-only troubleshooting, track incidents and draw architecture with verified, mentioned and inferred labels.", "technical.html", "https://bhaktathapa.com.np/meetinglens/media/v2-troubleshoot.jpg")
     o += page_head("Technical Copilot", "Understand and solve engineering problems, safely.", "For Kubernetes, AWS, Azure, Linux, networking, Terraform, CI/CD, databases, monitoring and more. It explains, it plans, it draws, and it never touches your systems.", [("explain", "Explain"), ("troubleshoot", "Troubleshoot"), ("incidents", "Incidents"), ("architecture", "Architecture")])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n'
     o += f'''    <section id="explain" style="padding-top:20px;padding-bottom:20px"><div class="wrap"><div class="grid g3">
@@ -327,7 +327,7 @@ def technical():
     </div></div></section>
     <section id="troubleshoot" style="padding-top:20px"><div class="wrap">
 '''
-    o += spot("v2-troubleshoot.jpg", "A troubleshooting plan with hypotheses and read-only commands", "Troubleshoot", "A plan you can trust, not a guess.", "Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.", ["Causes are labelled <b>hypotheses, not confirmed</b>", "Each command shows its purpose, what to expect and a risk level", "A command that could change anything is <b>removed and counted</b>", "MeetingLens <b>never runs a command</b>. You review it and run it yourself", "Save the plan to notes, or track it as an incident"], False, "next")
+    o += spot("v2-troubleshoot.jpg", "A troubleshooting plan with hypotheses and read-only commands", "Troubleshoot", "A plan you can trust, not a guess.", "Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.", ["Causes are labelled <b>hypotheses, not confirmed</b>", "Each command shows its purpose, what to expect and a risk level", "A command that could change anything is <b>removed and counted</b>", "Kinviva <b>never runs a command</b>. You review it and run it yourself", "Save the plan to notes, or track it as an incident"], False, "next")
     o += "      </div></section>\n"
     o += '''    <section class="alt"><div class="wrap">
       <div class="sec-head"><p class="eyebrow">Safety rules</p><h2>What counts as read-only.</h2><p class="lead">A command is kept only if it looks at things without changing them. The check is code, not the model, and it is tested against dozens of examples.</p></div>
@@ -345,9 +345,9 @@ def technical():
       </div>
     </div></section>
     <section class="alt" id="architecture"><div class="wrap">
-{spot("v2-architecture.jpg", "An architecture diagram of a load balancer, ingress, services and a database with an explanation panel", "Architecture", "Draw the system people describe.", "Say it out loud: a load balancer, an ingress controller, Kubernetes services and PostgreSQL. MeetingLens drafts the diagram and explains it in simple words.", ["Flowcharts and sequence diagrams from the conversation", "Zoom, pan, full screen, edit the Mermaid source, export SVG or PNG", "Saved with your session, with plain-English concerns such as single points of failure", "Updates while you talk, only after a quiet moment and never more than every 45 seconds"], True, "next")}
+{spot("v2-architecture.jpg", "An architecture diagram of a load balancer, ingress, services and a database with an explanation panel", "Architecture", "Draw the system people describe.", "Say it out loud: a load balancer, an ingress controller, Kubernetes services and PostgreSQL. Kinviva drafts the diagram and explains it in simple words.", ["Flowcharts and sequence diagrams from the conversation", "Zoom, pan, full screen, edit the Mermaid source, export SVG or PNG", "Saved with your session, with plain-English concerns such as single points of failure", "Updates while you talk, only after a quiet moment and never more than every 45 seconds"], True, "next")}
       <div class="sec-head center" style="margin-top:80px"><h2>Facts and guesses are never mixed.</h2><p class="lead">The label on each part is decided by code that checks the transcript and your documents.</p></div>
-      <div class="legend reveal"><div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div><div class="ev m"><b>Mentioned</b><p>The conversation used those words.</p></div><div class="ev i"><b>Inferred</b><p>MeetingLens suggests it. Dashed, with a warning when there is little evidence.</p></div></div>
+      <div class="legend reveal"><div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div><div class="ev m"><b>Mentioned</b><p>The conversation used those words.</p></div><div class="ev i"><b>Inferred</b><p>Kinviva suggests it. Dashed, with a warning when there is little evidence.</p></div></div>
       <div class="grid g2" style="margin-top:20px">
         {card("lock", "purple", "Locked down", "Diagram source is checked before it is drawn: no links, scripts, HTML or directives, and a size limit. The picture is cleaned again before it is shown.")}
         {card("search", "teal", "Illustrative when thin", "If there is little evidence, the diagram is clearly marked illustrative and confidence is lowered.")}
@@ -359,7 +359,7 @@ def technical():
 
 # ------------------------------------------------------------------ Whiteboard
 def whiteboard():
-    o = head("Whiteboard & charts · MeetingLens", "An editable whiteboard that turns meetings, interviews and lectures into diagrams, with previewed edits, versions, export, and charts built from real numbers.", "whiteboard.html", "https://bhaktathapa.com.np/meetinglens/media/v2-whiteboard.jpg")
+    o = head("Whiteboard & charts · Kinviva", "An editable whiteboard that turns meetings, interviews and lectures into diagrams, with previewed edits, versions, export, and charts built from real numbers.", "whiteboard.html", "https://bhaktathapa.com.np/meetinglens/media/v2-whiteboard.jpg")
     o += page_head("Whiteboard &amp; charts", "Turn what was said into something you can see.", "A real whiteboard, with diagrams drawn from your sessions. Edit them by hand or with a sentence, and never lose your own work.", [("board", "Whiteboard"), ("ai", "Edit with words"), ("charts", "Charts"), ("export", "Export")])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n    <section id="board" style="padding-top:20px"><div class="wrap">\n'
     o += spot("v2-whiteboard.jpg", "Whiteboard with a generated flowchart and generation tools on the right", "Whiteboard", "A canvas that starts with your conversation.", "Open Visuals &amp; Diagrams, pick a live meeting, interview, lecture or saved session, and press one button. The diagram appears on a new board, ready to edit.", ["Flowchart, concept map, decision tree, timeline or sequence", "Every object is editable: move, resize, rename, add arrows, sticky notes and handwriting", "Mouse, trackpad and keyboard, and a stylus. Apple Pencil works through Sidecar or a compatible iPad", "Autosave, <b>full screen</b>, and an uncluttered tool panel"], False, "next")
@@ -368,7 +368,7 @@ def whiteboard():
       <div class="sec-head"><p class="eyebrow">Edit with words</p><h2>Say the change. Check it. Apply it.</h2></div>
       <div class="steps">
         <div class="step reveal"><h3>Describe it</h3><p>“Add a cache between the API and the database” or “highlight the single point of failure”.</p></div>
-        <div class="step reveal"><h3>Preview it</h3><p>MeetingLens lists each change in plain words: add, rename, remove, connect, highlight or explain.</p></div>
+        <div class="step reveal"><h3>Preview it</h3><p>Kinviva lists each change in plain words: add, rename, remove, connect, highlight or explain.</p></div>
         <div class="step reveal"><h3>Apply it</h3><p>Only the targeted objects change. Your own drawings are never overwritten, and a version is saved first.</p></div>
       </div>
     </div></section>
@@ -392,7 +392,7 @@ def whiteboard():
 
 # ------------------------------------------------------------------ Discover
 def discover():
-    o = head("Discover & learning · MeetingLens", "Real articles and projects from official engineering sources for the skills you choose, plus learning goals with progress that comes only from what you do.", "discover.html", "https://bhaktathapa.com.np/meetinglens/media/v2-discover.jpg")
+    o = head("Discover & learning · Kinviva", "Real articles and projects from official engineering sources for the skills you choose, plus learning goals with progress that comes only from what you do.", "discover.html", "https://bhaktathapa.com.np/meetinglens/media/v2-discover.jpg")
     o += page_head("Discover &amp; learning", "Keep growing the skills you care about.", "Real articles and open-source projects from official sources, ranked on your computer for the interests you pick. Then turn them into goals and steps.", [("discover", "Discover"), ("sources", "Sources"), ("learning", "My Learning")])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n    <section id="discover" style="padding-top:20px"><div class="wrap">\n'
     o += spot("v2-discover.jpg", "Discover with interest chips and news items with pictures", "Discover", "Your interests, your feed.", "Choose from twelve topics or add any skill of your own, such as Rust, Terraform or Prompt engineering. Discover matches articles and GitHub projects for it.", ["<b>Pictures</b> from the articles and project logos, saved as small thumbnails on your computer", "<b>Ranked locally</b> by freshness, source quality and your interests", "<b>Explain, draw it, save to notes</b> or <b>add to a learning plan</b> on every item", "Mark read, save for later, and see trending topics counted from real posts"], False, "next")
@@ -410,7 +410,7 @@ def discover():
     </div></section>
 '''
     o += f'''    <section id="learning"><div class="wrap">
-{spot("v2-learning.jpg", "My Learning with goals, steps and progress bars", "My Learning", "Progress you can believe.", "Set a goal and let MeetingLens suggest the steps, or write your own. Mark steps in progress or done. Progress is just the share you finished.", ["<b>Goals with lessons and drills</b>, with a clear next step on your Dashboard", "<b>Quiz scores</b> from Classroom feed your accuracy, and topics under 70% become suggested review steps", "<b>Saved resources</b> from Discover, in one list", "Nothing is estimated and nothing is invented"], True, "next")}
+{spot("v2-learning.jpg", "My Learning with goals, steps and progress bars", "My Learning", "Progress you can believe.", "Set a goal and let Kinviva suggest the steps, or write your own. Mark steps in progress or done. Progress is just the share you finished.", ["<b>Goals with lessons and drills</b>, with a clear next step on your Dashboard", "<b>Quiz scores</b> from Classroom feed your accuracy, and topics under 70% become suggested review steps", "<b>Saved resources</b> from Discover, in one list", "Nothing is estimated and nothing is invented"], True, "next")}
       <div class="grid g3" style="margin-top:60px">
         {card("star", "amber", "Real activity only", "A step is done when you say so. Quiz scores are the answers you gave.")}
         {card("book", "green", "From any source", "Add a step from an article, a lecture or an interview drill.")}
@@ -426,10 +426,10 @@ STYLES = [
  ("simple", "Simple", "Short, clear, everyday words.", "I would give each team its own walled-off space with its own build workers and secrets. Then I would set limits and show each team its bill. It takes more setup, but it is safer and cheaper to run."),
  ("pro", "Professional", "Natural and confident.", "I would isolate each team in its own namespace and cloud account, with separate runners and secrets, so one team cannot affect another. I would add per-team quotas and cost reports to keep spending under control. The trade-off is more setup per team, which I accept for the security it buys."),
  ("tech", "Technical", "More engineering depth, still plain words.", "One namespace and one cloud account or subscription per team, with its own roles and short-lived credentials. Build runners are ephemeral and auto-scale, builds are signed, and a policy check gates every deploy. Quotas and a monthly cost report per team cap spend. I would verify isolation with a test that one team's runner cannot read another team's secrets."),
- ("star", "STAR", "For behavioral questions. Uses only your own notes.", "Situation: [from your notes] Task: [from your notes] Action: [from your notes] Result: [from your notes]. If your notes do not hold the facts, MeetingLens does not invent any. It tells you what to fill in from your real experience."),
+ ("star", "STAR", "For behavioral questions. Uses only your own notes.", "Situation: [from your notes] Task: [from your notes] Action: [from your notes] Result: [from your notes]. If your notes do not hold the facts, Kinviva does not invent any. It tells you what to fill in from your real experience."),
 ]
 def interview():
-    o = head("Interview · MeetingLens", "Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.", "interview.html", "https://bhaktathapa.com.np/meetinglens/media/v2-interview.jpg")
+    o = head("Interview · Kinviva", "Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.", "interview.html", "https://bhaktathapa.com.np/meetinglens/media/v2-interview.jpg")
     o += page_head("Interview", "Practise, and answer, like an expert.", "Interview has its own screen. Start it, and each question the interviewer asks is answered as it is asked, in the style you choose.")
     o += '    <section><div class="wrap">\n'
     o += spot("v2-interview.jpg", "Interview screen with answer controls on the left and Say it and Understand it cards on the right", "Interview", "The answer, and the reasoning behind it.", "Questions are detected from the other side's audio. Each answer has what to say, how to understand it, the trade-offs, hard words and a likely follow-up.", ["Press <b>Start interview</b> and stay on the Interview screen", "<b>Ask, Explain, Suggest reply and Recap</b> are at the bottom of the answers (new in " + NEXT + ")", "<b>Notes</b> download as Word, Markdown or text", "Use it for practice and preparation, and follow the rules of your interviewer or employer"], False, "now")
@@ -468,11 +468,11 @@ def interview():
 # ------------------------------------------------------------------ Video
 CH = [(0, "Meeting", "Live transcript and answers in simple words"), (5, "Interview", "Automatic answers to the interviewer's question"), (10, "Read my screen", "A command shown on screen, explained"), (15, "Overlay", "A see-through window beside your call")]
 def video():
-    o = head("Video · MeetingLens", "Watch MeetingLens: a short walkthrough of Meeting, Interview, Read my screen and the overlay, plus the original real-call demo.", "video.html", "https://bhaktathapa.com.np/meetinglens/media/meetinglens-walkthrough-poster.jpg")
-    o += page_head("Video", "See MeetingLens in action.", f"A short walkthrough of the {INSTALLER} interface, and the original recording of a real call.")
+    o = head("Video · Kinviva", "Watch Kinviva: a short walkthrough of Meeting, Interview, Read my screen and the overlay, plus the original real-call demo.", "video.html", "https://bhaktathapa.com.np/meetinglens/media/kinviva-walkthrough-poster.jpg")
+    o += page_head("Video", "See Kinviva in action.", f"A short walkthrough of the {INSTALLER} interface, and the original recording of a real call.")
     o += '''    <section><div class="wrap">
       <div class="player" data-player>
-        <video controls preload="metadata" poster="media/meetinglens-walkthrough-poster.jpg" width="1600" height="1000"><source src="media/meetinglens-walkthrough.mp4" type="video/mp4">Your browser cannot play this video.</video>
+        <video controls preload="metadata" poster="media/kinviva-walkthrough-poster.jpg" width="1600" height="1000"><source src="media/kinviva-walkthrough.mp4" type="video/mp4">Your browser cannot play this video.</video>
         <div class="chapters" role="list" aria-label="Chapters">
 '''
     for i, (t, n, d) in enumerate(CH):
@@ -482,8 +482,8 @@ def video():
       <p class="muted" style="margin-top:14px">The walkthrough uses real captures of version {INSTALLER} and has no sound. Choose a chapter to jump to it.</p>
     </div></section>
     <section class="alt"><div class="wrap">
-      <div class="sec-head"><p class="eyebrow">Original demo</p><h2>A real call, start to finish.</h2><p class="lead">The first recording of MeetingLens listening to a live call and explaining it in simple words.</p></div>
-      <video controls preload="none" poster="media/meetinglens-demo-poster.jpg" width="1600" height="900" style="border-radius:14px;box-shadow:var(--shadow-lg);width:100%;max-width:960px"><source src="media/meetinglens-demo.mp4" type="video/mp4"></video>
+      <div class="sec-head"><p class="eyebrow">Original demo</p><h2>A real call, start to finish.</h2><p class="lead">The first recording of Kinviva listening to a live call and explaining it in simple words.</p></div>
+      <video controls preload="none" poster="media/kinviva-demo-poster.jpg" width="1600" height="900" style="border-radius:14px;box-shadow:var(--shadow-lg);width:100%;max-width:960px"><source src="media/kinviva-demo.mp4" type="video/mp4"></video>
     </div></section>
 {cta()}'''
     o += foot()
@@ -496,8 +496,8 @@ SETUPS = [
  ("both", "Cloud speech and answers", "Deepgram speech and a cloud answer engine.", [("Your voice", "Sent to a service you chose", "Streamed to Deepgram for transcription."), ("Transcript text", "Sent to a service you chose", "The newest lines are sent to your answer engine."), ("Screenshots", "Sent to a service you chose", "Only when you ask, as above."), ("Saved sessions", "Stays on your computer", "Stored in a local database.")]),
 ]
 def privacy():
-    o = head("Privacy · MeetingLens", "MeetingLens is local-first. See exactly what stays on your computer and what is sent in each setup, plus the new Discover and diagram features.", "privacy.html")
-    o += page_head("Privacy", "Your meeting stays yours.", "MeetingLens is local-first. Choose a setup to see exactly what stays on your computer and what is sent.")
+    o = head("Privacy · Kinviva", "Kinviva is local-first. See exactly what stays on your computer and what is sent in each setup, plus the new Discover and diagram features.", "privacy.html")
+    o += page_head("Privacy", "Your meeting stays yours.", "Kinviva is local-first. Choose a setup to see exactly what stays on your computer and what is sent.")
     o += '    <section><div class="wrap"><div data-tabs>\n        <div class="tabs" role="tablist" aria-label="Setup">\n'
     for i, (k, n, d, rows) in enumerate(SETUPS):
         o += f'          <button role="tab" id="tab-{k}" aria-selected="{"true" if i == 0 else "false"}" aria-controls="p-{k}"{"" if i == 0 else " tabindex=\"-1\""}>{n}</button>\n'
@@ -530,10 +530,10 @@ def privacy():
     <section class="alt"><div class="wrap">
       <div class="sec-head center"><p class="eyebrow">Questions</p><h2>Straight answers.</h2></div>
       <div class="faq">
-        <details><summary>Does MeetingLens record my calls?</summary><p>Not unless you turn on "Save audio recordings" in Settings. By default it transcribes and saves text, not audio.</p></details>
+        <details><summary>Does Kinviva record my calls?</summary><p>Not unless you turn on "Save audio recordings" in Settings. By default it transcribes and saves text, not audio.</p></details>
         <details><summary>Where are my API keys stored?</summary><p>In your system keychain (macOS Keychain, Windows Credential Manager). They are never written to the database, settings files or logs.</p></details>
         <details><summary>Is there telemetry or an account?</summary><p>No. There is no account and no analytics. The app only contacts the speech and answer services you configure, and Discover if you turn it on.</p></details>
-        <details><summary>Can others see MeetingLens during screen sharing?</summary><p>You can ask your system to keep the app and overlay out of screen capture. This works with most tools but is not guaranteed, so check it before an important call.</p></details>
+        <details><summary>Can others see Kinviva during screen sharing?</summary><p>You can ask your system to keep the app and overlay out of screen capture. This works with most tools but is not guaranteed, so check it before an important call.</p></details>
         <details><summary>What does Read my screen send?</summary><p>A shrunken screenshot of your main display, with the last few things said, to your answer engine. It runs only when you ask, or when you turn on its automatic mode. The image is deleted right after it is read.</p></details>
         <details><summary>Do I need to tell people I'm using it?</summary><p>Some places require everyone's consent to record or transcribe a conversation, and some interviewers or employers have rules about assistance. You are responsible for following them.</p></details>
       </div>
@@ -546,8 +546,8 @@ def privacy():
 # ------------------------------------------------------------------ Download
 def download():
     note = NOTICE.replace(" Each feature below says which one it belongs to.", " The Features pages say which one each feature belongs to.")
-    o = head("Download · MeetingLens", f"Download MeetingLens {INSTALLER} for Mac or Windows. Free, no account. Build the full new workspace from source today.", "download.html")
-    o += page_head("Download", "Get MeetingLens.", f"Version {INSTALLER}. Free for Mac and, as an experiment, Windows. No account.")
+    o = head("Download · Kinviva", f"Download Kinviva {INSTALLER} for Mac or Windows. Free, no account. Build the full new workspace from source today.", "download.html")
+    o += page_head("Download", "Get Kinviva.", f"Version {INSTALLER}. Free for Mac and, as an experiment, Windows. No account.")
     o += f'''    <section><div class="wrap">
       {note}
       <div style="height:28px"></div>
@@ -557,24 +557,24 @@ def download():
           <button role="tab" id="os-win" aria-selected="false" aria-controls="p-win" tabindex="-1">Windows <span class="badge b-exp">experimental</span></button>
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
-          <h3>MeetingLens for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
+          <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
           <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download MeetingLens.dmg</a></p>
           <p class="muted">Version {INSTALLER} · about 9.5 MB</p>
           <ol class="steps-ol">
-            <li>Open the downloaded <code>.dmg</code> and drag <b>MeetingLens</b> onto <b>Applications</b>.</li>
+            <li>Open the downloaded <code>.dmg</code> and drag <b>Kinviva</b> onto <b>Applications</b>.</li>
             <li>Open it. macOS says it can't verify the app because this early version isn't notarized by Apple yet. Click <b>Done</b>.</li>
-            <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b> next to MeetingLens.</li>
+            <li>Open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b> next to Kinviva.</li>
             <li>Allow <b>Microphone</b> and <b>Screen &amp; System Audio Recording</b> when asked, then quit and reopen once.</li>
             <li>Add an answer engine key (for example Gemini) in <b>Settings → AI provider</b> (renamed Answer engine in {NEXT}), or set up <b>Ollama</b> and <b>whisper.cpp</b> for a fully local setup.</li>
           </ol>
         </div>
         <div id="p-win" class="panel card os-card" role="tabpanel" aria-labelledby="os-win" hidden>
-          <h3>MeetingLens for Windows <span class="badge b-exp">experimental</span></h3><p class="muted">Windows 10 or 11, 64-bit</p>
+          <h3>Kinviva for Windows <span class="badge b-exp">experimental</span></h3><p class="muted">Windows 10 or 11, 64-bit</p>
           <p><a class="btn btn-primary btn-big" href="{EXE}" data-download>Download for Windows</a></p>
           <p class="muted">Version {INSTALLER} · about 6 MB · built and unit-tested on a Windows server, not yet tried on a real laptop. Read my screen is Mac-only for now.</p>
           <ol class="steps-ol">
             <li>Run the installer. Windows shows “Windows protected your PC” because it isn't signed yet: click <b>More info → Run anyway</b>. It installs for your user only.</li>
-            <li>Open MeetingLens and allow <b>Microphone</b> access when Windows asks.</li>
+            <li>Open Kinviva and allow <b>Microphone</b> access when Windows asks.</li>
             <li>System audio is captured from your default output device, so play the call through your normal speakers or headphones.</li>
             <li>Add a key in <b>Settings → AI provider</b>, or set up Ollama for Windows and whisper.cpp and set the paths in <b>Settings → Speech recognition</b>.</li>
           </ol>
@@ -595,7 +595,7 @@ def download():
       <div class="grid g3">
         {card("chat", "blue", "An answer engine", "A key for a cloud model such as Gemini, or a local model through Ollama. A model that can read images is needed for Read my screen.")}
         {card("mic", "rose", "Speech recognition", "The built-in whisper.cpp engine on Mac, or Deepgram if you prefer the cloud.")}
-        {card("shield", "teal", "Permissions", "Microphone and, on Mac, Screen &amp; System Audio Recording. MeetingLens never changes your system permissions for you.")}
+        {card("shield", "teal", "Permissions", "Microphone and, on Mac, Screen &amp; System Audio Recording. Kinviva never changes your system permissions for you.")}
       </div>
       <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/MeetingLens.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
     </div></section>

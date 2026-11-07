@@ -1,6 +1,6 @@
-# meetinglens-whisperd
+# kinviva-whisperd
 
-A small C++ speech-to-text helper for MeetingLens. It links the same
+A small C++ speech-to-text helper for Kinviva. It links the same
 [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (v1.9.4, pinned in
 `CMakeLists.txt`) that people already install, keeps **one model loaded** for a
 whole meeting, and serves **one state per audio channel** so "Them" and "Me"
@@ -15,7 +15,7 @@ talks over the stdin/stdout pipes of the app that started it.
 ./native/whisperd/build.sh        # needs cmake, ninja, a C++17 compiler, git, network
 ```
 
-Produces `native/whisperd/dist/meetinglens-whisperd-<target-triple>` (about
+Produces `native/whisperd/dist/kinviva-whisperd-<target-triple>` (about
 3.8 MB, static whisper.cpp, GPU code embedded, only macOS system frameworks
 linked). `./scripts/build-mac-app.sh` builds it if missing and bundles it into
 the app as a Tauri sidecar. macOS only so far; the code avoids platform-specific
@@ -51,7 +51,7 @@ Up to 4 named streams are created on first use.
 
 ## Test hooks
 
-With `MEETINGLENS_WHISPERD_FAKE=1` no model is loaded: `transcribe` returns
+With `KINVIVA_WHISPERD_FAKE=1` no model is loaded: `transcribe` returns
 `fake transcript <audio_ms> ms` after `fake_delay_ms` (set in `load`), and the
 extra op `crash` aborts the process. The Rust tests use this to check timeouts,
 cancellation, crash restart and cleanup against the real binary.

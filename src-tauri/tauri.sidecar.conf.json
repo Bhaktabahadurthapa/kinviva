@@ -1,5 +1,5 @@
 {
   "bundle": {
-    "externalBin": ["../native/whisperd/dist/meetinglens-whisperd"]
+    "externalBin": ["../native/whisperd/dist/kinviva-whisperd"]
   }
 }

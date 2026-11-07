@@ -52,7 +52,7 @@ jobs:
       - name: Rust unit tests
         working-directory: src-tauri
         env:
-          MEETINGLENS_WHISPERD: ${{ github.workspace }}/native/whisperd/dist/meetinglens-whisperd-x86_64-pc-windows-msvc.exe
+          KINVIVA_WHISPERD: ${{ github.workspace }}/native/whisperd/dist/kinviva-whisperd-x86_64-pc-windows-msvc.exe
         run: cargo test --lib
 
       - name: Build the installer
@@ -63,14 +63,14 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           mkdir -p dist-win
           SRC=$(ls src-tauri/target/release/bundle/nsis/*-setup.exe | head -1)
-          cp "$SRC" "dist-win/MeetingLens_${VERSION}_x64-setup.exe"
-          cp "$SRC" "dist-win/MeetingLens-Windows-Setup.exe"
-          (cd dist-win && sha256sum MeetingLens_${VERSION}_x64-setup.exe | tee SHA256SUMS.txt)
+          cp "$SRC" "dist-win/Kinviva_${VERSION}_x64-setup.exe"
+          cp "$SRC" "dist-win/Kinviva-Windows-Setup.exe"
+          (cd dist-win && sha256sum Kinviva_${VERSION}_x64-setup.exe | tee SHA256SUMS.txt)
           ls -l dist-win
 
       - uses: actions/upload-artifact@v4
         with:
-          name: MeetingLens-Windows
+          name: Kinviva-Windows
           path: dist-win/*
           if-no-files-found: error
 
@@ -79,4 +79,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ inputs.release_tag }}" dist-win/MeetingLens_*_x64-setup.exe dist-win/MeetingLens-Windows-Setup.exe --clobber
+          gh release upload "${{ inputs.release_tag }}" dist-win/Kinviva_*_x64-setup.exe dist-win/Kinviva-Windows-Setup.exe --clobber

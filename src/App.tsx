@@ -25,7 +25,7 @@ import { setFocus, useFocus } from "./lib/focus";
 /** The two primary areas. Settings is a utility button, not a primary item. */
 
 function Logo() {
-  // The MeetingLens mark: a waveform that shifts from royal blue to violet.
+  // The Kinviva mark: a waveform that shifts from royal blue to violet.
   return (
     <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden>
       <defs>
@@ -238,7 +238,7 @@ export default function App() {
   if (!inTauri) {
     return (
       <div className="browser-note">
-        <Logo /> MeetingLens is a desktop app. Run it with <code>npm run tauri dev</code>; a browser tab cannot capture audio or reach the backend.
+        <Logo /> Kinviva is a desktop app. Run it with <code>npm run tauri dev</code>; a browser tab cannot capture audio or reach the backend.
       </div>
     );
   }

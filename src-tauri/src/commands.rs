@@ -575,7 +575,7 @@ pub async fn video_info(url: String) -> R<Option<VideoInfo>> {
     if !address.starts_with("https://www.youtube.com/watch?v=") {
         return Ok(None);
     }
-    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(6)).user_agent("MeetingLens").build().map_err(|e| e.to_string())?;
+    let client = reqwest::Client::builder().timeout(std::time::Duration::from_secs(6)).user_agent("Kinviva").build().map_err(|e| e.to_string())?;
     let r = client.get("https://www.youtube.com/oembed").query(&[("url", address.as_str()), ("format", "json")]).send().await;
     let Ok(r) = r else { return Ok(None) };
     if !r.status().is_success() {
@@ -621,7 +621,7 @@ pub fn video_in_browser(url: String) -> R<()> {
     cmd.arg(&address).spawn().map(|_| ()).map_err(|e| format!("Could not open the link: {e}"))
 }
 
-/// What MeetingLens adds to the prompts of a screen because of the user's own instructions, so nothing is hidden.
+/// What Kinviva adds to the prompts of a screen because of the user's own instructions, so nothing is hidden.
 #[tauri::command]
 pub fn instructions_preview(state: State<AppState>, screen: String) -> R<String> {
     let s = state.settings();
@@ -632,7 +632,7 @@ pub fn instructions_preview(state: State<AppState>, screen: String) -> R<String>
     if screen == "meeting" || screen == "classroom" {
         out.push_str(&format!("\n\nAnswer level: {}. Answer length: {}.", s.answer_level, s.answer_length));
     }
-    Ok(if out.trim().is_empty() { "Nothing is added. Answers use MeetingLens's own rules only.".to_string() } else { out.trim().to_string() })
+    Ok(if out.trim().is_empty() { "Nothing is added. Answers use Kinviva's own rules only.".to_string() } else { out.trim().to_string() })
 }
 
 #[tauri::command]
@@ -834,7 +834,7 @@ pub fn preview_retrieval(state: State<AppState>, text: Option<String>) -> R<Vec<
     state.db.search_passages(&docs::fts_query(&text, 12), 4)
 }
 
-/// Asks the OS to leave MeetingLens windows (main and overlay) out of screen
+/// Asks the OS to leave Kinviva windows (main and overlay) out of screen
 /// sharing and recording. Best effort: it sets the window-sharing flag
 /// (`NSWindowSharingNone` on macOS, `WDA_EXCLUDEFROMCAPTURE` on Windows), which
 /// some capture tools and OS versions ignore.

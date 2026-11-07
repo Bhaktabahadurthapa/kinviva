@@ -49,7 +49,7 @@ export function InstructionsPanel({ s, set, onSave }: { s: Settings; set: <K ext
   return (
     <section className="card ip">
       <h2>My instructions</h2>
-      <p className="hint">Tell MeetingLens who you are and how you want answers. This is added to what is sent to your answer engine. It steers style and focus. MeetingLens's own rules still win, so answers never invent facts.</p>
+      <p className="hint">Tell Kinviva who you are and how you want answers. This is added to what is sent to your answer engine. It steers style and focus. Kinviva's own rules still win, so answers never invent facts.</p>
 
       <div className="field">
         <label htmlFor="about-me">About me (used on every screen)</label>

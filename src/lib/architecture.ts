@@ -57,7 +57,7 @@ const NODE_SHAPE: Record<string, (t: string) => string> = {
 const EVIDENCE_NOTE: Record<Evidence, string> = {
   verified: "Verified by your documents",
   mentioned: "Mentioned in the conversation",
-  inferred: "Inferred by MeetingLens (not said)",
+  inferred: "Inferred by Kinviva (not said)",
 };
 export const evidenceNote = (e: Evidence) => EVIDENCE_NOTE[e];
 

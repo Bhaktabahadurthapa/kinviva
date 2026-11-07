@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Add shared media to the site
         run: |
-          cp docs/media/meetinglens-demo.mp4 docs/media/meetinglens-demo-poster.jpg docs/media/architecture-hero.png site/media/
+          cp docs/media/kinviva-demo.mp4 docs/media/kinviva-demo-poster.jpg docs/media/architecture-hero.png site/media/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

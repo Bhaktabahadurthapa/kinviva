@@ -21,7 +21,7 @@ export function ArchitectureExplanation({ model }: { model: ArchModel }) {
         <li><span className="dot dot-mentioned" aria-hidden />{counts.mentioned} mentioned in the conversation</li>
         <li><span className="dot dot-inferred" aria-hidden />{counts.inferred} inferred (dashed, not said)</li>
       </ul>
-      <p className="hint">Confidence: <strong>{model.confidence}</strong>. Dashed lines are links MeetingLens inferred.</p>
+      <p className="hint">Confidence: <strong>{model.confidence}</strong>. Dashed lines are links Kinviva inferred.</p>
       <h3>Components</h3>
       <ul className="arch-components">
         {model.components.map((c) => (

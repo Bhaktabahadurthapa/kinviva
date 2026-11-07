@@ -1,6 +1,6 @@
-# Contributing to MeetingLens
+# Contributing to Kinviva
 
-Thanks for your interest. MeetingLens is proprietary software whose source is
+Thanks for your interest. Kinviva is proprietary software whose source is
 public to read (see [LICENSE](LICENSE)). Contributions are welcome on these
 terms:
 
@@ -11,7 +11,7 @@ terms:
 - **Pull requests** — open an issue first for anything beyond a small fix.
   By submitting a pull request you confirm the work is your own and you grant
   the copyright owner a perpetual, worldwide, royalty-free license to use,
-  modify and distribute it as part of MeetingLens under any terms.
+  modify and distribute it as part of Kinviva under any terms.
 
 ## Development
 

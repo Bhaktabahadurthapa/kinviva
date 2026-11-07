@@ -185,7 +185,7 @@ export function HistoryView({ onError, onOpenLive, refreshKey, initialSearch }: 
             <TranscriptView transcript={{ finals: sel.segments, partials: {} }} emptyHint="No speech was transcribed." />
             {sel.ai_messages.filter((a) => a.status === "done").length > 0 && (
               <>
-                <h3>MeetingLens assistance</h3>
+                <h3>Kinviva assistance</h3>
                 {sel.ai_messages
                   .filter((a) => a.status === "done")
                   .map((a) => (

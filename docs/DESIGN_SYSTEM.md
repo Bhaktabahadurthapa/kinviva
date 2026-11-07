@@ -1,4 +1,4 @@
-# MeetingLens design system — "Broadcast console"
+# Kinviva design system — "Broadcast console"
 
 A meeting assistant listens, so the interface borrows from a broadcast desk:
 an ON AIR lamp, a timecode, per-channel strips with segmented level meters,

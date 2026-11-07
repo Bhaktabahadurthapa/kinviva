@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(meetinglens_whisperd LANGUAGES C CXX)
+project(kinviva_whisperd LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,7 +44,7 @@ FetchContent_Declare(whisper_cpp
   GIT_SHALLOW    TRUE)
 FetchContent_MakeAvailable(whisper_cpp)
 
-add_executable(meetinglens-whisperd src/main.cpp)
+add_executable(kinviva-whisperd src/main.cpp)
 # json.hpp (nlohmann/json, MIT) ships with whisper.cpp's examples.
-target_include_directories(meetinglens-whisperd PRIVATE ${whisper_cpp_SOURCE_DIR}/examples)
-target_link_libraries(meetinglens-whisperd PRIVATE whisper)
+target_include_directories(kinviva-whisperd PRIVATE ${whisper_cpp_SOURCE_DIR}/examples)
+target_link_libraries(kinviva-whisperd PRIVATE whisper)

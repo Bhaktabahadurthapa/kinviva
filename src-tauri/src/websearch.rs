@@ -46,7 +46,7 @@ pub fn query_from(text: &str) -> String {
 
 /// Only http(s) addresses are kept, so a result cannot smuggle another scheme into the UI.
 fn parse(body: &str) -> Result<Vec<WebSource>, String> {
-    let r: Response = serde_json::from_str(body).map_err(|_| "The web search service sent a response MeetingLens could not read.".to_string())?;
+    let r: Response = serde_json::from_str(body).map_err(|_| "The web search service sent a response Kinviva could not read.".to_string())?;
     Ok(r.results
         .into_iter()
         .filter(|i| (i.url.starts_with("https://") || i.url.starts_with("http://")) && !i.content.trim().is_empty())

@@ -1,4 +1,4 @@
-// Progressive enhancement for the MeetingLens website. Every page works without this script.
+// Progressive enhancement for the Kinviva website. Every page works without this script.
 (function () {
   // Mobile menu
   var toggle = document.querySelector(".nav-toggle");

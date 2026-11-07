@@ -125,7 +125,7 @@ pub fn meeting_doc(m: &MeetingDetail) -> Doc {
     if let Some(end) = m.meeting.ended_at {
         meta.push(format!("Ended: {}", fmt_ts(end)));
     }
-    meta.push("Exported from MeetingLens".into());
+    meta.push("Exported from Kinviva".into());
 
     let by = |action: &str| m.ai_messages.iter().filter(|a| a.action == action).filter(usable).collect::<Vec<_>>();
     let mut sections = Vec::new();
@@ -209,7 +209,7 @@ pub fn interview_doc(entries: &[InterviewEntry]) -> Doc {
         meta.push(format!("From {} to {}", fmt_ts(a.created_at), fmt_ts(b.created_at)));
     }
     meta.push("Generated coaching, not verified facts. Scores are coaching feedback, not a hiring assessment.".into());
-    meta.push("Exported from MeetingLens".into());
+    meta.push("Exported from Kinviva".into());
     let mut sections = Vec::new();
     for (i, e) in entries.iter().enumerate() {
         let mut blocks = vec![Block::Small(

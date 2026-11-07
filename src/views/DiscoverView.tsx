@@ -105,7 +105,7 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
     <div className="disc">
       <header className="disc-head">
         <div><h1>Discover</h1><p className="hint">Real articles and repositories from official engineering sources, ranked on this computer for your interests. Nothing is made up: every item links to its source with the date the source gave.</p></div>
-        {enabled && <div className="tc-actions"><button className="btn btn-primary" onClick={() => void refresh()} disabled={busy}>{busy ? "Refreshing…" : "Refresh"}</button><span className="hint">{last ? `Updated ${new Date(last).toLocaleString()}` : "Not refreshed yet"}</span><span className="hint">Refreshes itself every hour while MeetingLens is open.</span></div>}
+        {enabled && <div className="tc-actions"><button className="btn btn-primary" onClick={() => void refresh()} disabled={busy}>{busy ? "Refreshing…" : "Refresh"}</button><span className="hint">{last ? `Updated ${new Date(last).toLocaleString()}` : "Not refreshed yet"}</span><span className="hint">Refreshes itself every hour while Kinviva is open.</span></div>}
       </header>
 
       {!enabled && (
@@ -148,7 +148,7 @@ export default function DiscoverView({ settings, onSettings, onError, onChanged,
             <tbody>{trends.map((t) => <tr key={t.topic}><td>{t.topic}</td><td>{t.recent}</td><td>{t.previous}</td><td>{t.sources}</td></tr>)}</tbody></table>
         )
       ) : section === "learn" ? (
-        <div className="disc-list">{(["Certifications", "Learning paths"] as const).map((g) => <section key={g} className="dash-card"><h2>{g}</h2><p className="hint">Official pages. MeetingLens does not copy their content or claim dates.</p><ul className="dash-list">{OFFICIAL.filter((o) => o[0] === g).map((o) => <li key={o[2]}><strong>{o[1]}</strong><span className="hint">{o[2].replace("https://", "").split("/")[0]}</span></li>)}</ul></section>)}</div>
+        <div className="disc-list">{(["Certifications", "Learning paths"] as const).map((g) => <section key={g} className="dash-card"><h2>{g}</h2><p className="hint">Official pages. Kinviva does not copy their content or claim dates.</p><ul className="dash-list">{OFFICIAL.filter((o) => o[0] === g).map((o) => <li key={o[2]}><strong>{o[1]}</strong><span className="hint">{o[2].replace("https://", "").split("/")[0]}</span></li>)}</ul></section>)}</div>
       ) : shown.length === 0 ? (
         <p className="hint">{enabled ? "Nothing here yet. Press Refresh." : "Turn Discover on to see articles and repositories."}</p>
       ) : (

@@ -1,4 +1,4 @@
-# MeetingLens — current system (audited 2026-11-04)
+# Kinviva — current system (audited 2026-11-04)
 
 Audited from the repository itself, not from earlier documentation.
 

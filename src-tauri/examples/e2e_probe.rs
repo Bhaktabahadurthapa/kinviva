@@ -7,13 +7,13 @@
 //! Prints per-source audio statistics, transcripts, streamed AI output,
 //! cancellation timing, persistence after reopen, and export checks.
 
-use meetinglens_lib::audio::{self, CaptureSink, Source};
-use meetinglens_lib::db::Db;
-use meetinglens_lib::llm::{self, LlmConfig, LlmError};
-use meetinglens_lib::prompts::{self, Action, PromptInput};
-use meetinglens_lib::stt::{self, native, SttConfig, SttEvent};
-use meetinglens_lib::transcript::{Segment, Transcript};
-use meetinglens_lib::export;
+use kinviva_lib::audio::{self, CaptureSink, Source};
+use kinviva_lib::db::Db;
+use kinviva_lib::llm::{self, LlmConfig, LlmError};
+use kinviva_lib::prompts::{self, Action, PromptInput};
+use kinviva_lib::stt::{self, native, SttConfig, SttEvent};
+use kinviva_lib::transcript::{Segment, Transcript};
+use kinviva_lib::export;
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -34,7 +34,7 @@ async fn main() {
         )
     });
     println!("[engine] {}", if native_hub.is_some() { "bundled C++ helper (native)" } else { "whisper-cli process per clip" });
-    let work = std::env::temp_dir().join("meetinglens-probe");
+    let work = std::env::temp_dir().join("kinviva-probe");
     std::fs::create_dir_all(&work).unwrap();
 
     let (ev_tx, mut ev_rx) = mpsc::unbounded_channel::<SttEvent>();

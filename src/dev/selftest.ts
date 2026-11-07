@@ -24,7 +24,7 @@ async function until(pred: () => boolean, ms: number) {
 
 export async function runSelfTest(mode: string) {
   const w = getCurrentWindow();
-  const step = (s: string) => w.setTitle(`MeetingLens — selftest: ${s}`);
+  const step = (s: string) => w.setTitle(`Kinviva — selftest: ${s}`);
   if (mode === "auto") {
     // Hands-free check: start, then wait for automatic notes with no clicks.
     await wait(1500);

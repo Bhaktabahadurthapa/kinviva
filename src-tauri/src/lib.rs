@@ -1,4 +1,4 @@
-//! MeetingLens desktop backend.
+//! Kinviva desktop backend.
 
 pub mod architecture;
 pub mod assistant;
@@ -160,9 +160,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
-            // MEETINGLENS_DATA_DIR gives tests (or a portable setup) their own
+            // KINVIVA_DATA_DIR (or the older MEETINGLENS_DATA_DIR) gives tests (or a portable setup) their own
             // database and settings without touching the real ones.
-            let data_dir = match std::env::var_os("MEETINGLENS_DATA_DIR") {
+            let data_dir = match std::env::var_os("KINVIVA_DATA_DIR").or_else(|| std::env::var_os("MEETINGLENS_DATA_DIR")) {
                 Some(dir) => std::path::PathBuf::from(dir),
                 None => app.path().app_data_dir()?,
             };
@@ -289,7 +289,7 @@ pub fn run() {
             }
         })
         .build(tauri::generate_context!())
-        .expect("error while building MeetingLens")
+        .expect("error while building Kinviva")
         .run(|app, event| {
             if let tauri::RunEvent::ExitRequested { .. } = event {
                 // Release audio devices and close provider connections on quit.

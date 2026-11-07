@@ -1,4 +1,4 @@
-# Languages in MeetingLens: what is used, and why
+# Languages in Kinviva: what is used, and why
 
 The rule applied: **a language is added only where a measured, current need
 justifies its build, packaging and maintenance cost.** Working modules were not

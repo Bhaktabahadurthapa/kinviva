@@ -31,7 +31,7 @@ export const Intro: React.FC = () => {
 						transform: `translateY(${(1 - word) * 30}px)`,
 					}}
 				>
-					Meeting<span style={{fontStyle: 'italic', fontWeight: 400, color: c.signal}}>Lens</span>
+					Kin<span style={{fontStyle: 'italic', fontWeight: 400, color: c.signal}}>viva</span>
 				</div>
 				<div style={{width: 520 * line, height: 2, background: c.signal, margin: '18px 0 26px'}} />
 				<div style={{fontSize: 40, color: c.text2, opacity: tag, transform: `translateY(${(1 - tag) * 16}px)`}}>
@@ -54,7 +54,7 @@ export const Problem: React.FC = () => {
 					<Pain key={p} text={p} delay={8 + i * 14} />
 				))}
 				<div style={{fontSize: 36, color: c.text2, marginTop: 34, opacity: end, transform: `translateX(${(1 - end) * -20}px)`}}>
-					MeetingLens listens, explains, and helps you answer.
+					Kinviva listens, explains, and helps you answer.
 				</div>
 			</AbsoluteFill>
 		</Stage>
@@ -212,7 +212,7 @@ export const Outro: React.FC = () => {
 				<div style={{display: 'flex', alignItems: 'center', gap: 28, opacity: a, transform: `scale(${0.9 + a * 0.1})`}}>
 					<Logo size={96} />
 					<div style={{fontFamily: f.display, fontSize: 112, fontWeight: 600, letterSpacing: '-0.025em'}}>
-						Meeting<span style={{fontStyle: 'italic', fontWeight: 400, color: c.signal}}>Lens</span>
+						Kin<span style={{fontStyle: 'italic', fontWeight: 400, color: c.signal}}>viva</span>
 					</div>
 				</div>
 				<div

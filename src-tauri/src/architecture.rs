@@ -263,7 +263,7 @@ pub fn validate(raw: &str, transcript: &str, documents: &str) -> Result<Model, S
     })
 }
 
-const RULES: &str = "You are MeetingLens, a careful software architect. From the conversation transcript, build a small architecture model of the system the speakers describe.\n\
+const RULES: &str = "You are Kinviva, a careful software architect. From the conversation transcript, build a small architecture model of the system the speakers describe.\n\
 Return ONE JSON object and nothing else (no markdown fences). Keys:\n\
 \"title\": short name of the system or flow (max 8 words),\n\
 \"diagram\": \"flowchart\" for structure and data flow, or \"sequence\" when the speakers describe an ordered request or message flow,\n\

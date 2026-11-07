@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/media/architecture-hero.png" alt="MeetingLens: system audio and microphone flow through speech-to-text into a live transcript; the assistant combines recent lines with document passages, asks a local or cloud model, and shows answers in the window and overlay while meetings are saved on device." width="100%">
+<img src="docs/media/architecture-hero.png" alt="Kinviva: system audio and microphone flow through speech-to-text into a live transcript; the assistant combines recent lines with document passages, asks a local or cloud model, and shows answers in the window and overlay while meetings are saved on device." width="100%">
 
 <br>
 
@@ -26,13 +26,13 @@
 
 <div align="center">
 
-[![MeetingLens demo: live transcript, plain-English explanation and suggested reply](docs/media/meetinglens-demo.gif)](docs/media/meetinglens-demo.mp4)
+[![Kinviva demo: live transcript, plain-English explanation and suggested reply](docs/media/kinviva-demo.gif)](docs/media/kinviva-demo.mp4)
 
-**[▶ Watch the full 36-second demo (MP4, 1080p)](docs/media/meetinglens-demo.mp4)**
+**[▶ Watch the full 36-second demo (MP4, 1080p)](docs/media/kinviva-demo.mp4)**
 
 </div>
 
-Every screen in the video is a real capture of MeetingLens on macOS, with
+Every screen in the video is a real capture of Kinviva on macOS, with
 system audio transcribed by whisper.cpp and answers from a local Ollama
 model. The video is built with Remotion from [`demo-video/`](demo-video/).
 
@@ -87,7 +87,7 @@ git clone https://github.com/Bhaktabahadurthapa/meetinglens.git
 ```
 
 ```bash
-cd meetinglens && npm install && npm run tauri dev
+cd kinviva && npm install && npm run tauri dev
 ```
 
 For a fully local setup (free, nothing leaves your Mac):
@@ -128,8 +128,8 @@ To build it yourself instead, create a normal app you can drag into Applications
 ./scripts/build-mac-app.sh
 ```
 
-This creates `dist-mac/MeetingLens.app` and `dist-mac/MeetingLens_0.1.5_aarch64.dmg`.
-Open the DMG, drag **MeetingLens** onto **Applications**, then open it from
+This creates `dist-mac/Kinviva.app` and `dist-mac/Kinviva_0.1.5_aarch64.dmg`.
+Open the DMG, drag **Kinviva** onto **Applications**, then open it from
 Launchpad. On first start macOS asks for **Microphone** and **Screen & System
 Audio Recording** permission; allow both, then quit and reopen the app once.
 
@@ -202,7 +202,7 @@ npm run tauri build
   on.
 - **No telemetry,** no account, no update checks.
 - **Consent matters:** some places require everyone's consent to record or
-  transcribe a conversation. Tell participants when you use MeetingLens.
+  transcribe a conversation. Tell participants when you use Kinviva.
 
 ## Status
 

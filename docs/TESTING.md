@@ -12,7 +12,7 @@ Run 2026-11-03.
 | Frontend reducer | `npm test` | **6 passed** |
 | C++ helper protocol | driver script against the real binary and real models | load, two parallel channels, cancel (13–47 ms), unknown op, empty audio, oversize payload (exit 2), stdin close (2 ms), shutdown mid-inference (17–39 ms): all as designed |
 | Type check | `npx tsc --noEmit` | clean |
-| Release bundle | `npm run tauri build -- --bundles app` | builds `MeetingLens.app` (19 MB, unsigned), launches; dev self-test code absent from the production JS |
+| Release bundle | `npm run tauri build -- --bundles app` | builds `Kinviva.app` (19 MB, unsigned), launches; dev self-test code absent from the production JS |
 
 Coverage by area:
 

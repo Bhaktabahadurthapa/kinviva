@@ -1,13 +1,13 @@
 [package]
-name = "meetinglens"
+name = "kinviva"
 version = "0.1.1"
-description = "MeetingLens - local-first desktop meeting assistant"
+description = "Kinviva - local-first desktop meeting assistant"
 edition = "2021"
 license-file = "../LICENSE"
 publish = false
 
 [lib]
-name = "meetinglens_lib"
+name = "kinviva_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

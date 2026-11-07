@@ -164,7 +164,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
   return (
     <div className="page settings">
       <header className="page-head">
-        <h1>{s.onboarded ? "Settings" : "Set up MeetingLens"}</h1>
+        <h1>{s.onboarded ? "Settings" : "Set up Kinviva"}</h1>
         <button className="btn btn-primary" onClick={() => persist(s)}>
           Save
         </button>
@@ -180,7 +180,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
 
       {!s.onboarded && (
         <div className="setup">
-          <p>Three steps, then you're ready. Keys are stored in your system keychain, not in MeetingLens files.</p>
+          <p>Three steps, then you're ready. Keys are stored in your system keychain, not in Kinviva files.</p>
           <ol>
             <li className={audioReady ? "done" : ""}>Choose audio sources</li>
             <li className={sttReady ? "done" : ""}>Set up speech recognition</li>
@@ -264,7 +264,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           <>
             {s.stt_provider === "whisper_native" ? (
               <p className="hint">
-                Audio stays on this computer. MeetingLens includes its own whisper.cpp engine that keeps the model loaded, so text appears quickly and
+                Audio stays on this computer. Kinviva includes its own whisper.cpp engine that keeps the model loaded, so text appears quickly and
                 nothing else needs installing. You only choose a ggml model file (for example <code>ggml-small.en.bin</code>, more accurate than
                 base). {!nativeAvailable && <b>This build does not include the engine; pick the command-line tool instead.</b>}
               </p>
@@ -357,7 +357,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
             <option value="medium">Medium</option>
             <option value="high">High — slowest, deepest</option>
           </select>
-          <small>Only used by models that think before answering. If a model does not support it, MeetingLens retries without it.</small>
+          <small>Only used by models that think before answering. If a model does not support it, Kinviva retries without it.</small>
         </div>
         <div className="grid2">
           <div className="field">
@@ -430,7 +430,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
             checked={s.overlay_content_protection}
             onChange={(e) => set("overlay_content_protection", e.target.checked)}
           />
-          Hide MeetingLens (main window and overlay) from screen sharing and recording (on by default)
+          Hide Kinviva (main window and overlay) from screen sharing and recording (on by default)
         </label>
         <p className="hint">
           Best effort only. It relies on the OS window-sharing flag; some capture tools, apps and OS versions ignore it, and it does not hide the Dock icon
@@ -447,7 +447,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         </p>
         <label className="check">
           <input type="checkbox" checked={s.overlay_on_minimize} onChange={(e) => set("overlay_on_minimize", e.target.checked)} />
-          Show the floating answer overlay when I minimize MeetingLens
+          Show the floating answer overlay when I minimize Kinviva
         </label>
         <div className="grid2">
           {(
@@ -473,7 +473,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         <section className="card about">
           <h2>About</h2>
           <p>
-            MeetingLens {info.version} · data stored locally in <code>{info.data_dir}</code> · schema v{info.schema_version}
+            Kinviva {info.version} · data stored locally in <code>{info.data_dir}</code> · schema v{info.schema_version}
           </p>
           <p className="hint">No telemetry. Meeting content and API keys are not written to logs.</p>
         </section>

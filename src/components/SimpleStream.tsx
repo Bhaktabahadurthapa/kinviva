@@ -132,7 +132,7 @@ export function SimpleStream({ finals, side, running, children }: { finals: Segm
       <div className="simple-stream" aria-live="polite">
         {failure && (
           <div className="banner" role="alert">
-            <b>MeetingLens could not generate an answer.</b> {failure}
+            <b>Kinviva could not generate an answer.</b> {failure}
           </div>
         )}
         {steps.length === 0 && running && !failure && <p className="empty">When they finish a thought, it appears here as step 1 with its meaning in simple words.</p>}
@@ -140,7 +140,7 @@ export function SimpleStream({ finals, side, running, children }: { finals: Segm
           <div className="how">
             <p className="empty">Simple explanations appear here automatically.</p>
             <ol className="how-steps">
-              <li><b>Begin session</b><span>MeetingLens listens to the call and your microphone.</span></li>
+              <li><b>Begin session</b><span>Kinviva listens to the call and your microphone.</span></li>
               <li><b>They speak</b><span>Each finished thought becomes a numbered step.</span></li>
               <li><b>You reply</b><span>A short answer you could say is drafted when a question is asked.</span></li>
             </ol>

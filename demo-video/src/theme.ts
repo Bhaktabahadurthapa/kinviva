@@ -1,4 +1,4 @@
-// Mirrors the MeetingLens app design tokens (docs/DESIGN_SYSTEM.md).
+// Mirrors the Kinviva app design tokens (docs/DESIGN_SYSTEM.md).
 export const c = {
 	bg: '#110f0d',
 	bg2: '#15120f',

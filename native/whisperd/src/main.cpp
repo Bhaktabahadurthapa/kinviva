@@ -1,6 +1,6 @@
-// meetinglens-whisperd: a persistent whisper.cpp speech-to-text helper.
+// kinviva-whisperd: a persistent whisper.cpp speech-to-text helper.
 //
-// The MeetingLens app starts one of these per meeting as a child process.
+// The Kinviva app starts one of these per meeting as a child process.
 // The model is loaded once and kept in memory; each audio channel gets its
 // own whisper state, so channels run in parallel and share the weights.
 //
@@ -68,10 +68,10 @@ void emit_error(const char *code, const std::string &message, const json &id = n
     emit(std::move(j));
 }
 
-// Test hook: with MEETINGLENS_WHISPERD_FAKE set, no model is loaded and
+// Test hook: with KINVIVA_WHISPERD_FAKE set, no model is loaded and
 // transcription returns a canned string, so the app's process handling
 // (timeouts, cancellation, crashes) can be tested without a model.
-bool fake_mode() { return std::getenv("MEETINGLENS_WHISPERD_FAKE") != nullptr; }
+bool fake_mode() { return std::getenv("KINVIVA_WHISPERD_FAKE") != nullptr; }
 
 void quiet_log(enum ggml_log_level level, const char *text, void *) {
     if (level >= GGML_LOG_LEVEL_WARN && text) std::fputs(text, stderr);
@@ -277,7 +277,7 @@ void start_parent_watchdog() {
 
 int main(int argc, char **argv) {
     if (argc > 1 && std::strcmp(argv[1], "--version") == 0) {
-        std::printf("meetinglens-whisperd %s (whisper.cpp %s)\n", kVersion, whisper_version());
+        std::printf("kinviva-whisperd %s (whisper.cpp %s)\n", kVersion, whisper_version());
         return 0;
     }
     std::ios::sync_with_stdio(false);
@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
     start_parent_watchdog();
 
     emit({{"event", "ready"},
-          {"name", "meetinglens-whisperd"},
+          {"name", "kinviva-whisperd"},
           {"version", kVersion},
           {"protocol", kProtocol},
           {"whisper", whisper_version()},
