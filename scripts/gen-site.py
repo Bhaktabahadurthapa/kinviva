@@ -555,7 +555,7 @@ def download():
       </div>
     </div></section>
     <section class="alt"><div class="wrap">
-      <div class="sec-head"><p class="eyebrow">Prefer to build it yourself?</p><h2>Build it from source.</h2><p class="lead">Everything on the Features pages is in the open source code. If you are comfortable with developer tools, you can build version {NEXT} yourself.</p></div>
+      <div class="sec-head"><p class="eyebrow">Prefer to build it yourself?</p><h2>Build it from source.</h2><p class="lead">Everything on the Features pages is in the public source code. If you are comfortable with developer tools, you can build version {NEXT} yourself.</p></div>
       <div class="card reveal"><ol class="steps-ol">
         <li>Install <b>Node.js</b> and <b>Rust</b> (rustup).</li>
         <li><code>git clone {GH}.git</code> and open the folder.</li>
