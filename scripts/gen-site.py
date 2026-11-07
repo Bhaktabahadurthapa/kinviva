@@ -8,8 +8,8 @@ GH = "https://github.com/Bhaktabahadurthapa/kinviva"
 REL = GH + "/releases"
 INSTALLER = "0.1.4"   # the version people can download today
 NEXT = "0.1.5"        # the next installer, which includes the new workspace
-DMG = REL + "/latest/download/Kinviva.dmg"
-EXE = REL + "/latest/download/Kinviva-Windows-Setup.exe"
+DMG = REL + "/latest/download/MeetingLens.dmg"
+EXE = REL + "/latest/download/MeetingLens-Windows-Setup.exe"
 OG = "https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg"
 
 NAV = [("features.html", "Features"), ("technical.html", "Technical"), ("whiteboard.html", "Whiteboard"), ("discover.html", "Discover"), ("interview.html", "Interview"), ("privacy.html", "Privacy"), ("video.html", "Video")]
@@ -547,7 +547,7 @@ def download():
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
           <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
-          <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download Kinviva.dmg</a></p>
+          <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download MeetingLens.dmg</a></p>
           <p class="muted">Version {INSTALLER} · about 9.5 MB</p>
           <ol class="steps-ol">
             <li>Open the downloaded <code>.dmg</code> and drag <b>Kinviva</b> onto <b>Applications</b>.</li>
@@ -586,7 +586,7 @@ def download():
         {card("mic", "rose", "Speech recognition", "The built-in whisper.cpp engine on Mac, or Deepgram if you prefer the cloud.")}
         {card("shield", "teal", "Permissions", "Microphone and, on Mac, Screen &amp; System Audio Recording. Kinviva never changes your system permissions for you.")}
       </div>
-      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/Kinviva.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
+      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/MeetingLens.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
     </div></section>
     <div class="toast" id="started" role="status" hidden><b>Your download has started.</b><span>Open it from your Downloads and follow the steps on this page.</span><button type="button" aria-label="Close">×</button></div>
 '''

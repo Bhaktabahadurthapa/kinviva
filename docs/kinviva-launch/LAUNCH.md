@@ -2,7 +2,7 @@
 
 Stage 1 (this branch, `kinviva-launch`, not pushed): the website, README and workflows already use the new repo address
 (`Bhaktabahadurthapa/kinviva`), the new site path (`bhaktathapa.com.np/kinviva/`) and the new installer names
-(`Kinviva.dmg`, `Kinviva-Windows-Setup.exe`). Screenshots are retaken with the Kinviva wordmark. My Learning is removed from the site.
+(`MeetingLens.dmg`, `MeetingLens-Windows-Setup.exe` until the 0.1.5 release (then switch to `Kinviva.dmg`, `Kinviva-Windows-Setup.exe`)). Screenshots are retaken with the Kinviva wordmark. My Learning is removed from the site.
 
 Do NOT push this branch to `main` before steps 2 and 3, or the live download links and repo links will point to things that do not exist yet.
 
