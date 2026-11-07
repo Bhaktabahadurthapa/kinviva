@@ -42,7 +42,8 @@ Purpose: to learn who wants advanced features and to contact selected participan
 - **Collected**: name, email address, use case (a short list or free choice), optional company, the time and the version of the consent text you agreed to. A hashed form of your network address is used for a short time to limit abuse and is not stored with your signup.
 - **Consent**: a required checkbox, unticked by default: "I agree that Kinviva stores my name, email and answers so it can contact me about Early Access. I can ask for deletion at any time." Version id `ea-2026-11-v1`.
 - **Use**: contacting selected participants about Early Access, and planning. No selling, no advertising lists, no sharing except with the hosting provider that runs the service.
-- **Retention**: until you ask for deletion, or 12 months after the program ends, whichever is first (the owner may set a shorter period).
+- **Retention**: at most 12 months from the date you agreed, unless you renew your consent. Earlier deletion on request.
+- **Outreach**: confirmed (double opt-in) email is required before any large-scale promotional outreach. It is not built yet.
 - **Deletion and access**: email the address given on the Early Access page. Records are deleted on request.
 - **Security**: server-side validation, rate limiting, duplicate handling, HTTPS only, minimal fields, no logging of personal data.
 - **Children**: the form is not meant for people under 16.

@@ -10,7 +10,13 @@ INSTALLER = "0.1.5"   # the version people can download today (the first one nam
 NEXT = "0.1.5"        # features added since 0.1.4 carry a "New in" badge
 DMG = REL + "/latest/download/Kinviva.dmg"
 EXE = REL + "/latest/download/Kinviva-Windows-Setup.exe"
-OG = "https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg"
+CURRENT_BASE = "https://bhaktathapa.com.np/kinviva/"
+# Public address of the site. Stays on the current address until the owner approves the move to kinviva.tech;
+# then build with KINVIVA_SITE_BASE=https://kinviva.tech/ (see docs/kinviva-launch/MOVE-TO-KINVIVA-TECH.md).
+BASE = os.environ.get("KINVIVA_SITE_BASE", CURRENT_BASE)
+if not BASE.endswith("/"): BASE += "/"
+MOVED = BASE != CURRENT_BASE
+OG = CURRENT_BASE + "media/v2-dashboard.jpg"
 # Address of the deployed Early Access service. Empty until the owner approves deploying it; the form then stays closed.
 EA_ENDPOINT = os.environ.get("KINVIVA_EA_ENDPOINT", "")
 EA_MESSAGE = "Discover what's next with Kinviva. Join Early Access for advanced AI workflows, technical copilots, and productivity features. We'll contact selected participants as access becomes available."
@@ -60,7 +66,9 @@ def head(title, desc, page, og=OG):
   <meta property="og:type" content="website">
   <meta property="og:title" content="{esc(title)}">
   <meta property="og:description" content="{esc(desc)}">
-  <meta property="og:image" content="{og}">
+  <link rel="canonical" href="{BASE}{"" if page == "index.html" else page}">
+  <meta property="og:url" content="{BASE}{"" if page == "index.html" else page}">
+  <meta property="og:image" content="{og.replace(CURRENT_BASE, BASE)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
@@ -685,6 +693,11 @@ def docs_page():
     write("docs.html", o)
 
 if __name__ == "__main__":
-    for f in (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page):
+    PAGES = (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page)
+    for f in PAGES:
         f()
     print("Wrote 11 pages to", SITE)
+    if MOVED:  # only when building for the new address
+        urls = "".join(f"  <url><loc>{BASE}{'' if f.__name__ == 'home' else {'docs_page': 'docs', 'early_access': 'early-access'}.get(f.__name__, f.__name__) + '.html'}</loc></url>\n" for f in PAGES)
+        (SITE / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
+        (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {BASE}sitemap.xml\n")
