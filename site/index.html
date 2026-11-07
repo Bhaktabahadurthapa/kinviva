@@ -63,18 +63,22 @@
       </div>
     </section>
 
-    <section class="glance-sec"><div class="wrap">
+    <section class="glance-sec" id="what"><div class="wrap">
+      <div class="qa-head"><p class="eyebrow">What is Kinviva?</p></div>
       <dl class="glance">
         <div><dt>What it is</dt><dd>A free app for your computer. It listens to a call, meeting or lecture and explains it in plain words while it happens.</dd></div>
         <div><dt>Who it is for</dt><dd>Anyone who has to follow fast talk and answer well: at work, in technical calls, in interviews and in class.</dd></div>
         <div><dt>Where it runs</dt><dd>On your Mac or Windows PC. There is no Kinviva server, no account and no bot that joins your call.</dd></div>
         <div><dt>What it costs</dt><dd>Nothing to download or use. If you pick a cloud AI service, that service bills you directly. A local model is free.</dd></div>
       </dl>
+      <nav class="qa-jump" aria-label="Jump to a question">
+        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#when">When and where?</a><a href="#why">Why is it different?</a><a href="#today">What works today?</a>
+      </nav>
     </div></section>
 
-    <section>
+    <section id="problems">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">The problem</p><h2>Conversations move faster than people can follow.</h2><p class="lead">Seven real situations Kinviva is built for, and what it does in each.</p></div>
+        <div class="sec-head"><p class="eyebrow">What problems does it solve?</p><h2>Conversations move faster than people can follow.</h2><p class="lead">Seven real situations Kinviva is built for, and what it does in each.</p></div>
         <div class="prob3-head" aria-hidden="true"><span></span><span>Real-world problem</span><span>Example</span><span>Kinviva's solution</span></div>
         <div class="prob-list">
           <div class="prob3 reveal"><div class="p-num">01</div><div><h3>Difficult conversations</h3></div><div><p class="eg">An employee does not understand an unfamiliar term during a meeting.</p></div><div><p class="how">Live transcription and simple-English explanations.</p></div></div>
@@ -88,9 +92,9 @@
       </div>
     </section>
 
-    <section class="alt">
+    <section class="alt" id="how">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">How it works</p><h2>Four steps, in plain terms.</h2></div>
+        <div class="sec-head"><p class="eyebrow">How does it work?</p><h2>Four steps, in plain terms.</h2></div>
         <ol class="flow">
           <li class="reveal"><b>Set it up once</b><p>Install the app and choose its answer engine: your own key (for example Gemini) or a free local model through Ollama. Allow microphone and system-audio access when your computer asks.</p></li>
           <li class="reveal"><b>Press Start</b><p>Kinviva hears the call (<em>Them</em>, from your computer's audio) and your voice (<em>Me</em>, from the microphone) and writes the transcript on your computer.</p></li>
@@ -101,9 +105,9 @@
       </div>
     </section>
 
-    <section>
+    <section id="when">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">When and where</p><h2>Use it whenever you need to keep up.</h2><p class="lead">It listens to the audio on your computer, so it works with a call in any app or a video in your browser. Nothing is installed in the other app.</p></div>
+        <div class="sec-head"><p class="eyebrow">When and where do you use it?</p><h2>Use it whenever you need to keep up.</h2><p class="lead">It listens to the audio on your computer, so it works with a call in any app or a video in your browser. Nothing is installed in the other app.</p></div>
         <table class="table reveal">
           <thead><tr><th>Situation</th><th>When you would use it</th><th>What you get</th></tr></thead>
           <tbody>
@@ -138,9 +142,9 @@
       </div>
     </section>
 
-    <section>
+    <section id="why">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Why it is different</p><h2>Three things together.</h2><p class="lead">Kinviva is built to do all three together, on your own computer.</p></div>
+        <div class="sec-head"><p class="eyebrow">Why is it different?</p><h2>Three things together.</h2><p class="lead">Kinviva is built to do all three together, on your own computer.</p></div>
         <div class="three">
           <div class="reveal"><span class="big-n">1</span><h3>Understand it live</h3><p>It explains what someone is saying as they say it, not only in a summary after the meeting.</p></div>
           <div class="reveal"><span class="big-n">2</span><h3>Keep it private</h3><p>Local speech recognition and a local AI model mean your conversation never has to reach an outside cloud model. There is no Kinviva server, no account and no tracking.</p></div>
@@ -149,9 +153,9 @@
       </div>
     </section>
 
-    <section class="alt">
+    <section class="alt" id="today">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">What works today</p><h2>The honest checklist.</h2><p class="lead">What is in the version you can download now, and what is not.</p></div>
+        <div class="sec-head"><p class="eyebrow">What works today?</p><h2>The honest checklist.</h2><p class="lead">What is in the version you can download now, and what is not.</p></div>
         <table class="table status reveal"><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Live meeting transcription</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically explain conversations</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Detect questions and suggest replies</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Save and search meeting history</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Search your documents with AI</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Generate architecture diagrams</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Local AI for privacy</td><td><span class="badge b-sup">Supported</span></td></tr><tr><td>Floating meeting assistant (overlay)</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically detect Zoom or Teams meetings</td><td><span class="badge b-nv">Not verified</span></td></tr><tr><td>Automatically create and assign follow-up tasks</td><td><span class="badge b-nv">Not fully implemented</span></td></tr><tr><td>Autonomous multi-step AI agents</td><td><span class="badge b-na">Not available. Planned for Pro.</span></td></tr><tr><td>Team integrations and collaboration</td><td><span class="badge b-na">Not available. Planned for Business.</span></td></tr></tbody></table>
         <div class="notice limits reveal"><b>Good to know</b><p>You press Start to begin; Kinviva does not detect meetings by itself yet. Answers come from the AI you connect and can be wrong, so you decide what to say. You need an answer engine (a cloud key or a local model). It works best on a Mac with Apple silicon; the Windows version is experimental and has not been tested on real hardware by us. It is built for English today. The source is public on GitHub but is not yet open source licensed.</p></div>
       </div>
