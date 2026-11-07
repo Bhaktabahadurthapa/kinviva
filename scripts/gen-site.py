@@ -21,7 +21,8 @@ OG = CURRENT_BASE + "media/v2-dashboard.jpg"
 EA_ENDPOINT = os.environ.get("KINVIVA_EA_ENDPOINT", "")
 EA_MESSAGE = "Discover what's next with Kinviva. Join Early Access for advanced AI workflows, technical copilots, and productivity features. We'll contact selected participants as access becomes available."
 
-NAV = [("index.html", "Product"), ("features.html", "Features"), ("community.html", "Community"), ("early-access.html", "Pro Early Access"), ("docs.html", "Documentation"), (GH, "GitHub")]
+# Four links only. The logo goes home, Download is the one button, GitHub lives in the footer and on the Community page.
+NAV = [("features.html", "Features"), ("community.html", "Community"), ("docs.html", "Documentation"), ("early-access.html", "Early Access")]
 
 ICON = {
  "home": "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
