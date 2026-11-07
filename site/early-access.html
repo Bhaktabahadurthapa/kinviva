@@ -35,12 +35,13 @@
     </div>
   </header>
   <main id="main">
-    <div class="page-head"><div class="wrap"><p class="eyebrow">Pro Early Access</p><h1>Discover what's next with Kinviva.</h1><p class="lead">Discover what&#x27;s next with Kinviva. Join Early Access for advanced AI workflows, technical copilots, and productivity features. We&#x27;ll contact selected participants as access becomes available.</p></div></div>
+    <div class="page-head"><div class="wrap"><p class="eyebrow">Pro Early Access</p><h1>Early Access is coming soon.</h1><p class="lead">We're preparing the next chapter of Kinviva. Explore the product today and return when registrations open.</p></div></div>
     <section><div class="wrap ea-wrap">
       <div class="ea-form card">
-        <h2>Join Early Access</h2>
-        <p class="notice-line" role="status"><b>Registrations are temporarily unavailable.</b> The form will start accepting sign-ups once the Early Access service is switched on. Nothing you type here is sent anywhere until then. Please check back soon.</p>
+        <h2>Registrations open soon</h2>
+        <p class="notice-line" role="status"><b>Registrations are temporarily unavailable.</b> Nothing you type here is sent anywhere. Please return when registrations open.</p>
         <form id="ea-form" data-endpoint="" novalidate>
+        <fieldset class="ea-fields" disabled>
           <label>Your name<input name="name" type="text" autocomplete="name" maxlength="100" required></label>
           <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
           <label>What would you use Kinviva for?<select name="use_case" required><option value="">Choose one</option><option value="meetings">Meetings</option><option value="interviews">Interviews</option><option value="learning">Learning and classes</option><option value="technical">Technical work (engineering, operations)</option><option value="team">My team or company</option><option value="other">Something else</option></select></label>
@@ -48,6 +49,7 @@
           <label class="ea-hp" aria-hidden="true">Leave this empty<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
           <label class="ea-consent"><input name="consent" type="checkbox" required> <span>I agree that Kinviva stores my name, email and answers so it can contact me about Early Access. I can ask for deletion at any time. <a href="https://github.com/Bhaktabahadurthapa/kinviva/blob/main/docs/PRIVACY.md">How my data is used</a>.</span></label>
           <button class="btn btn-primary btn-big" type="submit" disabled>Join Early Access</button>
+        </fieldset>
           <p id="ea-status" class="ea-status" role="status" aria-live="polite"></p>
         </form>
         <noscript><p>This form needs JavaScript.</p></noscript>

@@ -138,7 +138,23 @@ def cta(title="Free, local-first, and yours.", lead=f"Download the Kinviva Commu
     return f'''    <section><div class="wrap"><div class="cta-band reveal"><h2>{title}</h2><p class="lead">{lead}</p><a class="btn btn-primary btn-big" href="download.html">Download Kinviva</a></div></div></section>
 '''
 
+import re
+_IMG = re.compile(r'<img src="media/(v2-[a-z-]+)\.jpg"([^>]*)>')
+def _picture(m):
+    n, rest = m.group(1), m.group(2)
+    return (f'<picture><source type="image/webp" srcset="media/{n}-800.webp 800w, media/{n}-1600.webp 1600w" sizes="(min-width: 1100px) 1000px, 100vw">'
+            f'<img src="media/{n}.jpg"{rest if "decoding" in rest else rest + " decoding=\"async\""}></picture>')
+
+def ea_cta():
+    if EA_ENDPOINT:
+        title, lead, btn = "Join Early Access.", EA_MESSAGE, '<a class="btn btn-primary btn-big" href="early-access.html">Join Early Access</a>'
+    else:
+        title, lead, btn = "Early Access is coming soon.", "We're preparing the next chapter of Kinviva. Explore the product today and return when registrations open.", '<a class="btn btn-primary btn-big" href="early-access.html">About Early Access</a>'
+    return f'''    <section><div class="wrap"><div class="cta-band reveal"><h2>{title}</h2><p class="lead">{lead}</p><div class="cta">{btn}<a class="btn btn-ghost btn-big" href="download.html">Download the free Community Edition</a></div></div></div></section>
+'''
+
 def write(name, content):
+    content = _IMG.sub(_picture, content)
     (SITE / name).write_text(content)
 
 NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can download today is <b>{INSTALLER}</b>, the first release named Kinviva (it was MeetingLens before). Features marked <b>New in {NEXT}</b> were added since 0.1.4.</p></div>'''
@@ -149,53 +165,39 @@ def home():
              "Kinviva listens to meetings, interviews and lectures, explains them in plain words, draws diagrams and whiteboards, and helps you learn. Free for Mac and Windows, no account.", "index.html")
     o += f'''    <section class="hero">
       <div class="wrap">
-        <p class="eyebrow">Free · Local-first · No account</p>
-        <h1>Hear it. Understand it. <span>Visualize it.</span></h1>
-        <p class="lead">Kinviva listens to your meetings, interviews and lectures, explains every point in plain words, and turns what was said into diagrams, whiteboards, notes and notes. It all stays on your computer.</p>
-        <div class="cta"><a class="btn btn-primary btn-big" href="download.html">Download for free</a><a class="btn btn-ghost btn-big" href="features.html">See every feature</a></div>
-        <p class="fine">Mac and Windows · Current installer {INSTALLER} · <a href="{GH}">Source on GitHub</a></p>
+        <p class="eyebrow">Privacy-first AI copilot</p>
+        <h1>Every conversation, <span>clearer.</span></h1>
+        <p class="lead">Kinviva listens to your meetings, technical discussions, interviews and lectures on your own computer, explains what was said in plain words, and turns it into notes, diagrams and answers you can trust.</p>
+        <div class="cta"><a class="btn btn-primary btn-big" href="early-access.html">Get Early Access</a><a class="btn btn-ghost btn-big" href="features.html">Explore Features</a></div>
+        <p class="fine">The free Community Edition is available now: <a href="download.html">download for Mac and Windows</a> · version {INSTALLER} · <a href="{GH}">source on GitHub</a></p>
         <div class="stage">
-          <div class="tabs on-dark" role="tablist" aria-label="Theme" data-tabs>
-            <button role="tab" id="tab-light" aria-selected="true" aria-controls="p-light">Light</button>
-            <button role="tab" id="tab-dark" aria-selected="false" aria-controls="p-dark" tabindex="-1">Dark</button>
-          </div>
           <div class="frame"><div class="frame-bar"><i></i><i></i><i></i><span>Kinviva · Dashboard (sample data)</span></div>
-            <div id="p-light" class="panel" role="tabpanel" aria-labelledby="tab-light"><img src="media/v2-dashboard.jpg" alt="The Kinviva Dashboard in light mode: activity counts, recent sessions, an assistant and discover cards" width="1800" height="1125"></div>
-            <div id="p-dark" class="panel" role="tabpanel" aria-labelledby="tab-dark" hidden><img src="media/v2-dashboard-dark.jpg" alt="The Kinviva Dashboard in dark mode" width="1800" height="1125" loading="lazy"></div>
+            <img src="media/v2-dashboard-dark.jpg" alt="The Kinviva dashboard: recent sessions, activity counts and an assistant panel, shown with sample data" width="1800" height="1125" fetchpriority="high">
           </div>
         </div>
       </div>
     </section>
-    <section class="facts"><div class="wrap">
-      <div class="fact"><b>Local-first</b><span>Your sessions, notes and boards live on your computer.</span></div>
-      <div class="fact"><b>No account</b><span>No sign-up, no subscription, no telemetry.</span></div>
-      <div class="fact"><b>Your own AI</b><span>Use a cloud key or a local model. You choose.</span></div>
-      <div class="fact"><b>Honest by design</b><span>Every answer shows where it came from.</span></div>
-    </div></section>
 
     <section>
       <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">One workspace</p><h2>Everything around a conversation, in one place.</h2><p class="lead">Capture it, understand it, draw it, keep it, and learn from it. Each part works with the others.</p></div>
-        <div class="grid g3">
-          {card("mic", "blue", "Meetings", "Live transcript, plain-English explanations, suggested replies, recaps, and decisions with owners.", "features.html#meetings")}
-          {card("chat", "rose", "Interviews", "Questions are answered as they are asked, in the style you choose, without inventing your experience.", "interview.html")}
-          {card("code", "teal", "Technical Copilot", "Explain terms, plan safe troubleshooting, track incidents and draw architecture from what was said.", "technical.html", "next")}
-          {card("board", "blue", "Whiteboard", "An editable board with diagrams drawn from your sessions. Change them in words, with a preview first.", "whiteboard.html", "next")}
-          {card("chart", "rose", "Charts", "Bar, line and pie charts built only from numbers that really appear in your material.", "whiteboard.html#charts", "next")}
-          {card("compass", "purple", "Discover", "Real articles and projects from official engineering sources, matched to the skills you follow.", "discover.html", "next")}
-          {card("cap", "green", "Classroom", "Lecture notes, study guides and practice quizzes from the lecture and your course files.", "features.html#classroom", "next")}
-          {card("present", "amber", "Presentation", "Speaker notes, rehearsal feedback and answers to audience questions, from your own slides.", "features.html#presentation", "next")}
+        <div class="sec-head center"><p class="eyebrow">The problem</p><h2>Important conversations move faster than you can follow.</h2><p class="lead">Kinviva is built for the moments when you need to keep up, remember, and answer well.</p></div>
+        <div class="grid g4">
+          {card("note", "blue", "What was decided?", "Decisions and action items come with the quote that proves them, and an owner only when someone said one.")}
+          {card("code", "teal", "Technical talk, fast", "Hard terms are explained in simple words. Troubleshooting plans are read-only and marked as hypotheses.")}
+          {card("chat", "rose", "Questions arrive live", "In an interview or a class, get an answer in the style you choose, without inventing your experience.")}
+          {card("lock", "purple", "Private by default", "Sessions, notes and boards stay on your computer. No account and no telemetry.")}
         </div>
       </div>
     </section>
 
     <section class="alt">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Tour</p><h2>See what it does.</h2></div>
-{spot("v2-meeting.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript on one side and plain-English insights on the other. Hard words are explained, and your answers come out ready to say.", ["<b>Explain, Suggest reply, Recap and Ask</b> from the bar at the bottom", "<b>Decisions &amp; actions</b>: a decision needs a real quote, an owner only if someone said it", "<b>Important words are highlighted</b> so you can scan an answer in a second"], False, None, f"Sample data. Decisions and highlights arrive in {NEXT}.")}
-{spot("v2-troubleshoot.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes marked as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Never runs a command</b> and removes any that could change something", "<b>Incident tracker</b> with a root cause that stays locked until the evidence supports it", "<b>Architecture diagrams</b> with verified, mentioned and inferred parts clearly marked"], True, "next", link=("technical.html", "Explore Technical Copilot"))}
-{spot("v2-whiteboard.jpg", "An editable whiteboard with a flowchart generated from a conversation and an AI panel on the right", "Whiteboard", "Draw it, then make it yours.", "Turn a meeting, an interview or a lecture into an editable diagram on a real whiteboard. Move it, rename it, and extend it with a sentence.", ["<b>Changes are previewed</b> in plain words before anything is applied", "<b>Your drawings are never overwritten</b>, and versions are saved before every change", "<b>Export</b> to PNG, SVG, an editable file or Mermaid text"], False, "next", link=("whiteboard.html", "Explore the Whiteboard"))}
-{spot("v2-discover.jpg", "Discover page with interests and news items with pictures", "Discover", "Keep learning what matters to you.", "Add any skill you want to grow. Kinviva finds real articles and open-source projects from official sources and ranks them for you, on your computer.", ["<b>Real sources only</b>: eight official engineering blogs and GitHub", "<b>Any skill or topic</b>, not just a fixed list", "<b>Explain, save to notes, draw it or add it to a learning plan</b>"], True, "next", link=("discover.html", "Explore Discover"))}
+        <div class="sec-head"><p class="eyebrow">Product</p><h2>One workspace for every kind of conversation.</h2><p class="lead">Screenshots use sample data. Each part works with the others.</p></div>
+{spot("v2-meeting.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript beside plain-English insights. Hard words are explained, and you can ask, get a suggested reply, or request a recap.", ["<b>Decisions and actions</b> with the quote behind each one", "<b>Searchable</b> sessions you can export to Word, Markdown or text"], link=("features.html#meetings", "Meetings"))}
+{spot("v2-troubleshoot.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Incident tracker</b> with evidence for any root cause", "<b>Architecture diagrams</b> labelled verified, mentioned or inferred"], flip=True, badge="next", link=("technical.html", "Technical Copilot"))}
+{spot("v2-classroom.jpg", "Classroom screen with During class, After class and Practice tabs, an I am lost button that catches you up, and a finder for homework announcements", "Classroom", "Catch up in class. Study after it.", "Lost in a lecture? Get what the teacher is on right now in simple words. Then turn the class into notes, study guides and practice quizzes.", ["<b>Homework and exam dates</b> listed only if the teacher actually said them", "<b>Answers cite your course files</b> by name and page", "A clear reminder that it is study help, not finished coursework"], badge="next", link=("features.html#classroom", "Classroom"))}
+{spot("v2-interview.jpg", "Interview screen with the interviewer's question in a banner at the top, practice modes, role and answer style choices, and practice notes beside them", "Interview", "See the question, and a good answer, in the right place.", "Each question the interviewer asks appears in a banner beside your answer. Choose your role and answer style, practise first, or run a mock interview.", ["<b>Never invents</b> your experience", "<b>Practice notes</b> you can download as Markdown, Word or text", "<b>Job description analysis</b> compared with your own documents"], flip=True, link=("interview.html", "Interview"))}
+{spot("v2-presentation.jpg", "Presentation screen with a box for what the talk is about, choices for audience, tone, number of slides and colours, and a Plan the slides button", "Presentations", "From your notes to an editable deck.", "Type what the talk is about, choose audience, tone and length, and Kinviva plans the slides and saves a PowerPoint file you can edit. Then get speaker notes, rehearsal feedback and answers to audience questions.", ["<b>Only uses what you write</b> and your documents. It does not invent figures", "<b>Edit in Kinviva</b> beside the preview, then download the .pptx"], badge="next", link=("features.html#presentation", "Presentations"))}
       </div>
     </section>
 
@@ -247,7 +249,7 @@ def home():
       </div>
     </section>
 {editions_band()}
-{cta()}'''
+{ea_cta()}'''
     o += foot()
     write("index.html", o)
 
@@ -637,14 +639,18 @@ def early_access():
     ep = esc(EA_ENDPOINT)
     opts = "".join(f'<option value="{k}">{v}</option>' for k, v in USE_CASES)
     open_ = bool(EA_ENDPOINT)
-    notice = "" if open_ else '<p class="notice-line" role="status"><b>Registrations are temporarily unavailable.</b> The form will start accepting sign-ups once the Early Access service is switched on. Nothing you type here is sent anywhere until then. Please check back soon.</p>'
+    notice = "" if open_ else '<p class="notice-line" role="status"><b>Registrations are temporarily unavailable.</b> Nothing you type here is sent anywhere. Please return when registrations open.</p>'
     o = head("Pro Early Access · Kinviva", "Join Early Access for advanced AI workflows, technical copilots, and productivity features in future Kinviva editions.", "early-access.html")
-    o += page_head("Pro Early Access", "Discover what's next with Kinviva.", esc(EA_MESSAGE))
+    if open_:
+        o += page_head("Pro Early Access", "Discover what's next with Kinviva.", esc(EA_MESSAGE))
+    else:
+        o += page_head("Pro Early Access", "Early Access is coming soon.", "We're preparing the next chapter of Kinviva. Explore the product today and return when registrations open.")
     o += f"""    <section><div class="wrap ea-wrap">
       <div class="ea-form card">
-        <h2>Join Early Access</h2>
+        <h2>{"Join Early Access" if open_ else "Registrations open soon"}</h2>
         {notice}
         <form id="ea-form" data-endpoint="{ep}" novalidate>
+        <fieldset class="ea-fields"{"" if open_ else " disabled"}>
           <label>Your name<input name="name" type="text" autocomplete="name" maxlength="100" required></label>
           <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
           <label>What would you use Kinviva for?<select name="use_case" required><option value="">Choose one</option>{opts}</select></label>
@@ -652,6 +658,7 @@ def early_access():
           <label class="ea-hp" aria-hidden="true">Leave this empty<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
           <label class="ea-consent"><input name="consent" type="checkbox" required> <span>I agree that Kinviva stores my name, email and answers so it can contact me about Early Access. I can ask for deletion at any time. <a href="{GH}/blob/main/docs/PRIVACY.md">How my data is used</a>.</span></label>
           <button class="btn btn-primary btn-big" type="submit"{"" if open_ else " disabled"}>Join Early Access</button>
+        </fieldset>
           <p id="ea-status" class="ea-status" role="status" aria-live="polite"></p>
         </form>
         <noscript><p>This form needs JavaScript.</p></noscript>
