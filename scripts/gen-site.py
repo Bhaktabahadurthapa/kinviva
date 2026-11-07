@@ -629,7 +629,7 @@ def early_access():
     ep = esc(EA_ENDPOINT)
     opts = "".join(f'<option value="{k}">{v}</option>' for k, v in USE_CASES)
     open_ = bool(EA_ENDPOINT)
-    notice = "" if open_ else '<p class="notice-line" role="status"><b>Signup is not open yet.</b> The form will start accepting sign-ups when the Early Access service goes live. Please check back soon.</p>'
+    notice = "" if open_ else '<p class="notice-line" role="status"><b>Registrations are temporarily unavailable.</b> The form will start accepting sign-ups once the Early Access service is switched on. Nothing you type here is sent anywhere until then. Please check back soon.</p>'
     o = head("Pro Early Access · Kinviva", "Join Early Access for advanced AI workflows, technical copilots, and productivity features in future Kinviva editions.", "early-access.html")
     o += page_head("Pro Early Access", "Discover what's next with Kinviva.", esc(EA_MESSAGE))
     o += f"""    <section><div class="wrap ea-wrap">

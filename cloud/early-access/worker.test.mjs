@@ -17,7 +17,7 @@ const ORIGIN = "https://bhaktathapa.com.np";
 const good = { name: "Sam Lee", email: "sam@example.com", use_case: "technical", company: "Acme", consent: true };
 const send = (env, body, over = {}) =>
   worker.fetch(new Request("https://api.example/api/early-access", { method: "POST", headers: { "content-type": "application/json", origin: ORIGIN, "cf-connecting-ip": "203.0.113.9", ...over.headers }, body: typeof body === "string" ? body : JSON.stringify(body) }), env);
-const envOf = () => ({ DB: makeDb(), ALLOWED_ORIGIN: ORIGIN, RATE_SALT: "test" });
+const envOf = () => ({ DB: makeDb(), ALLOWED_ORIGIN: ORIGIN, RATE_SALT: "test-salt-0123456789-abcdef" });
 
 test("validates fields and requires consent", () => {
   assert.equal(validate(good).ok, true);
@@ -79,4 +79,37 @@ test("preflight only allows the website origin, other paths are not found", asyn
   const bad = await worker.fetch(new Request("https://api.example/api/early-access", { method: "OPTIONS", headers: { origin: "https://evil.example" } }), env);
   assert.equal(bad.status, 403);
   assert.equal((await worker.fetch(new Request("https://api.example/other"), env)).status, 404);
+});
+
+test("health check reports configuration and database without revealing data", async () => {
+  const env = envOf();
+  const r = await worker.fetch(new Request("https://api.example/health"), env);
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), { ok: true, configured: true, database: true });
+  const bad = await worker.fetch(new Request("https://api.example/health"), { ...env, RATE_SALT: "" });
+  assert.equal(bad.status, 503);
+  const text = JSON.stringify(await bad.json());
+  assert.ok(!text.includes("sam@"));
+});
+
+test("a missing secret salt or a database failure gives a safe 503 and stores nothing", async () => {
+  const env = envOf();
+  const noSalt = await send({ ...env, RATE_SALT: undefined }, good);
+  assert.equal(noSalt.status, 503);
+  const broken = { ...env, DB: { prepare: () => { throw new Error("db down: secret detail"); } } };
+  const r = await send(broken, good);
+  assert.equal(r.status, 503);
+  assert.ok(!(await r.text()).includes("secret detail"));
+  assert.equal(env.DB.raw.prepare("SELECT count(*) AS n FROM signups").get().n, 0);
+});
+
+test("bad requests count toward the rate limit, and only the agreed fields are stored", async () => {
+  const env = envOf();
+  for (let i = 0; i < 5; i++) await send(env, { ...good, consent: false });
+  assert.equal((await send(env, good)).status, 429);
+  const env2 = envOf();
+  await send(env2, { ...good, transcript: "private words", recording: "x", extra: 1 });
+  const cols = Object.keys(env2.DB.raw.prepare("SELECT * FROM signups").get()).sort();
+  assert.deepEqual(cols, ["company", "consent_at", "consent_version", "email", "email_lower", "id", "name", "use_case"]);
+  assert.ok(!JSON.stringify(env2.DB.raw.prepare("SELECT * FROM signups").all()).includes("private words"));
 });

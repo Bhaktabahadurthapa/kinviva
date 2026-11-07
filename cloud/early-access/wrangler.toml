@@ -1,12 +1,18 @@
 # Cloudflare Worker settings for the Early Access service. NOT deployed.
-# Replace the database id after creating the database: `wrangler d1 create kinviva-early-access`.
-# Secrets are never stored here. Set RATE_SALT with `wrangler secret put RATE_SALT`.
+# Follow DEPLOY.md step by step. Secrets are never stored in this file.
 name = "kinviva-early-access"
 main = "worker.js"
 compatibility_date = "2025-01-01"
+# No public *.workers.dev address and no preview URLs: the service is reached only through the route you add in DEPLOY.md.
+workers_dev = false
+preview_urls = false
 
 [vars]
 ALLOWED_ORIGIN = "https://bhaktathapa.com.np"
+
+# Platform logs show request status and errors only. The code never logs names, emails or request bodies.
+[observability]
+enabled = true
 
 [[d1_databases]]
 binding = "DB"

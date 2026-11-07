@@ -5,9 +5,9 @@ website at it needs the owner's approval.
 
 ## What it does
 `POST /api/early-access` with JSON `{ name, email, use_case, company?, consent: true }`:
-validates every field, requires explicit consent, ignores a hidden honeypot field, limits each client to 5 attempts per hour (by a salted
+validates every field, requires explicit consent, ignores a hidden honeypot field, limits each client to 5 attempts per hour (bad requests count too) (by a salted
 hash of the address, never stored with the signup), stores one row per email address (repeats change nothing and get the same answer), and
-answers with a confirmation message. Only the website's origin may call it.
+answers with a confirmation message. `GET /health` reports whether it is configured and the database answers. A missing secret or database error gives a safe 503 with no details. Only the website's origin may call it.
 
 Stored: name, email, use case, optional company, consent time, consent text version. Nothing else. See `docs/PRIVACY.md`.
 
@@ -17,14 +17,9 @@ node --test cloud/early-access/worker.test.mjs     # Node 22.13 or newer (uses t
 ```
 
 ## Deploy (owner approval needed first)
-```bash
-cd cloud/early-access
-npx wrangler d1 create kinviva-early-access          # copy the database id into wrangler.toml
-npx wrangler d1 execute kinviva-early-access --remote --file=schema.sql
-npx wrangler secret put RATE_SALT                    # any long random string
-npx wrangler deploy
-```
-Then set `EA_ENDPOINT` for the website build (see `scripts/gen-site.py`) to the worker's `/api/early-access` address and regenerate the site.
+Exact steps, secrets, health check, export and deletion commands: **[DEPLOY.md](DEPLOY.md)**.
+Quick local trial: `node cloud/early-access/local-server.mjs`. Health check: `GET /health`.
+The website form stays closed ("Registrations are temporarily unavailable") until the site is rebuilt with `KINVIVA_EA_ENDPOINT` set.
 
 ## Still to decide
-Email confirmation (double opt-in) needs an email provider. Retention period and the contact address for deletion requests (PRIVACY.md).
+Email confirmation (double opt-in) needs an email provider. The retention period and a public contact address for deletion requests (see `docs/PRIVACY.md`).

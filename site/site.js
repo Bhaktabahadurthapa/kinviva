@@ -90,7 +90,7 @@
     eaForm.addEventListener("submit", function (ev) {
       ev.preventDefault();
       var endpoint = eaForm.getAttribute("data-endpoint");
-      if (!endpoint) { say("Signup is not open yet. Please check back soon.", true); return; }
+      if (!endpoint) { say("Registrations are temporarily unavailable. Please check back soon.", true); return; }
       var f = eaForm.elements;
       var email = f.email.value.trim();
       if (!f.name.value.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say("Please enter your name and a valid email.", true); return; }

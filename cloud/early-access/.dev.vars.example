@@ -1,0 +1,2 @@
+# Copy to .dev.vars for `wrangler dev` on your own computer. .dev.vars is never committed.
+RATE_SALT=local-only-salt-not-for-production-use

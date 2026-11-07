@@ -12,3 +12,7 @@ public/excalidraw-assets/
 
 # Internal only: never commit pricing research
 docs/PRICING_RESEARCH.md
+
+# Local secrets for the Early Access service
+cloud/early-access/.dev.vars
+cloud/early-access/.wrangler/

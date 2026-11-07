@@ -46,9 +46,28 @@ function reply(status, payload, origin) {
 
 export default {
   async fetch(request, env) {
+    try {
+      return await handle(request, env);
+    } catch {
+      // Never reveal internals or echo the submission. The visitor can simply try again.
+      return reply(503, { ok: false, message: "Sign-up is temporarily unavailable. Please try again later." }, env.ALLOWED_ORIGIN || null);
+    }
+  },
+};
+
+async function handle(request, env) {
     const allowed = env.ALLOWED_ORIGIN;
     const origin = request.headers.get("origin");
     const url = new URL(request.url);
+
+    // Health check: confirms the service is configured and the database answers. Reveals no counts or data.
+    if (url.pathname === "/health" && request.method === "GET") {
+      const configured = Boolean(allowed && env.RATE_SALT && env.RATE_SALT.length >= 16 && env.DB);
+      let database = false;
+      try { database = Boolean(env.DB && (await env.DB.prepare("SELECT 1 AS ok").bind().first())); } catch { database = false; }
+      const ok = configured && database;
+      return reply(ok ? 200 : 503, { ok, configured, database });
+    }
 
     if (request.method === "OPTIONS") {
       if (!allowed || origin !== allowed) return new Response(null, { status: 403 });
@@ -68,26 +87,28 @@ export default {
       return reply(400, { ok: false, message: "Send the form as JSON." }, allowed);
     }
 
+    // Refuse to run without a real secret salt, so stored rate keys cannot be reversed by guessing addresses.
+    if (!env.RATE_SALT || env.RATE_SALT.length < 16) return reply(503, { ok: false, message: "Sign-up is temporarily unavailable. Please try again later." }, allowed);
+
     // A hidden field that only automated senders fill in: pretend to succeed, store nothing.
     if (body && typeof body === "object" && clean(body.website, 200)) return reply(200, { ok: true, message: MESSAGE }, allowed);
 
-    const checked = validate(body);
-    if (!checked.ok) return reply(422, { ok: false, message: checked.error }, allowed);
-    const v = checked.value;
-
-    // Rate limit by a salted hash of the client address, per hour.
+    // Rate limit by a salted hash of the client address, per hour. Counted before validation so bad requests also count.
     const ip = request.headers.get("cf-connecting-ip") || "unknown";
-    const key = await sha256Hex(`${env.RATE_SALT || "kinviva"}:${ip}`);
+    const key = await sha256Hex(`${env.RATE_SALT}:${ip}`);
     const window = Math.floor(Date.now() / 3_600_000);
     await env.DB.prepare("INSERT INTO rate(key, window, count) VALUES (?1, ?2, 1) ON CONFLICT(key, window) DO UPDATE SET count = count + 1").bind(key, window).run();
     const row = await env.DB.prepare("SELECT count FROM rate WHERE key = ?1 AND window = ?2").bind(key, window).first();
     if (row && row.count > HOURLY_LIMIT) return reply(429, { ok: false, message: "Too many attempts. Please try again in an hour." }, allowed);
     await env.DB.prepare("DELETE FROM rate WHERE window < ?1").bind(window - 24).run();
 
+    const checked = validate(body);
+    if (!checked.ok) return reply(422, { ok: false, message: checked.error }, allowed);
+    const v = checked.value;
+
     // A repeated email changes nothing and gets the same answer, so the form does not reveal who is on the list.
     await env.DB.prepare("INSERT INTO signups(email, email_lower, name, use_case, company, consent_version, consent_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ON CONFLICT(email_lower) DO NOTHING")
       .bind(v.email, v.emailLower, v.name, v.useCase, v.company, CONSENT_VERSION, new Date().toISOString())
       .run();
     return reply(200, { ok: true, message: MESSAGE }, allowed);
-  },
-};
+}
