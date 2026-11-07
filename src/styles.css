@@ -2422,8 +2422,9 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .meeting-area:has(.live-watching) > .subnav { display: none; }
 
 /* Notes: folders, list or gallery, rich editor */
-.notes2 { display: grid; grid-template-columns: 200px 300px minmax(0, 1fr); height: 100%; min-height: 0; background: var(--c-surface); }
+.notes2 { display: grid; grid-template-columns: var(--nf, 200px) 8px var(--nl, 300px) 8px minmax(0, 1fr); height: 100%; min-height: 0; background: var(--c-surface); }
 .notes2.notes-full { position: fixed; inset: 0; z-index: 60; background: var(--c-bg); grid-template-columns: 1fr; }
+.notes2.notes-full .nh { display: none; }
 .notes2.notes-full .nf, .notes2.notes-full .notes-list2 { display: none; }
 .notes2.notes-full .notes-editor2 { max-width: 980px; width: 100%; margin: 0 auto; }
 .nf { padding: 14px 10px; border-right: 1px solid var(--c-line); background: var(--c-bg); overflow: auto; display: flex; flex-direction: column; gap: 2px; }
@@ -2501,7 +2502,7 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .ne-doc th { background: var(--c-sunken); text-align: left; font-weight: 700; }
 .ne-doc .selectedCell { background: var(--c-signal-soft); }
 .ne-doc p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: var(--c-text-3); }
-@media (max-width: 1100px) { .notes2 { grid-template-columns: 170px 250px minmax(0, 1fr); } }
+
 
 /* My instructions */
 .ip textarea { width: 100%; }
@@ -2515,3 +2516,9 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .ip-preview { margin: 12px 0 0; padding: 12px 14px; border-radius: 12px; background: #0b1735; color: #e2e8f0; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; }
 .ip-style { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--c-line); }
 .ip-style h3 { margin: 0 0 6px; font-size: 14px; }
+
+.nh { position: relative; cursor: col-resize; background: var(--c-line); width: 1px; justify-self: center; touch-action: none; }
+.nh::before { content: ""; position: absolute; inset: 0 -4px; }
+.nh:hover, .nh:focus-visible { background: #2563eb; width: 3px; outline: none; }
+.nf { border-right: none; }
+.notes-list2 { border-right: none; }

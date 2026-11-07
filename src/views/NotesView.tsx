@@ -17,6 +17,39 @@ const short = (ms?: number) => {
 type Sort = "edited" | "created" | "title";
 type Scope = { kind: "all" } | { kind: "folder"; name: string } | { kind: "tag"; name: string } | { kind: "trash" };
 const FOLDERS_KEY = "ml.noteFolders";
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Math.round(v)));
+const loadW = (k: string, d: number, lo: number, hi: number) => {
+  try { const v = Number(localStorage.getItem(k)); return v ? clamp(v, lo, hi) : d; } catch { return d; }
+};
+
+/** A thin handle: drag it to make the column on its left wider or narrower. Double-click to reset, arrow keys to nudge. */
+function Handle({ label, value, min, max, reset, onChange }: { label: string; value: number; min: number; max: number; reset: number; onChange: (v: number) => void }) {
+  const start = useRef<{ x: number; w: number } | null>(null);
+  return (
+    <div
+      className="nh"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label={label}
+      aria-valuenow={value}
+      aria-valuemin={min}
+      aria-valuemax={max}
+      tabIndex={0}
+      title="Drag to resize. Double-click to reset."
+      onPointerDown={(e) => { start.current = { x: e.clientX, w: value }; e.currentTarget.setPointerCapture(e.pointerId); }}
+      onPointerMove={(e) => { if (start.current) onChange(clamp(start.current.w + e.clientX - start.current.x, min, max)); }}
+      onPointerUp={() => { start.current = null; }}
+      onPointerCancel={() => { start.current = null; }}
+      onDoubleClick={() => onChange(reset)}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft") onChange(clamp(value - 16, min, max));
+        else if (e.key === "ArrowRight") onChange(clamp(value + 16, min, max));
+        else return;
+        e.preventDefault();
+      }}
+    />
+  );
+}
 
 /** All notes, in the style people know from a good notes app: folders, pinned notes, tags, rich text, a trash with restore. */
 export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: string) => void; refreshKey: number; onChanged: () => void }) {
@@ -32,6 +65,9 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
     try { return JSON.parse(localStorage.getItem(FOLDERS_KEY) ?? "[]") as string[]; } catch { return []; }
   });
   const [undo, setUndo] = useState<AppRecord | null>(null);
+  const [fw, setFw] = useState(() => loadW("ml.noteFolderW", 200, 130, 340));
+  const [lw, setLw] = useState(() => loadW("ml.noteListW", 300, 220, 560));
+  const saveW = (k: string, v: number) => { try { localStorage.setItem(k, String(v)); } catch { /* not essential */ } };
   const timer = useRef<number>();
   const dirty = useRef(false);
   const selRef = useRef<AppRecord | null>(null);
@@ -185,7 +221,7 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
   };
 
   return (
-    <div className={`notes2 ${full ? "notes-full" : ""}`}>
+    <div className={`notes2 ${full ? "notes-full" : ""}`} style={{ ["--nf" as string]: `${fw}px`, ["--nl" as string]: `${lw}px` }}>
       <nav className="nf" aria-label="Folders">
         <button className={scope.kind === "all" ? "on" : ""} onClick={() => setScope({ kind: "all" })}>All Notes <em>{live.length}</em></button>
         <h4>Folders <button className="nf-add" title="New folder" aria-label="New folder" onClick={addFolder}>+</button></h4>
@@ -203,6 +239,7 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
         <button className={`nf-trash ${inTrash ? "on" : ""}`} onClick={() => setScope({ kind: "trash" })}>Recently Deleted <em>{trashed.length}</em></button>
       </nav>
 
+      <Handle label="Resize the folders column" value={fw} min={130} max={340} reset={200} onChange={(v) => { setFw(v); saveW("ml.noteFolderW", v); }} />
       <aside className="notes-list2">
         <div className="nl-head">
           <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search notes" aria-label="Search notes" />
@@ -224,6 +261,7 @@ export function NotesView({ onError, refreshKey, onChanged }: { onError: (m: str
         {undo && !inTrash && <div className="undo-toast" role="status">Moved to Recently Deleted.<button className="btn btn-sm" onClick={() => void restore(undo)}>Undo</button><button className="btn btn-ghost btn-sm" aria-label="Dismiss" onClick={() => setUndo(null)}>✕</button></div>}
       </aside>
 
+      <Handle label="Resize the notes list" value={lw} min={220} max={560} reset={300} onChange={(v) => { setLw(v); saveW("ml.noteListW", v); }} />
       <section className="notes-editor2">
         {sel ? (
           <>
