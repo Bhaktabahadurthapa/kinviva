@@ -151,7 +151,7 @@ def spot(img, alt, eyebrow, title, text, bullets, flip=False, badge=None, captio
     more = f'<p><a class="btn btn-small" href="{link[0]}">{link[1]} →</a></p>' if link else ""
     return f'''        <div class="spot reveal{" flip" if flip else ""}">
           <div class="spot-text"><p class="eyebrow">{eyebrow}</p>{b}<h2>{title}</h2><p class="lead">{text}</p><ul>{li}</ul>{more}</div>
-          <figure class="shot"><img src="media/{img}" alt="{esc(alt)}" loading="lazy" width="1800" height="1125"><figcaption>{caption}</figcaption></figure>
+          <figure class="shot"><img src="media/{img}" alt="{esc(alt)}" loading="lazy" width="{"1504" if "-panel" in img else "1800"}" height="{"1049" if "-panel" in img else "1125"}"><figcaption>{caption}</figcaption></figure>
         </div>
 '''
 
@@ -163,7 +163,8 @@ import re
 _IMG = re.compile(r'<img src="media/(v2-[a-z-]+)\.jpg"([^>]*)>')
 def _picture(m):
     n, rest = m.group(1), m.group(2)
-    return (f'<picture><source type="image/webp" srcset="media/{n}-800.webp 800w, media/{n}-1600.webp 1600w" sizes="(min-width: 1100px) 1000px, 100vw">'
+    big = 1504 if n.endswith("-panel") else 1600
+    return (f'<picture><source type="image/webp" srcset="media/{n}-800.webp 800w, media/{n}-{big}.webp {big}w" sizes="(min-width: 1100px) 1000px, 100vw">'
             f'<img src="media/{n}.jpg"{rest if "decoding" in rest else rest + " decoding=\"async\""}></picture>')
 
 def ea_cta():
@@ -174,7 +175,14 @@ def ea_cta():
     return f'''    <section><div class="wrap"><div class="cta-band reveal"><h2>{title}</h2><p class="lead">{lead}</p><div class="cta">{btn}<a class="btn btn-ghost btn-big" href="download.html">Download the free Community Edition</a></div></div></div></section>
 '''
 
+_EYEBROW = re.compile(r'<p class="eyebrow[^"]*">[^<]*</p>\s*')
+_H3 = re.compile(r'<h3>(.*?)</h3>', re.S)
+_HEADING_SKIP = {"community.html", "docs.html", "technical.html"}
+
 def write(name, content):
+    content = _EYEBROW.sub("", content)
+    if name in _HEADING_SKIP:  # these pages go from h1 straight to card titles: make them h2 so the outline has no gap
+        content = _H3.sub(r'<h2 class="h3">\1</h2>', content)
     content = _IMG.sub(_picture, content)
     (SITE / name).write_text(content)
 
@@ -191,9 +199,9 @@ def home():
           <div>
             <p class="eyebrow hero-anim d1">Free desktop app for Mac and Windows</p>
             <h1 class="hero-anim d2" style="margin-top:18px">Every conversation, <em><span class="mark">clearer.</span></em></h1>
-            <p class="lead hero-anim d3">Kinviva listens to a meeting, call, interview or lecture on your computer, explains each point in plain words, and helps you answer. Your conversations stay on your device.</p>
-            <div class="cta hero-anim d4"><a class="btn btn-primary btn-big" href="early-access.html">Get Early Access</a><a class="btn btn-ghost btn-big" href="features.html">Explore Features</a></div>
-            <p class="fine hero-anim d4">The free Community Edition is available now: <a href="download.html">download for Mac and Windows</a>, version {INSTALLER}. <a href="{GH}">Source on GitHub</a>.</p>
+            <p class="lead hero-anim d3">Kinviva listens to a meeting, call, interview or lecture on your computer, explains each point in plain words, and helps you answer. Your conversations stay on your device unless you choose a cloud AI service.</p>
+            <div class="cta hero-anim d4"><a class="btn btn-primary btn-big" href="download.html">Download free</a><a class="btn btn-ghost btn-big" href="features.html">Explore Features</a></div>
+            <p class="fine hero-anim d4">Free for Mac and Windows, version {INSTALLER}, no account. Pro features are planned: <a href="early-access.html">Early Access is coming soon</a>. <a href="{GH}">Source on GitHub</a>.</p>
           </div>
           <figure class="transcript hero-anim d3" aria-label="Example of a transcript line with a plain-words note">
             <div class="tr-row"><span class="tr-who">Them</span><div><p>&ldquo;Can we roll this back, or is the migration already applied?&rdquo;</p><p class="tr-note"><b>In plain words</b>They are asking whether the database change can still be undone.</p></div></div>
@@ -202,15 +210,15 @@ def home():
           </figure>
         </div>
         <div class="stage">
-          <figure class="plate hero-anim d4"><div class="plate-bar"><i></i><i></i><i></i><span>Kinviva dashboard &middot; sample data</span></div>
-            <img src="media/v2-dashboard-dark.jpg" alt="The Kinviva dashboard: recent sessions, activity counts and an assistant panel, shown with sample data" width="1800" height="1125" fetchpriority="high">
+          <figure class="plate hero-anim d4"><div class="plate-bar"><i></i><i></i><i></i><span>Kinviva Meetings, live &middot; sample data</span></div>
+            <img src="media/v2-meeting-dark-panel.jpg" alt="The Kinviva Meetings screen in dark mode: a live transcript on the left, and a plain-English answer with a suggested reply on the right, shown with sample data" width="1504" height="1049" fetchpriority="high">
           </figure>
         </div>
       </div>
     </section>
 
     <section class="glance-sec" id="what"><div class="wrap">
-      <div class="qa-head"><p class="eyebrow">What is Kinviva?</p></div>
+      <h2 class="sr-only">What is Kinviva?</h2>
       <dl class="glance">
         <div><dt>What it is</dt><dd>A free app for your computer. It listens to a call, meeting or lecture and explains it in plain words while it happens.</dd></div>
         <div><dt>Who it is for</dt><dd>Anyone who has to follow fast talk and answer well: at work, in technical calls, in interviews and in class.</dd></div>
@@ -218,30 +226,30 @@ def home():
         <div><dt>What it costs</dt><dd>Nothing to download or use. If you pick a cloud AI service, that service bills you directly. A local model is free.</dd></div>
       </dl>
       <nav class="qa-jump" aria-label="Jump to a question">
-        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#watch">Learning from a video?</a><a href="#when">When and where?</a><a href="#why">Why is it different?</a><a href="#today">What works today?</a>
+        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#watch">Learning from a video?</a><a href="#why">Why is it different?</a>
       </nav>
     </div></section>
 
     <section id="problems">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">What problems does it solve?</p><h2>Conversations move faster than people can follow.</h2><p class="lead">Eight real situations Kinviva is built for, and what it does in each.</p></div>
-        <div class="prob3-head" aria-hidden="true"><span></span><span>Real-world problem</span><span>Example</span><span>Kinviva's solution</span></div>
+        <div class="sec-head"><h2>What problems does it solve?</h2><p class="lead">Conversations move faster than people can follow. These are eight real situations Kinviva is built for, and what it does in each.</p></div>
+        <div class="prob3-head" aria-hidden="true"><span>Real-world problem</span><span>Example</span><span>Kinviva's solution</span></div>
         <div class="prob-list">
-          <div class="prob3 reveal"><div class="p-num">01</div><div><h3>Difficult conversations</h3></div><div><p class="eg">An employee does not understand an unfamiliar term during a meeting.</p></div><div><p class="how">Live transcription and simple-English explanations.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">02</div><div><h3>Slow responses</h3></div><div><p class="eg">Someone needs time to understand a complicated question.</p></div><div><p class="how">Question detection and editable suggested replies.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">03</div><div><h3>Forgotten information</h3></div><div><p class="eg">A manager forgets the key points from yesterday's meeting.</p></div><div><p class="how">Saved transcripts, searchable history and notes.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">04</div><div><h3>Complex classroom lectures</h3></div><div><p class="eg">A student struggles to follow a professor's explanation.</p></div><div><p class="how">Simplified concepts, supporting course documents and learning tools.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">05</div><div><h3>Interview preparation</h3></div><div><p class="eg">A candidate finds it hard to explain their professional experience.</p></div><div><p class="how">Practice, feedback and structured answer suggestions.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">06</div><div><h3>Complicated technical discussions</h3></div><div><p class="eg">A project manager does not understand a cloud infrastructure problem.</p></div><div><p class="how">Technical explanations and architecture diagrams.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">07</div><div><h3>Confidential conversations</h3></div><div><p class="eg">A business cannot send sensitive meeting content to public AI services.</p></div><div><p class="how">Local speech recognition, local AI model options and on-device storage.</p></div></div>
-          <div class="prob3 reveal"><div class="p-num">08</div><div><h3>Long videos you do not understand</h3></div><div><p class="eg">A learner watches a full lecture on YouTube and a key concept does not make sense.</p></div><div><p class="how">Video Assist plays the video beside live plain-English explanations. Pause, ask for it again, then keep notes and a quiz.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Difficult conversations</h3></div><div><p class="eg">An employee does not understand an unfamiliar term during a meeting.</p></div><div><p class="how">Live transcription and simple-English explanations.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Slow responses</h3></div><div><p class="eg">Someone needs time to understand a complicated question.</p></div><div><p class="how">Question detection and editable suggested replies.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Forgotten information</h3></div><div><p class="eg">A manager forgets the key points from yesterday's meeting.</p></div><div><p class="how">Saved transcripts, searchable history and notes.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Complex classroom lectures</h3></div><div><p class="eg">A student struggles to follow a professor's explanation.</p></div><div><p class="how">Simplified concepts, supporting course documents and learning tools.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Interview preparation</h3></div><div><p class="eg">A candidate finds it hard to explain their professional experience.</p></div><div><p class="how">Practice, feedback and structured answer suggestions.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Complicated technical discussions</h3></div><div><p class="eg">A project manager does not understand a cloud infrastructure problem.</p></div><div><p class="how">Technical explanations and architecture diagrams.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Confidential conversations</h3></div><div><p class="eg">A business cannot send sensitive meeting content to public AI services.</p></div><div><p class="how">Local speech recognition, local AI model options and on-device storage.</p></div></div>
+          <div class="prob3 reveal"><div><h3>Long videos you do not understand</h3></div><div><p class="eg">A learner watches a full lecture on YouTube and a key concept does not make sense.</p></div><div><p class="how">Video Assist plays the video beside live plain-English explanations. Pause, ask for it again, then keep notes and a quiz.</p></div></div>
         </div>
       </div>
     </section>
 
     <section class="alt" id="how">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">How does it work?</p><h2>Four steps, in plain terms.</h2></div>
+        <div class="sec-head"><h2>How does it work?</h2><p class="lead">Four steps, in plain terms.</p></div>
         <ol class="flow">
           <li class="reveal"><b>Set it up once</b><p>Install the app and choose its answer engine: your own key (for example Gemini) or a free local model through Ollama. Allow microphone and system-audio access when your computer asks.</p></li>
           <li class="reveal"><b>Press Start</b><p>Kinviva hears the call (<em>Them</em>, from your computer's audio) and your voice (<em>Me</em>, from the microphone) and writes the transcript on your computer.</p></li>
@@ -254,10 +262,10 @@ def home():
 
     <section id="watch">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Learning from a video?</p><h2>Watch it with an explainer beside you.</h2><p class="lead">You are watching a full lecture on YouTube and a concept does not click. Kinviva's Video Assist plays the video on one side and explains what is being said on the other, as it plays.</p></div>
+        <div class="sec-head"><h2>Learning from a video? Watch it with an explainer beside you.</h2><p class="lead">You are watching a full lecture on YouTube and a concept does not click. Kinviva's Video Assist plays the video on one side and explains what is being said on the other, as it plays.</p></div>
         <div class="sbs">
           <figure class="sbs-video reveal" aria-label="Illustration of a lecture video playing inside Kinviva">
-            <div class="sbs-screen"><span class="sbs-play" aria-hidden="true"></span><span class="sbs-time">12:40 / 58:10</span></div>
+            <div class="sbs-screen"><span class="sbs-mock">Illustration</span><span class="sbs-play" aria-hidden="true"></span><span class="sbs-time">12:40 / 58:10</span></div>
             <figcaption>The video plays inside Kinviva. Illustration, not a real screen.</figcaption>
           </figure>
           <div class="sbs-notes reveal">
@@ -279,7 +287,7 @@ def home():
 
     <section id="when">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">When and where do you use it?</p><h2>Use it whenever you need to keep up.</h2><p class="lead">It listens to the audio on your computer, so it works with a call in any app or a video in your browser. Nothing is installed in the other app.</p></div>
+        <div class="sec-head"><h2>When and where do you use it?</h2><p class="lead">It listens to the audio on your computer, so it works with a call in any app or a video in your browser. Nothing is installed in the other app.</p></div>
         <table class="table reveal">
           <thead><tr><th>Situation</th><th>When you would use it</th><th>What you get</th></tr></thead>
           <tbody>
@@ -296,27 +304,27 @@ def home():
 
     <section class="alt">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">A look inside</p><h2>What it looks like.</h2><p class="lead">Screenshots use sample data. <a href="features.html">See every feature.</a></p></div>
-{spot("v2-meeting.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript beside plain-English insights. Ask, get a suggested reply, or request a recap.", ["<b>Decisions and actions</b> with the quote behind each one", "<b>Searchable</b> sessions you can export to Word, Markdown or text"], link=("features.html#meetings", "Meetings"))}
-{spot("v2-troubleshoot.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Incident tracker</b> that wants evidence before naming a root cause", "<b>Architecture diagrams</b> labelled verified, mentioned or inferred"], flip=True, badge="next", link=("technical.html", "Technical Copilot"))}
-{spot("v2-interview.jpg", "Interview screen with the interviewer's question in a banner at the top, practice modes, role and answer style choices", "Interview", "See the question and a good answer together.", "Each question appears in a banner beside your answer. Choose your role and style, practise first, or run a mock interview.", ["<b>Never invents</b> your experience", "<b>Job description analysis</b> compared with your own documents"], link=("interview.html", "Interview"))}
+        <div class="sec-head"><h2>What does it look like?</h2><p class="lead">Screenshots use sample data. <a href="features.html">See every feature.</a></p></div>
+{spot("v2-meeting-panel.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript beside plain-English insights. Ask, get a suggested reply, or request a recap.", ["<b>Decisions and actions</b> with the quote behind each one", "<b>Searchable</b> sessions you can export to Word, Markdown or text"], link=("features.html#meetings", "Meetings"))}
+{spot("v2-troubleshoot-panel.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Incident tracker</b> that wants evidence before naming a root cause", "<b>Architecture diagrams</b> labelled verified, mentioned or inferred"], flip=True, badge="next", link=("technical.html", "Technical Copilot"))}
+{spot("v2-interview-panel.jpg", "Interview screen with the interviewer's question in a banner at the top, practice modes, role and answer style choices", "Interview", "See the question and a good answer together.", "Each question appears in a banner beside your answer. Choose your role and style, practise first, or run a mock interview.", ["<b>Never invents</b> your experience", "<b>Job description analysis</b> compared with your own documents"], link=("interview.html", "Interview"))}
       </div>
     </section>
 
     <section id="why">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Why is it different?</p><h2>Three things together.</h2><p class="lead">Kinviva is built to do all three together, on your own computer.</p></div>
+        <div class="sec-head"><h2>Why is it different?</h2><p class="lead">Kinviva is built to do all three together, on your own computer.</p></div>
         <div class="three">
-          <div class="reveal"><span class="big-n">1</span><h3>Understand it live</h3><p>It explains what someone is saying as they say it, not only in a summary after the meeting.</p></div>
-          <div class="reveal"><span class="big-n">2</span><h3>Keep it private</h3><p>Local speech recognition and a local AI model mean your conversation never has to reach an outside cloud model. There is no Kinviva server, no account and no tracking.</p></div>
-          <div class="reveal"><span class="big-n">3</span><h3>Turn it into action</h3><p>Today it gives you notes, decisions and action items with the quote behind each one. Completing approved follow-up tasks for you is not built yet.</p></div>
+          <div class="reveal"><h3>Understand it live</h3><p>It explains what someone is saying as they say it, not only in a summary after the meeting.</p></div>
+          <div class="reveal"><h3>Keep it private</h3><p>Local speech recognition and a local AI model mean your conversation never has to reach an outside cloud model. There is no Kinviva server, no account and no tracking.</p></div>
+          <div class="reveal"><h3>Turn it into action</h3><p>Today it gives you notes, decisions and action items with the quote behind each one. Completing approved follow-up tasks for you is not built yet.</p></div>
         </div>
       </div>
     </section>
 
     <section class="alt" id="today">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">What works today?</p><h2>The honest checklist.</h2><p class="lead">What is in the version you can download now, and what is not.</p></div>
+        <div class="sec-head"><h2>What works today?</h2><p class="lead">What is in the version you can download now, and what is not.</p></div>
         <table class="table status reveal"><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Live meeting transcription</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically explain conversations</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Detect questions and suggest replies</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Save and search meeting history</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Search your documents with AI</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Generate architecture diagrams</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Local AI for privacy</td><td><span class="badge b-sup">Supported</span></td></tr><tr><td>Floating meeting assistant (overlay)</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically detect Zoom or Teams meetings</td><td><span class="badge b-nv">Not verified</span></td></tr><tr><td>Automatically create and assign follow-up tasks</td><td><span class="badge b-nv">Not fully implemented</span></td></tr><tr><td>Autonomous multi-step AI agents</td><td><span class="badge b-na">Not available. Planned for Pro.</span></td></tr><tr><td>Team integrations and collaboration</td><td><span class="badge b-na">Not available. Planned for Business.</span></td></tr></tbody></table>
         <div class="notice limits reveal"><b>Good to know</b><p>You press Start to begin; Kinviva does not detect meetings by itself yet. Answers come from the AI you connect and can be wrong, so you decide what to say. You need an answer engine (a cloud key or a local model). It works best on a Mac with Apple silicon; the Windows version is experimental and has not been tested on real hardware by us. It is built for English today. The source is public on GitHub but is not yet open source licensed.</p></div>
       </div>
@@ -426,7 +434,7 @@ def technical():
     </div></div></section>
     <section id="troubleshoot" style="padding-top:20px"><div class="wrap">
 '''
-    o += spot("v2-troubleshoot.jpg", "A troubleshooting plan with hypotheses and read-only commands", "Troubleshoot", "A plan you can trust, not a guess.", "Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.", ["Causes are labelled <b>hypotheses, not confirmed</b>", "Each command shows its purpose, what to expect and a risk level", "A command that could change anything is <b>removed and counted</b>", "Kinviva <b>never runs a command</b>. You review it and run it yourself", "Save the plan to notes, or track it as an incident"], False, "next")
+    o += spot("v2-troubleshoot-panel.jpg", "A troubleshooting plan with hypotheses and read-only commands", "Troubleshoot", "A plan you can trust, not a guess.", "Describe the symptom. You get possible causes, the evidence to collect, commands to try, and how to confirm a fix.", ["Causes are labelled <b>hypotheses, not confirmed</b>", "Each command shows its purpose, what to expect and a risk level", "A command that could change anything is <b>removed and counted</b>", "Kinviva <b>never runs a command</b>. You review it and run it yourself", "Save the plan to notes, or track it as an incident"], False, "next")
     o += "      </div></section>\n"
     o += '''    <section class="alt"><div class="wrap">
       <div class="sec-head"><p class="eyebrow">Safety rules</p><h2>What counts as read-only.</h2><p class="lead">A command is kept only if it looks at things without changing them. The check is code, not the model, and it is tested against dozens of examples.</p></div>
@@ -522,7 +530,7 @@ def interview():
     o = head("Interview · Kinviva", "Practise and answer interview questions in four styles. Automatic answers, mock practice and STAR responses that never invent your experience.", "interview.html", "https://bhaktathapa.com.np/kinviva/media/v2-interview.jpg")
     o += page_head("Interview", "Practise, and answer, like an expert.", "Interview has its own screen. Start it, and each question the interviewer asks is answered as it is asked, in the style you choose.")
     o += '    <section><div class="wrap">\n'
-    o += spot("v2-interview.jpg", "Interview screen with answer controls on the left and Say it and Understand it cards on the right", "Interview", "The answer, and the reasoning behind it.", "Questions are detected from the other side's audio. Each answer has what to say, how to understand it, the trade-offs, hard words and a likely follow-up.", ["Press <b>Start interview</b> and stay on the Interview screen", "<b>Ask, Explain, Suggest reply and Recap</b> are at the bottom of the answers (new in " + NEXT + ")", "<b>Notes</b> download as Word, Markdown or text", "Use it for practice and preparation, and follow the rules of your interviewer or employer"], False, "now")
+    o += spot("v2-interview-panel.jpg", "Interview screen with answer controls on the left and Say it and Understand it cards on the right", "Interview", "The answer, and the reasoning behind it.", "Questions are detected from the other side's audio. Each answer has what to say, how to understand it, the trade-offs, hard words and a likely follow-up.", ["Press <b>Start interview</b> and stay on the Interview screen", "<b>Ask, Explain, Suggest reply and Recap</b> are at the bottom of the answers (new in " + NEXT + ")", "<b>Notes</b> download as Word, Markdown or text", "Use it for practice and preparation, and follow the rules of your interviewer or employer"], False, "now")
     o += f'''      </div></section>
     <section class="alt"><div class="wrap">
       <div class="sec-head"><p class="eyebrow">Answer styles</p><h2>One question, four ways to answer it.</h2><p class="lead">The sample question: “Design a multi-tenant CI/CD platform for internal teams. Focus on isolation, security and cost.”</p></div>
@@ -677,7 +685,7 @@ def download():
 # ------------------------------------------------------------------ Editions, Community, Early Access, Documentation
 def editions_band():
     return f"""    <section class="alt"><div class="wrap">
-      <div class="sec-head"><p class="eyebrow">Editions</p><h2>Free today. More to come.</h2><p class="lead">The Community Edition is the whole app you can download now. Pro and Business are planned and are not available yet.</p></div>
+      <div class="sec-head"><h2>Free today. More to come.</h2><p class="lead">The Community Edition is the whole app you can download now. Pro and Business are planned and are not available yet.</p></div>
       <div class="grid g3">
         {card("check", "green", "Community", "Local transcription, bring your own answer engine, explanations and history, interview and classroom help, technical troubleshooting and diagrams, Notes, Whiteboard. Free, no account.", "community.html", None, "About Community")}
         {card("code", "purple", "Pro (planned)", "Advanced technical investigations, richer diagrams and reports, enhanced interview and learning workflows, an optional managed AI service. Not built yet.", "early-access.html", None, "Join Early Access")}

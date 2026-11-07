@@ -416,3 +416,44 @@ footer { padding: 56px 0 28px; }
 .watch-steps li b { display: block; font: 500 20px var(--serif); color: var(--ink); margin-bottom: 6px; }
 @media (max-width: 1000px) { .sbs { grid-template-columns: 1fr; } .watch-steps { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 620px) { .watch-steps { grid-template-columns: 1fr; } .sbs-play { width: 60px; height: 60px; } }
+
+/* Impeccable critique pass: flatter callouts, softer depth, readable labels, themed browser surfaces */
+:root { --blue-mark: rgba(59, 130, 246, .2); --depth: 0 1px 0 rgba(11, 23, 53, .85), 0 24px 44px -24px rgba(11, 23, 53, .5); }
+html { scrollbar-color: var(--navy-3) var(--paper-2); }
+::selection { background: var(--blue-mark); color: var(--navy); }
+input, select, textarea { caret-color: var(--blue-ink); accent-color: var(--blue-ink); }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.hero h1 { font-size: clamp(48px, 7.4vw, 96px); }
+h2.h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; font-variation-settings: "opsz" 36; }
+.sec-head h2 + .lead { margin-top: 2px; }
+
+/* Callouts and list items without coloured side stripes */
+.tr-note { border: 1px solid rgba(29, 78, 216, .3); }
+.notice { border-left-width: 1.5px; border-left-color: var(--navy); }
+.notice-line, .flow-note { border: 1px solid rgba(29, 78, 216, .3); }
+.prob .how, .prob3 .how { border-left: 0; padding-left: 0; font-weight: 500; }
+.sbs-note { border: 1px solid var(--rule-strong); }
+.sbs-plain { border-color: rgba(29, 78, 216, .35); }
+.sbs-ask { border-color: rgba(91, 33, 182, .35); }
+
+/* Depth with a soft falloff instead of hard offset blocks on content surfaces */
+.transcript, .plate, .shot, .sbs-screen, .sbs-notes, .ea-form { box-shadow: var(--depth); }
+.cta-band { box-shadow: var(--depth); }
+.qa-jump a { box-shadow: none; background: transparent; }
+.qa-jump a:hover { background: var(--navy); color: #fff; transform: none; box-shadow: none; }
+.qa-jump a:active { transform: none; }
+
+/* Labels in the sans voice; mono stays for transcript data and captions */
+.qa-jump a, .badge, .table th, .tabs button, .toc a { font-family: var(--sans); }
+.qa-jump a { font-weight: 600; font-size: 15px; letter-spacing: 0; }
+.badge { font-weight: 650; font-size: 12px; letter-spacing: .03em; }
+.table th { font-weight: 650; font-size: 13px; letter-spacing: .04em; }
+.glance dt { font-family: var(--sans); font-weight: 650; font-size: 13px; letter-spacing: .06em; }
+
+/* Problem table without numerals */
+.prob3, .prob3-head { grid-template-columns: 1fr 1.2fr 1.2fr; }
+.sbs-mock { position: absolute; top: 12px; left: 14px; font: 650 12px var(--sans); letter-spacing: .05em; text-transform: uppercase; color: #D5DBEC; border: 1px solid rgba(213, 219, 236, .5); padding: 3px 9px; border-radius: 2px; }
+@media (max-width: 1000px) { .prob3 { grid-template-columns: 1fr; gap: 6px; } .prob3 > div:nth-child(2), .prob3 > div:nth-child(3) { grid-column: 1; } }
+.qa-jump a:hover, .qa-jump a:focus-visible:hover { color: #fff; }
+.flow-note a, .notice-line a { color: var(--navy); }
+.skip, .skip:hover, .skip:focus { color: #fff; }
