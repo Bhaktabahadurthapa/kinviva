@@ -334,3 +334,13 @@ footer { padding: 56px 0 28px; }
 
 .legal { padding-top: 22px; }
 .legal p:first-child { white-space: nowrap; }
+
+/* Logo: 3D waveform mark with a sans wordmark, "viva" in the blue-to-violet gradient */
+.brand { gap: 10px; font: 700 27px var(--sans); letter-spacing: -0.03em; color: var(--navy); }
+.brand img { width: 42px; height: 42px; filter: drop-shadow(0 3px 3px rgba(11, 23, 53, .22)); transition: transform .2s ease; }
+.brand:hover img { transform: translateY(-2px) rotate(-3deg); }
+.brand em { font-style: normal; font-weight: 700; background: linear-gradient(90deg, #2563EB, #7C3AED); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.foot-brand b { font: 700 27px var(--sans); letter-spacing: -0.03em; color: #fff; text-transform: none; }
+.foot-brand b em { font-style: normal; background: linear-gradient(90deg, #7DB1FF, #B79BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.foot-brand img { filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .35)); }
+@media (prefers-reduced-motion: reduce) { .brand img { transition: none; } .brand:hover img { transform: none; } }

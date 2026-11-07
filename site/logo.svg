@@ -1,38 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="100 100 824 824">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Kinviva">
   <defs>
-    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#22386a"/>
-      <stop offset="1" stop-color="#0c1730"/>
-    </linearGradient>
-    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#9db9ff"/>
-    </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#9db9ff"/>
-      <stop offset="1" stop-color="#4d7cff"/>
-    </linearGradient>
-    <radialGradient id="glass" cx="0.35" cy="0.3" r="0.8">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="lens"><circle cx="512" cy="500" r="206"/></clipPath>
+    <linearGradient id="b0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#80AEF9"/><stop offset=".55" stop-color="#3B82F6"/><stop offset="1" stop-color="#3065C8"/></linearGradient><linearGradient id="b1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8DA7F9"/><stop offset=".55" stop-color="#4F78F6"/><stop offset="1" stop-color="#3E5EC8"/></linearGradient><linearGradient id="b2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9AA1F9"/><stop offset=".55" stop-color="#636FF6"/><stop offset="1" stop-color="#4D58C8"/></linearGradient><linearGradient id="b3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A79CF9"/><stop offset=".55" stop-color="#7766F6"/><stop offset="1" stop-color="#5B51C8"/></linearGradient><linearGradient id="b4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B495F9"/><stop offset=".55" stop-color="#8B5CF6"/><stop offset="1" stop-color="#6A4AC8"/></linearGradient>
+    <filter id="soft" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <!-- tile -->
-  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#tile)"/>
-  <rect x="100.5" y="100.5" width="823" height="823" rx="185.5" fill="none" stroke="#ffffff" stroke-opacity="0.12"/>
-  <!-- lens -->
-  <circle cx="512" cy="500" r="206" fill="#0a1226" fill-opacity="0.55"/>
-  <circle cx="512" cy="500" r="206" fill="url(#glass)"/>
-  <circle cx="512" cy="500" r="206" fill="none" stroke="url(#ring)" stroke-width="40"/>
-  <!-- handle (a lens, held) -->
-  <path d="M668 656 L748 736" stroke="url(#ring)" stroke-width="44" stroke-linecap="round"/>
-  <!-- voice bars inside the lens -->
-  <g clip-path="url(#lens)" fill="url(#bar)">
-    <rect x="396" y="466" width="32" height="68" rx="16"/>
-    <rect x="448" y="418" width="32" height="164" rx="16"/>
-    <rect x="496" y="372" width="32" height="256" rx="16"/>
-    <rect x="544" y="418" width="32" height="164" rx="16"/>
-    <rect x="596" y="466" width="32" height="68" rx="16"/>
-  </g>
+  <ellipse cx="50" cy="86" rx="36" ry="4.5" fill="#0B1735" opacity=".28" filter="url(#soft)"/>
+  <rect x="16" y="35.0" width="10" height="26" rx="5" fill="#1E3E89"/><rect x="32" y="22.0" width="10" height="52" rx="5" fill="#253A89"/><rect x="48" y="14.0" width="10" height="68" rx="5" fill="#2D3789"/><rect x="64" y="25.0" width="10" height="46" rx="5" fill="#353389"/><rect x="80" y="34.0" width="10" height="28" rx="5" fill="#3C2F89"/>
+  <rect x="12" y="31.0" width="10" height="26" rx="5" fill="url(#b0)"/><rect x="13.6" y="33.0" width="2.2" height="18" rx="1.1" fill="#fff" opacity=".38"/><rect x="28" y="18.0" width="10" height="52" rx="5" fill="url(#b1)"/><rect x="29.6" y="20.0" width="2.2" height="44" rx="1.1" fill="#fff" opacity=".38"/><rect x="44" y="10.0" width="10" height="68" rx="5" fill="url(#b2)"/><rect x="45.6" y="12.0" width="2.2" height="60" rx="1.1" fill="#fff" opacity=".38"/><rect x="60" y="21.0" width="10" height="46" rx="5" fill="url(#b3)"/><rect x="61.6" y="23.0" width="2.2" height="38" rx="1.1" fill="#fff" opacity=".38"/><rect x="76" y="30.0" width="10" height="28" rx="5" fill="url(#b4)"/><rect x="77.6" y="32.0" width="2.2" height="20" rx="1.1" fill="#fff" opacity=".38"/>
 </svg>
