@@ -12,7 +12,7 @@ DMG = REL + "/latest/download/Kinviva.dmg"
 EXE = REL + "/latest/download/Kinviva-Windows-Setup.exe"
 OG = "https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg"
 
-NAV = [("features.html", "Features"), ("technical.html", "Technical"), ("whiteboard.html", "Whiteboard"), ("discover.html", "Discover"), ("interview.html", "Interview"), ("privacy.html", "Privacy"), ("video.html", "Video")]
+NAV = [("features.html", "Features"), ("technical.html", "Technical"), ("whiteboard.html", "Whiteboard"), ("discover.html", "Discover"), ("interview.html", "Interview"), ("privacy.html", "Privacy")]
 
 ICON = {
  "home": "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
@@ -90,7 +90,7 @@ def foot():
           <p>Local-first, free, with no account.</p>
         </div>
         <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; skills</a></div>
-        <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a><a href="video.html">Video</a></div>
+        <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a></div>
         <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="{GH}">Source on GitHub</a><a href="{GH}/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
       <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p>
@@ -456,27 +456,6 @@ def interview():
 
 # ------------------------------------------------------------------ Video
 CH = [(0, "Meeting", "Live transcript and answers in simple words"), (5, "Interview", "Automatic answers to the interviewer's question"), (10, "Read my screen", "A command shown on screen, explained"), (15, "Overlay", "A see-through window beside your call")]
-def video():
-    o = head("Video · Kinviva", "Watch Kinviva: a short walkthrough of Meeting, Interview, Read my screen and the overlay, plus the original real-call demo.", "video.html", "https://bhaktathapa.com.np/kinviva/media/kinviva-walkthrough-poster.jpg")
-    o += page_head("Video", "See Kinviva in action.", f"A short walkthrough of the {INSTALLER} interface, and the original recording of a real call.")
-    o += '''    <section><div class="wrap">
-      <div class="player" data-player>
-        <video controls preload="metadata" poster="media/kinviva-walkthrough-poster.jpg" width="1600" height="1000"><source src="media/kinviva-walkthrough.mp4" type="video/mp4">Your browser cannot play this video.</video>
-        <div class="chapters" role="list" aria-label="Chapters">
-'''
-    for i, (t, n, d) in enumerate(CH):
-        o += f'          <button type="button" role="listitem" class="chapter{" is-on" if i == 0 else ""}" data-t="{t}"><span><b>{n}</b><br><small>{esc(d)}</small></span><span>{t // 60}:{t % 60:02d}</span></button>\n'
-    o += f'''        </div>
-      </div>
-      <p class="muted" style="margin-top:14px">The walkthrough uses real captures of version {INSTALLER} and has no sound. Choose a chapter to jump to it.</p>
-    </div></section>
-    <section class="alt"><div class="wrap">
-      <div class="sec-head"><p class="eyebrow">Original demo</p><h2>A real call, start to finish.</h2><p class="lead">The first recording of Kinviva listening to a live call and explaining it in simple words.</p></div>
-      <video controls preload="none" poster="media/kinviva-demo-poster.jpg" width="1600" height="900" style="border-radius:14px;box-shadow:var(--shadow-lg);width:100%;max-width:960px"><source src="media/kinviva-demo.mp4" type="video/mp4"></video>
-    </div></section>
-{cta()}'''
-    o += foot()
-    write("video.html", o)
 
 # ------------------------------------------------------------------ Privacy
 SETUPS = [
@@ -594,6 +573,6 @@ def download():
     write("download.html", o)
 
 if __name__ == "__main__":
-    for f in (home, features, technical, whiteboard, discover, interview, video, privacy, download):
+    for f in (home, features, technical, whiteboard, discover, interview, privacy, download):
         f()
-    print("Wrote 9 pages to", SITE)
+    print("Wrote 8 pages to", SITE)

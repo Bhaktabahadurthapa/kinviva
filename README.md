@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="docs/media/architecture-hero.png" alt="Kinviva: system audio and microphone flow through speech-to-text into a live transcript; the assistant combines recent lines with document passages, asks a local or cloud model, and shows answers in the window and overlay while meetings are saved on device." width="100%">
-
 <br>
 
 ### A desktop meeting assistant that hears the call, explains it in plain English, and drafts a reply you can edit. Local-first. No telemetry.
@@ -22,19 +20,9 @@
 
 ---
 
-## Demo
+## Screenshots
 
-<div align="center">
-
-[![Kinviva demo: live transcript, plain-English explanation and suggested reply](docs/media/kinviva-demo.gif)](docs/media/kinviva-demo.mp4)
-
-**[▶ Watch the full 36-second demo (MP4, 1080p)](docs/media/kinviva-demo.mp4)**
-
-</div>
-
-Every screen in the video is a real capture of Kinviva on macOS, with
-system audio transcribed by whisper.cpp and answers from a local Ollama
-model. The video is built with Remotion from [`demo-video/`](demo-video/).
+See the screens on the website: https://bhaktathapa.com.np/kinviva/
 
 ## Features
 

@@ -1,3 +1,5 @@
+> The screenshots named in this file (`ui-*.png`) were removed from the repository when the product was renamed, because they showed the old name. The results below are unchanged.
+
 # Test results and remaining limitations
 
 Host: macOS 27.0.1, Apple Silicon (arm64), Rust 1.97.1, Node 26.13.
