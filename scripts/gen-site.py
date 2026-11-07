@@ -6,10 +6,10 @@ import html, pathlib
 SITE = pathlib.Path(__file__).resolve().parent.parent / "site"
 GH = "https://github.com/Bhaktabahadurthapa/kinviva"
 REL = GH + "/releases"
-INSTALLER = "0.1.4"   # the version people can download today
-NEXT = "0.1.5"        # the next installer, which includes the new workspace
-DMG = REL + "/latest/download/MeetingLens.dmg"
-EXE = REL + "/latest/download/MeetingLens-Windows-Setup.exe"
+INSTALLER = "0.1.5"   # the version people can download today (the first one named Kinviva)
+NEXT = "0.1.5"        # features added since 0.1.4 carry a "New in" badge
+DMG = REL + "/latest/download/Kinviva.dmg"
+EXE = REL + "/latest/download/Kinviva-Windows-Setup.exe"
 OG = "https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg"
 
 NAV = [("features.html", "Features"), ("technical.html", "Technical"), ("whiteboard.html", "Whiteboard"), ("discover.html", "Discover"), ("interview.html", "Interview"), ("privacy.html", "Privacy"), ("video.html", "Video")]
@@ -130,7 +130,7 @@ def cta(title="Free, local-first, and yours.", lead=f"Download Kinviva for Mac o
 def write(name, content):
     (SITE / name).write_text(content)
 
-NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can download today is <b>{INSTALLER}</b>. The new workspace on these pages (Dashboard, Technical Copilot, Whiteboard, Discover and more) is built and in the source code, and arrives in the next installer, <b>{NEXT}</b>. Each feature below says which one it belongs to.</p></div>'''
+NOTICE = f'''<div class="notice"><b>About versions</b><p>The installer you can download today is <b>{INSTALLER}</b>, the first release named Kinviva (it was MeetingLens before). Features marked <b>New in {NEXT}</b> were added since 0.1.4.</p></div>'''
 
 # ------------------------------------------------------------------ Home
 def home():
@@ -142,7 +142,7 @@ def home():
         <h1>Hear it. Understand it. <span>Visualize it.</span></h1>
         <p class="lead">Kinviva listens to your meetings, interviews and lectures, explains every point in plain words, and turns what was said into diagrams, whiteboards, notes and notes. It all stays on your computer.</p>
         <div class="cta"><a class="btn btn-primary btn-big" href="download.html">Download for free</a><a class="btn btn-ghost btn-big" href="features.html">See every feature</a></div>
-        <p class="fine">Mac and Windows · Current installer {INSTALLER} · New workspace arrives in {NEXT} · <a href="{GH}">Source on GitHub</a></p>
+        <p class="fine">Mac and Windows · Current installer {INSTALLER} · <a href="{GH}">Source on GitHub</a></p>
         <div class="stage">
           <div class="tabs on-dark" role="tablist" aria-label="Theme" data-tabs>
             <button role="tab" id="tab-light" aria-selected="true" aria-controls="p-light">Light</button>
@@ -228,7 +228,7 @@ def home():
         <div class="sec-head center"><p class="eyebrow">Questions</p><h2>Straight answers.</h2></div>
         <div class="faq">
           <details><summary>Is Kinviva really free?</summary><p>Yes. There is no account, no subscription and no paid tier. You only pay for any cloud AI service you choose to connect, such as Gemini. You can also use a local model for free.</p></details>
-          <details><summary>What can I download today?</summary><p>The current installer is {INSTALLER}. It includes Meetings, Interviews, Read my screen and the overlay. The new workspace shown on this site is in the source code and arrives in {NEXT}. Advanced users can build it from source now.</p></details>
+          <details><summary>What can I download today?</summary><p>The current installer is {INSTALLER}. It includes everything shown on this site: Meetings, Interviews, Technical Copilot, Classroom, Presentation, Whiteboard, Visuals, Notes and Discover.</p></details>
           <details><summary>Does it record my calls?</summary><p>Not unless you turn on "Save audio recordings" in Settings. By default it saves text, not audio.</p></details>
           <details><summary>Is it accurate?</summary><p>Answers are suggestions from the AI service you connect and can be wrong. Kinviva labels what it knows and what it guesses, and never invents your own experience, but you decide what to say or do.</p></details>
           <details><summary>Which computers does it run on?</summary><p>Macs with Apple silicon (macOS 13 or later). A Windows installer is available as an experiment.</p></details>
@@ -289,7 +289,7 @@ GROUPS = [
 ]
 def features():
     o = head("Features · Kinviva", "Every Kinviva feature: meetings, interviews, Technical Copilot, Classroom, Presentation, Whiteboard, charts, Discover, notes and search.", "features.html")
-    o += page_head("Features", "Everything Kinviva does.", "Nine areas, one workspace. Each feature says whether it is in the current installer or arrives in the next one.", [(g[0], g[1]) for g in GROUPS])
+    o += page_head("Features", "Everything Kinviva does.", "Nine areas, one workspace. Features marked New in 0.1.5 were added since the previous version.", [(g[0], g[1]) for g in GROUPS])
     o += f'    <section><div class="wrap">{NOTICE}</div></section>\n'
     for i, (gid, name, ic, tone, badge, tag, items) in enumerate(GROUPS):
         o += f'''    <section id="{gid}"{' class="alt"' if i % 2 == 0 else ""} style="padding:72px 0"><div class="wrap">
@@ -547,7 +547,7 @@ def download():
         </div>
         <div id="os-mac" class="panel card os-card" role="tabpanel" aria-labelledby="tab-mac">
           <h3>Kinviva for Mac</h3><p class="muted">macOS 13 or later, Apple silicon</p>
-          <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download MeetingLens.dmg</a></p>
+          <p><a class="btn btn-primary btn-big" href="{DMG}" data-download>Download Kinviva.dmg</a></p>
           <p class="muted">Version {INSTALLER} · about 9.5 MB</p>
           <ol class="steps-ol">
             <li>Open the downloaded <code>.dmg</code> and drag <b>Kinviva</b> onto <b>Applications</b>.</li>
@@ -571,7 +571,7 @@ def download():
       </div>
     </div></section>
     <section class="alt"><div class="wrap">
-      <div class="sec-head"><p class="eyebrow">Want the new workspace now?</p><h2>Build it from source.</h2><p class="lead">Everything on the Features pages is in the source code. If you are comfortable with developer tools, you can build version {NEXT} yourself today.</p></div>
+      <div class="sec-head"><p class="eyebrow">Prefer to build it yourself?</p><h2>Build it from source.</h2><p class="lead">Everything on the Features pages is in the open source code. If you are comfortable with developer tools, you can build version {NEXT} yourself.</p></div>
       <div class="card reveal"><ol class="steps-ol">
         <li>Install <b>Node.js</b> and <b>Rust</b> (rustup).</li>
         <li><code>git clone {GH}.git</code> and open the folder.</li>
@@ -586,7 +586,7 @@ def download():
         {card("mic", "rose", "Speech recognition", "The built-in whisper.cpp engine on Mac, or Deepgram if you prefer the cloud.")}
         {card("shield", "teal", "Permissions", "Microphone and, on Mac, Screen &amp; System Audio Recording. Kinviva never changes your system permissions for you.")}
       </div>
-      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/MeetingLens.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
+      <div class="card reveal" style="margin-top:20px"><h3>Verify your download</h3><p>Every release lists SHA-256 checksums. On a Mac, run this in Terminal and compare the result with the release notes:</p><p><code>shasum -a 256 ~/Downloads/Kinviva.dmg</code></p><p><a href="{REL}">Release notes and checksums</a> · <a href="{REL}">All releases</a> · <a href="{GH}">Source code</a></p></div>
     </div></section>
     <div class="toast" id="started" role="status" hidden><b>Your download has started.</b><span>Open it from your Downloads and follow the steps on this page.</span><button type="button" aria-label="Close">×</button></div>
 '''
