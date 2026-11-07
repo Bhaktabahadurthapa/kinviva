@@ -4,8 +4,8 @@ Nothing here has been run. Do not run these steps until the owner says to. You n
 
 ## 0. Decide first
 - **Where will the service live?** Two options:
-  - **A. A subdomain you control on Cloudflare**, for example `early-access-api.bhaktathapa.com.np`. The domain `bhaktathapa.com.np` must be managed by Cloudflare DNS (or you add that one subdomain there). This is the tidy option. It needs a DNS change, which is the owner's call.
-  - **B. The free `workers.dev` address.** No DNS change. In `wrangler.toml` set `workers_dev = true` (and remove or leave `preview_urls = false`).
+  - **A. Selected: `api.kinviva.tech`**, a custom domain on the Cloudflare-managed zone `kinviva.tech`. Cloudflare creates the DNS record when the custom domain is attached; that is a DNS change and needs the owner's separate approval.
+  - **B. The free `workers.dev` address** (fallback). No DNS change. In `wrangler.toml` set `workers_dev = true`.
 - **A contact address for deletion requests.** `docs/PRIVACY.md` promises deletion on request, so the Early Access page must show a real address. Add it to the page text before launch.
 
 ## 1. Sign in and create the database
@@ -30,7 +30,7 @@ Expected: `signups` and `rate`.
 ```bash
 openssl rand -hex 32 | npx wrangler secret put RATE_SALT
 ```
-`RATE_SALT` must be at least 16 characters; the service refuses to run without it. Never commit it or paste it into chat. `ALLOWED_ORIGIN` is not secret and lives in `wrangler.toml`; it must be exactly `https://bhaktathapa.com.np` (no trailing slash).
+`RATE_SALT` must be at least 16 characters; the service refuses to run without it. Never commit it or paste it into chat. `ALLOWED_ORIGIN` is not secret and lives in `wrangler.toml`: a comma-separated list of exact website origins (no trailing slash). It currently lists `https://kinviva.tech`, `https://www.kinviva.tech` and `https://bhaktathapa.com.np`. Remove the old one after the site has moved.
 
 ## 4. Deploy
 ```bash
@@ -38,12 +38,12 @@ npx wrangler deploy
 ```
 For option A, add a custom domain in the Cloudflare dashboard (Workers & Pages, kinviva-early-access, Settings, Domains & Routes), or add this to `wrangler.toml` and deploy again:
 ```toml
-routes = [{ pattern = "early-access-api.bhaktathapa.com.np", custom_domain = true }]
+routes = [{ pattern = "api.kinviva.tech", custom_domain = true }]
 ```
 
 ## 5. Check it works
 ```bash
-curl https://<your-service-address>/health
+curl https://api.kinviva.tech/health
 # expected: {"ok":true,"configured":true,"database":true}
 ```
 Then send one test sign-up from your own email address using the real form (step 6), and read it back:
@@ -54,7 +54,7 @@ npx wrangler d1 execute kinviva-early-access --remote --command "SELECT id,email
 ## 6. Switch the website form on
 ```bash
 cd ../..
-KINVIVA_EA_ENDPOINT="https://<your-service-address>/api/early-access" python3 scripts/gen-site.py
+KINVIVA_EA_ENDPOINT="https://api.kinviva.tech/api/early-access" python3 scripts/gen-site.py
 git add site && git commit -m "Site: switch Early Access form on"
 ```
 Pushing `site/` publishes the site automatically (the Pages workflow). Do this only after step 5 passes.

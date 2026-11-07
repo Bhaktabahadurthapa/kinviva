@@ -3,12 +3,15 @@
 name = "kinviva-early-access"
 main = "worker.js"
 compatibility_date = "2025-01-01"
+# The service is reached at api.kinviva.tech (custom domain added after owner approval, see DEPLOY.md).
 # No public *.workers.dev address and no preview URLs: the service is reached only through the route you add in DEPLOY.md.
 workers_dev = false
 preview_urls = false
 
 [vars]
-ALLOWED_ORIGIN = "https://bhaktathapa.com.np"
+# Website origins allowed to send the form (comma separated, exact, no trailing slash).
+# kinviva.tech is the planned home; bhaktathapa.com.np serves the site until it moves.
+ALLOWED_ORIGIN = "https://kinviva.tech,https://www.kinviva.tech,https://bhaktathapa.com.np"
 
 # Platform logs show request status and errors only. The code never logs names, emails or request bodies.
 [observability]

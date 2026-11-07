@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
-import worker, { validate } from "./worker.js";
+import worker, { validate, matchOrigin } from "./worker.js";
 
 // A real SQLite database stands in for D1, with the same prepare/bind/run/first shape.
 function makeDb() {
@@ -112,4 +112,17 @@ test("bad requests count toward the rate limit, and only the agreed fields are s
   const cols = Object.keys(env2.DB.raw.prepare("SELECT * FROM signups").get()).sort();
   assert.deepEqual(cols, ["company", "consent_at", "consent_version", "email", "email_lower", "id", "name", "use_case"]);
   assert.ok(!JSON.stringify(env2.DB.raw.prepare("SELECT * FROM signups").all()).includes("private words"));
+});
+
+test("several website origins can be allowed, and only those", async () => {
+  const list = "https://kinviva.tech, https://www.kinviva.tech,https://bhaktathapa.com.np";
+  assert.equal(matchOrigin(list, "https://kinviva.tech"), "https://kinviva.tech");
+  assert.equal(matchOrigin(list, "https://www.kinviva.tech"), "https://www.kinviva.tech");
+  assert.equal(matchOrigin(list, "https://kinviva.tech.evil.example"), null);
+  assert.equal(matchOrigin(list, null), null);
+  const env = { ...envOf(), ALLOWED_ORIGIN: list };
+  const r = await send(env, good, { headers: { origin: "https://kinviva.tech" } });
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get("access-control-allow-origin"), "https://kinviva.tech");
+  assert.equal((await send(env, good, { headers: { origin: "https://evil.example" } })).status, 403);
 });

@@ -31,6 +31,12 @@ async function sha256Hex(text) {
   return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/** ALLOWED_ORIGIN may hold several website origins separated by commas. Returns the matching one, or null. */
+export function matchOrigin(list, origin) {
+  if (!list || !origin) return null;
+  return String(list).split(",").map((o) => o.trim()).filter(Boolean).includes(origin) ? origin : null;
+}
+
 function reply(status, payload, origin) {
   return new Response(JSON.stringify(payload), {
     status,
@@ -50,19 +56,20 @@ export default {
       return await handle(request, env);
     } catch {
       // Never reveal internals or echo the submission. The visitor can simply try again.
-      return reply(503, { ok: false, message: "Sign-up is temporarily unavailable. Please try again later." }, env.ALLOWED_ORIGIN || null);
+      return reply(503, { ok: false, message: "Sign-up is temporarily unavailable. Please try again later." }, matchOrigin(env.ALLOWED_ORIGIN, request.headers.get("origin")));
     }
   },
 };
 
 async function handle(request, env) {
-    const allowed = env.ALLOWED_ORIGIN;
     const origin = request.headers.get("origin");
+    const allowed = matchOrigin(env.ALLOWED_ORIGIN, origin);
+    const configuredOrigin = Boolean(env.ALLOWED_ORIGIN);
     const url = new URL(request.url);
 
     // Health check: confirms the service is configured and the database answers. Reveals no counts or data.
     if (url.pathname === "/health" && request.method === "GET") {
-      const configured = Boolean(allowed && env.RATE_SALT && env.RATE_SALT.length >= 16 && env.DB);
+      const configured = Boolean(configuredOrigin && env.RATE_SALT && env.RATE_SALT.length >= 16 && env.DB);
       let database = false;
       try { database = Boolean(env.DB && (await env.DB.prepare("SELECT 1 AS ok").bind().first())); } catch { database = false; }
       const ok = configured && database;
@@ -70,12 +77,12 @@ async function handle(request, env) {
     }
 
     if (request.method === "OPTIONS") {
-      if (!allowed || origin !== allowed) return new Response(null, { status: 403 });
+      if (!allowed) return new Response(null, { status: 403 });
       return new Response(null, { status: 204, headers: { "access-control-allow-origin": allowed, "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type", "access-control-max-age": "600", vary: "Origin" } });
     }
     if (url.pathname !== "/api/early-access") return reply(404, { ok: false, message: "Not found." });
     if (request.method !== "POST") return reply(405, { ok: false, message: "Use POST." });
-    if (!allowed || origin !== allowed) return reply(403, { ok: false, message: "This form can only be sent from the Kinviva website." });
+    if (!allowed) return reply(403, { ok: false, message: "This form can only be sent from the Kinviva website." });
     if (!(request.headers.get("content-type") || "").includes("application/json")) return reply(415, { ok: false, message: "Send the form as JSON." }, allowed);
 
     const text = await request.text();
