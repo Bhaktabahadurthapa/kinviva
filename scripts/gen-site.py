@@ -182,9 +182,9 @@ def home():
       <div class="wrap">
         <div class="hero-grid">
           <div>
-            <p class="eyebrow hero-anim d1">Privacy-first AI copilot</p>
+            <p class="eyebrow hero-anim d1">Free desktop app for Mac and Windows</p>
             <h1 class="hero-anim d2" style="margin-top:18px">Every conversation, <em><span class="mark">clearer.</span></em></h1>
-            <p class="lead hero-anim d3">Kinviva listens to your meetings, technical discussions, interviews and lectures on your own computer, explains what was said in plain words, and turns it into notes, diagrams and answers you can trust.</p>
+            <p class="lead hero-anim d3">Kinviva listens to a meeting, call, interview or lecture on your computer, explains each point in plain words, and helps you answer. Your conversations stay on your device.</p>
             <div class="cta hero-anim d4"><a class="btn btn-primary btn-big" href="early-access.html">Get Early Access</a><a class="btn btn-ghost btn-big" href="features.html">Explore Features</a></div>
             <p class="fine hero-anim d4">The free Community Edition is available now: <a href="download.html">download for Mac and Windows</a>, version {INSTALLER}. <a href="{GH}">Source on GitHub</a>.</p>
           </div>
@@ -202,73 +202,90 @@ def home():
       </div>
     </section>
 
+    <section class="glance-sec"><div class="wrap">
+      <dl class="glance">
+        <div><dt>What it is</dt><dd>A free app for your computer. It listens to a call, meeting or lecture and explains it in plain words while it happens.</dd></div>
+        <div><dt>Who it is for</dt><dd>Anyone who has to follow fast talk and answer well: at work, in technical calls, in interviews and in class.</dd></div>
+        <div><dt>Where it runs</dt><dd>On your Mac or Windows PC. There is no Kinviva server, no account and no bot that joins your call.</dd></div>
+        <div><dt>What it costs</dt><dd>Nothing to download or use. If you pick a cloud AI service, that service bills you directly. A local model is free.</dd></div>
+      </dl>
+    </div></section>
+
     <section>
       <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">The problem</p><h2>Important conversations move faster than you can follow.</h2><p class="lead">Kinviva is built for the moments when you need to keep up, remember, and answer well.</p></div>
-        <div class="grid g4">
-          {card("note", "blue", "What was decided?", "Decisions and action items come with the quote that proves them, and an owner only when someone said one.")}
-          {card("code", "teal", "Technical talk, fast", "Hard terms are explained in simple words. Troubleshooting plans are read-only and marked as hypotheses.")}
-          {card("chat", "rose", "Questions arrive live", "In an interview or a class, get an answer in the style you choose, without inventing your experience.")}
-          {card("lock", "purple", "Private by default", "Sessions, notes and boards stay on your computer. No account and no telemetry.")}
+        <div class="sec-head"><p class="eyebrow">The problem</p><h2>Conversations move faster than you can follow.</h2><p class="lead">These are the moments Kinviva is built for.</p></div>
+        <div class="prob-list">
+          <div class="prob reveal"><div><h3>You lose the thread</h3><p>Fast talk, jargon, an accent or a long meeting, and you miss a point.</p></div><div><p class="how">Kinviva writes a live transcript and explains each finished point in plain words, with the hard words listed.</p></div></div>
+          <div class="prob reveal"><div><h3>You must answer on the spot</h3><p>A question lands and you need a good answer now.</p></div><div><p class="how">It drafts a short reply you can edit, grounded in what was said and in your own documents. It never invents your experience, and nothing is typed into the call for you.</p></div></div>
+          <div class="prob reveal"><div><h3>You forget what was decided</h3><p>The call ends and nobody remembers who agreed to what.</p></div><div><p class="how">It lists decisions and action items, each with the exact quote that proves it, and an owner only when someone said one.</p></div></div>
+          <div class="prob reveal"><div><h3>The call is private</h3><p>You cannot put a cloud recording bot on a sensitive conversation.</p></div><div><p class="how">Audio, transcript and notes stay on your computer. With a local speech engine and a local model, nothing leaves it at all.</p></div></div>
         </div>
       </div>
     </section>
 
     <section class="alt">
       <div class="wrap">
-        <div class="sec-head"><p class="eyebrow">Product</p><h2>One workspace for every kind of conversation.</h2><p class="lead">Screenshots use sample data. Each part works with the others.</p></div>
-{spot("v2-meeting.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript beside plain-English insights. Hard words are explained, and you can ask, get a suggested reply, or request a recap.", ["<b>Decisions and actions</b> with the quote behind each one", "<b>Searchable</b> sessions you can export to Word, Markdown or text"], link=("features.html#meetings", "Meetings"))}
-{spot("v2-troubleshoot.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Incident tracker</b> with evidence for any root cause", "<b>Architecture diagrams</b> labelled verified, mentioned or inferred"], flip=True, badge="next", link=("technical.html", "Technical Copilot"))}
-{spot("v2-classroom.jpg", "Classroom screen with During class, After class and Practice tabs, an I am lost button that catches you up, and a finder for homework announcements", "Classroom", "Catch up in class. Study after it.", "Lost in a lecture? Get what the teacher is on right now in simple words. Then turn the class into notes, study guides and practice quizzes.", ["<b>Homework and exam dates</b> listed only if the teacher actually said them", "<b>Answers cite your course files</b> by name and page", "A clear reminder that it is study help, not finished coursework"], badge="next", link=("features.html#classroom", "Classroom"))}
-{spot("v2-interview.jpg", "Interview screen with the interviewer's question in a banner at the top, practice modes, role and answer style choices, and practice notes beside them", "Interview", "See the question, and a good answer, in the right place.", "Each question the interviewer asks appears in a banner beside your answer. Choose your role and answer style, practise first, or run a mock interview.", ["<b>Never invents</b> your experience", "<b>Practice notes</b> you can download as Markdown, Word or text", "<b>Job description analysis</b> compared with your own documents"], flip=True, link=("interview.html", "Interview"))}
-{spot("v2-presentation.jpg", "Presentation screen with a box for what the talk is about, choices for audience, tone, number of slides and colours, and a Plan the slides button", "Presentations", "From your notes to an editable deck.", "Type what the talk is about, choose audience, tone and length, and Kinviva plans the slides and saves a PowerPoint file you can edit. Then get speaker notes, rehearsal feedback and answers to audience questions.", ["<b>Only uses what you write</b> and your documents. It does not invent figures", "<b>Edit in Kinviva</b> beside the preview, then download the .pptx"], badge="next", link=("features.html#presentation", "Presentations"))}
+        <div class="sec-head"><p class="eyebrow">How it works</p><h2>Four steps, in plain terms.</h2></div>
+        <ol class="flow">
+          <li class="reveal"><b>Set it up once</b><p>Install the app and choose its answer engine: your own key (for example Gemini) or a free local model through Ollama. Allow microphone and system-audio access when your computer asks.</p></li>
+          <li class="reveal"><b>Press Start</b><p>Kinviva hears the call (<em>Them</em>, from your computer's audio) and your voice (<em>Me</em>, from the microphone) and writes the transcript on your computer.</p></li>
+          <li class="reveal"><b>Read as it goes</b><p>Each finished point is explained in simple words. Questions get a draft answer. You can also press Explain, Suggest reply, Recap or Ask.</p></li>
+          <li class="reveal"><b>Keep and use it</b><p>The session is saved. Export notes to Word, Markdown or text, list decisions, draw a diagram, or make a quiz. Everything is searchable.</p></li>
+        </ol>
+        <p class="flow-note">What leaves your computer: only the text sent to the answer engine you chose, and only if it is a cloud service. <a href="privacy.html">See exactly what is sent in each setup.</a></p>
       </div>
     </section>
 
     <section>
       <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">Honest by design</p><h2>Every part of a diagram says where it came from.</h2><p class="lead">Kinviva never presents a guess as a fact. When it draws your architecture, each box and line carries one of three labels, decided by code, not by the model.</p></div>
-        <div class="legend reveal">
-          <div class="ev v"><b>Verified</b><p>A document you selected mentions it.</p></div>
-          <div class="ev m"><b>Mentioned</b><p>Someone in the conversation said it, in those words.</p></div>
-          <div class="ev i"><b>Inferred</b><p>Kinviva suggests it. Drawn dashed, never called a fact.</p></div>
-        </div>
+        <div class="sec-head"><p class="eyebrow">When and where</p><h2>Use it whenever you need to keep up.</h2><p class="lead">It listens to the audio on your computer, so it works with a call in any app or a video in your browser. Nothing is installed in the other app.</p></div>
+        <table class="table reveal">
+          <thead><tr><th>Situation</th><th>When you would use it</th><th>What you get</th></tr></thead>
+          <tbody>
+            <tr><td><b>Work meetings</b></td><td>Planning calls, stand-ups, client calls</td><td>Live transcript, plain-English points, decisions and action items, a recap</td></tr>
+            <tr><td><b>Technical calls</b></td><td>Incidents, design reviews, engineering talk</td><td>Terms explained, a safe read-only troubleshooting plan, architecture diagrams labelled by evidence <span class="badge b-next">New in 0.1.5</span></td></tr>
+            <tr><td><b>Interviews</b></td><td>Live interviews and practice sessions</td><td>Each question beside an editable answer in your style; mock questions with feedback</td></tr>
+            <tr><td><b>Classes and lectures</b></td><td>During and after a lecture</td><td>A catch-up when you are lost, homework dates the teacher actually said, notes, study guides and quizzes <span class="badge b-next">New in 0.1.5</span></td></tr>
+            <tr><td><b>Presentations</b></td><td>Before and while you present</td><td>An editable PowerPoint from your notes, speaker notes, rehearsal feedback, audience-question answers <span class="badge b-next">New in 0.1.5</span></td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
     <section class="alt">
       <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">How it works</p><h2>Three steps. Nothing to set up first.</h2></div>
-        <div class="steps">
-          <div class="step reveal"><h3>Start</h3><p>Press Start. Kinviva listens to the call and your microphone and writes the transcript on your computer.</p></div>
-          <div class="step reveal"><h3>Understand</h3><p>Each finished thought is explained in plain words. Ask a question, get a reply to say, or request a recap.</p></div>
-          <div class="step reveal"><h3>Keep and use</h3><p>Save notes, draw a diagram, make a quiz. It is all searchable.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="dark">
-      <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">Privacy</p><h2>Your conversations stay yours.</h2><p class="lead">Use local speech and a local model and nothing leaves your computer. If you choose a cloud service, the app tells you exactly what is sent.</p></div>
-        <div class="grid g4">
-          {card("lock", "purple", "Raw audio stays local", "Recordings are off unless you turn them on.")}
-          {card("shield", "teal", "Keys in the keychain", "Never in files, logs or exports.")}
-          {card("cloud", "blue", "No account, no telemetry", "Nothing is collected about you.")}
-          {card("check", "green", "Never speaks for you", "Text is shown to you only. Nothing is typed into your call.")}
-        </div>
-        <p style="margin-top:36px"><a class="btn btn-ghost" href="privacy.html">Read the privacy details</a></p>
+        <div class="sec-head"><p class="eyebrow">A look inside</p><h2>What it looks like.</h2><p class="lead">Screenshots use sample data. <a href="features.html">See every feature.</a></p></div>
+{spot("v2-meeting.jpg", "Meetings screen with a live transcript on the left and explanations in simple words on the right", "Meetings", "Understand it while it is said.", "A live transcript beside plain-English insights. Ask, get a suggested reply, or request a recap.", ["<b>Decisions and actions</b> with the quote behind each one", "<b>Searchable</b> sessions you can export to Word, Markdown or text"], link=("features.html#meetings", "Meetings"))}
+{spot("v2-troubleshoot.jpg", "Technical Copilot troubleshooting plan with possible causes, evidence to collect and read-only commands", "Technical Copilot", "Solve it safely.", "Describe a problem and get a plan: possible causes as hypotheses, the evidence to collect, and read-only commands you copy and run yourself.", ["<b>Incident tracker</b> that wants evidence before naming a root cause", "<b>Architecture diagrams</b> labelled verified, mentioned or inferred"], flip=True, badge="next", link=("technical.html", "Technical Copilot"))}
+{spot("v2-interview.jpg", "Interview screen with the interviewer's question in a banner at the top, practice modes, role and answer style choices", "Interview", "See the question and a good answer together.", "Each question appears in a banner beside your answer. Choose your role and style, practise first, or run a mock interview.", ["<b>Never invents</b> your experience", "<b>Job description analysis</b> compared with your own documents"], link=("interview.html", "Interview"))}
       </div>
     </section>
 
     <section>
       <div class="wrap">
-        <div class="sec-head center"><p class="eyebrow">Questions</p><h2>Straight answers.</h2></div>
+        <div class="sec-head"><p class="eyebrow">Why it is different</p><h2>Built to be trusted, not just clever.</h2></div>
+        <div class="grid g3">
+          {card("lock", "blue", "It stays on your computer", "No Kinviva server and no bot in your call. Sessions, notes and boards live on your computer, and recordings are off unless you turn them on.")}
+          {card("check", "green", "No account, no tracking", "No sign-up and no telemetry. Your keys sit in the system keychain, never in files or exports.")}
+          {card("chat", "purple", "You choose the AI", "Use a free local model or your own cloud key. You see what is sent, and you can switch any time.")}
+          {card("shield", "teal", "It tells you how sure it is", "Diagram boxes are marked verified, mentioned or inferred. Cited sources are checked by the app, not trusted from the model.")}
+          {card("note", "rose", "It never speaks for you", "Suggestions are shown to you only. Nothing is typed into your call, and it never invents your own experience.")}
+          {card("code", "amber", "Free and open to read", "The Community Edition is free. The source is public on GitHub so you can see what it does. It is not yet open source licensed.")}
+        </div>
+        <div class="notice limits reveal"><b>Honest limits</b><p>Answers come from the AI you connect and can be wrong, so you decide what to say. You need an answer engine (a cloud key or a local model). It works best on a Mac with Apple silicon; the Windows version is experimental and has not been tested on real hardware by us. It is built for English today: the bundled speech models and question detection are English.</p></div>
+      </div>
+    </section>
+
+    <section class="alt">
+      <div class="wrap">
+        <div class="sec-head"><p class="eyebrow">Questions</p><h2>Straight answers.</h2></div>
         <div class="faq">
-          <details><summary>Is Kinviva really free?</summary><p>Yes. There is no account, no subscription and no paid tier. You only pay for any cloud AI service you choose to connect, such as Gemini. You can also use a local model for free.</p></details>
-          <details><summary>What can I download today?</summary><p>The current installer is {INSTALLER}. It includes everything shown on this site: Meetings, Interviews, Technical Copilot, Classroom, Presentation, Whiteboard, Visuals, Notes and Discover.</p></details>
-          <details><summary>Does it record my calls?</summary><p>Not unless you turn on "Save audio recordings" in Settings. By default it saves text, not audio.</p></details>
-          <details><summary>Is it accurate?</summary><p>Answers are suggestions from the AI service you connect and can be wrong. Kinviva labels what it knows and what it guesses, and never invents your own experience, but you decide what to say or do.</p></details>
-          <details><summary>Which computers does it run on?</summary><p>Macs with Apple silicon (macOS 13 or later). A Windows installer is available as an experiment.</p></details>
+          <details><summary>What do I need to start?</summary><p>A Mac with Apple silicon (macOS 13 or later), or a Windows 10/11 PC (experimental). You also need an answer engine: your own cloud key such as Gemini, or a local model through Ollama. The first time, your computer asks for microphone and system-audio permission.</p></details>
+          <details><summary>Is Kinviva really free?</summary><p>Yes. There is no account, no subscription and no paid tier in the Community Edition. If you connect a cloud AI service, that service may charge you directly. A local model costs nothing.</p></details>
+          <details><summary>Does it work offline?</summary><p>Yes, if you choose on-device speech recognition and a local model. A cloud answer engine needs the internet.</p></details>
+          <details><summary>Does it join or record my calls?</summary><p>No bot joins your call. Kinviva listens to your computer's audio and your microphone. It saves text, not audio, unless you turn on "Save audio recordings" in Settings. Please follow the rules of your school, employer and local law on recording.</p></details>
+          <details><summary>Is it accurate?</summary><p>Answers are suggestions from the AI you connect and can be wrong. Kinviva labels what it knows and what it guesses, but you decide what to say or do.</p></details>
+          <details><summary>What can I download today?</summary><p>Version {INSTALLER}. It includes Meetings, Interviews, Technical Copilot, Classroom, Presentation, Whiteboard, Visuals, Notes and Discover. Pro and Business editions are planned and not available yet.</p></details>
         </div>
       </div>
     </section>
