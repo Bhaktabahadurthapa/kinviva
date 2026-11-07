@@ -115,6 +115,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
   const [modelErr, setModelErr] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [info, setInfo] = useState<{ data_dir: string; version: string; schema_version: number } | null>(null);
+  const [edition, setEdition] = useState("Community Edition");
 
   const loadSecrets = () => api.secretStatus().then(setSecrets).catch((e) => onError(errorText(e)));
   useEffect(() => {
@@ -122,6 +123,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
     api.listInputDevices().then(setDevices).catch(() => {});
     api.speechEngines().then((e) => setNativeAvailable(e.native_available)).catch(() => {});
     api.appInfo().then(setInfo).catch(() => {});
+    api.editionInfo().then((e) => setEdition(e.label)).catch(() => {});
     loadSecrets();
   }, []);
   if (!s) return <div className="page">Loading…</div>;
@@ -473,7 +475,7 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         <section className="card about">
           <h2>About</h2>
           <p>
-            Kinviva {info.version} · data stored locally in <code>{info.data_dir}</code> · schema v{info.schema_version}
+            Kinviva {edition} {info.version} · data stored locally in <code>{info.data_dir}</code> · schema v{info.schema_version}
           </p>
           <p className="hint">No telemetry. Meeting content and API keys are not written to logs.</p>
         </section>

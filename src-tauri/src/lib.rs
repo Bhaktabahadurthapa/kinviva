@@ -8,6 +8,7 @@ pub mod commands;
 pub mod db;
 pub mod demo;
 pub mod discover;
+pub mod edition;
 pub mod migrate;
 pub mod docs;
 pub mod export;
@@ -248,6 +249,7 @@ pub fn run() {
             commands::video_open,
             commands::video_bounds,
             commands::video_close,
+            commands::edition_info,
             commands::instructions_preview,
             commands::clipboard_text,
             commands::video_info,

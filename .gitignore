@@ -9,3 +9,6 @@ dist-mac
 # Local tooling installs (Impeccable skills and engine)
 .claude/
 public/excalidraw-assets/
+
+# Internal only: never commit pricing research
+docs/PRICING_RESEARCH.md

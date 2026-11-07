@@ -202,6 +202,10 @@ npm run tauri build
 
 Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 
+## Editions
+
+This repository is the **Community Edition**: free, local-first, no account. **Pro** and **Business** editions are *planned* and are **not available yet**; nothing in this repository implements them. See [docs/OPEN_CORE_PLAN.md](docs/OPEN_CORE_PLAN.md) and [docs/FEATURE_AUDIT.md](docs/FEATURE_AUDIT.md) for what exists today and what does not. The code is public to read, but it is currently under an all-rights-reserved licence ([licensing review](docs/LICENSING_REVIEW.md)).
+
 ## Docs
 
 - [How answers are written](docs/ANSWERS.md): format, sources and citation checking
@@ -213,6 +217,7 @@ Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 - [Reference investigation & feature coverage](docs/FINDINGS.md): an
   independent implementation; see that file for how the reference app was
   studied.
+- [Open-core plan](docs/OPEN_CORE_PLAN.md) · [Release readiness](docs/RELEASE_READINESS.md) · [Privacy](docs/PRIVACY.md)
 - [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) ·
   [Code of conduct](CODE_OF_CONDUCT.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)

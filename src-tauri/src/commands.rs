@@ -636,6 +636,11 @@ pub fn instructions_preview(state: State<AppState>, screen: String) -> R<String>
 }
 
 #[tauri::command]
+pub fn edition_info() -> crate::edition::EditionInfo {
+    crate::edition::info()
+}
+
+#[tauri::command]
 pub fn interview_run(app: AppHandle, state: State<AppState>, request: crate::interview::Request) -> R<String> {
     crate::interview::start(&app, &state, request)
 }

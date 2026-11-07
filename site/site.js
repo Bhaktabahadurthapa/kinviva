@@ -81,4 +81,32 @@
   } else {
     items.forEach(function (el) { el.classList.add("in"); });
   }
+
+  // Early Access form: posts to the service named in data-endpoint. Closed until that is set.
+  var eaForm = document.getElementById("ea-form");
+  if (eaForm) {
+    var eaStatus = document.getElementById("ea-status");
+    var say = function (t, bad) { eaStatus.textContent = t; eaStatus.className = "ea-status" + (bad ? " bad" : " ok"); };
+    eaForm.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var endpoint = eaForm.getAttribute("data-endpoint");
+      if (!endpoint) { say("Signup is not open yet. Please check back soon.", true); return; }
+      var f = eaForm.elements;
+      var email = f.email.value.trim();
+      if (!f.name.value.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say("Please enter your name and a valid email.", true); return; }
+      if (!f.use_case.value) { say("Please choose what you would use Kinviva for.", true); return; }
+      if (!f.consent.checked) { say("Please tick the consent box so we can contact you.", true); return; }
+      var btn = eaForm.querySelector("button[type=submit]");
+      btn.disabled = true; say("Sending…", false);
+      fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        name: f.name.value.trim(), email: email, use_case: f.use_case.value, company: f.company.value.trim(),
+        consent: true, website: f.website.value
+      }) }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; }); })
+        .then(function (x) {
+          if (x.r.ok) { say("Thank you. You are on the Early Access list. If you are selected we will email you.", false); eaForm.reset(); }
+          else if (x.r.status === 429) { say("Too many attempts. Please try again in an hour.", true); btn.disabled = false; }
+          else { say(x.j.error || "Something went wrong. Please try again.", true); btn.disabled = false; }
+        }).catch(function () { say("Could not reach the service. Please try again later.", true); btn.disabled = false; });
+    });
+  }
 })();

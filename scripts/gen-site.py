@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generates the whole Kinviva website in site/ (home, features, technical, whiteboard, discover,
 interview, video, privacy, download). Only site files are written. Run: python3 scripts/gen-site.py"""
-import html, pathlib
+import html, os, pathlib
 
 SITE = pathlib.Path(__file__).resolve().parent.parent / "site"
 GH = "https://github.com/Bhaktabahadurthapa/kinviva"
@@ -11,8 +11,11 @@ NEXT = "0.1.5"        # features added since 0.1.4 carry a "New in" badge
 DMG = REL + "/latest/download/Kinviva.dmg"
 EXE = REL + "/latest/download/Kinviva-Windows-Setup.exe"
 OG = "https://bhaktathapa.com.np/kinviva/media/v2-dashboard.jpg"
+# Address of the deployed Early Access service. Empty until the owner approves deploying it; the form then stays closed.
+EA_ENDPOINT = os.environ.get("KINVIVA_EA_ENDPOINT", "")
+EA_MESSAGE = "Discover what's next with Kinviva. Join Early Access for advanced AI workflows, technical copilots, and productivity features. We'll contact selected participants as access becomes available."
 
-NAV = [("features.html", "Features"), ("technical.html", "Technical"), ("whiteboard.html", "Whiteboard"), ("discover.html", "Discover"), ("interview.html", "Interview"), ("privacy.html", "Privacy")]
+NAV = [("index.html", "Product"), ("features.html", "Features"), ("community.html", "Community"), ("early-access.html", "Pro Early Access"), ("docs.html", "Documentation"), (GH, "GitHub")]
 
 ICON = {
  "home": "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
@@ -87,11 +90,11 @@ def foot():
         <div>
           <p class="foot-brand"><img src="logo.svg" width="30" height="30" alt=""> <b>Kinviva</b></p>
           <p>Hear it. Understand it. Visualize it. Keep it.</p>
-          <p>Local-first, free, with no account.</p>
+          <p>Local-first. The Community Edition is free and needs no account.</p>
         </div>
         <div class="foot-links"><p><b>Product</b></p><a href="features.html">All features</a><a href="technical.html">Technical Copilot</a><a href="whiteboard.html">Whiteboard &amp; charts</a><a href="discover.html">Discover &amp; skills</a></div>
         <div class="foot-links"><p><b>Use cases</b></p><a href="interview.html">Interview</a><a href="features.html#classroom">Classroom</a><a href="features.html#presentation">Presentation</a></div>
-        <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="{GH}">Source on GitHub</a><a href="{GH}/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
+        <div class="foot-links"><p><b>Project</b></p><a href="download.html">Download</a><a href="community.html">Community</a><a href="early-access.html">Pro Early Access</a><a href="docs.html">Documentation</a><a href="privacy.html">Privacy</a><a href="{GH}">Source on GitHub</a><a href="{GH}/blob/main/THIRD_PARTY_NOTICES.md">Third-party notices</a></div>
       </div>
       <p class="legal">© 2026 Bhakta Thapa · Built by BKT AI. Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p>
     </div>
@@ -123,7 +126,7 @@ def spot(img, alt, eyebrow, title, text, bullets, flip=False, badge=None, captio
         </div>
 '''
 
-def cta(title="Free, local-first, and yours.", lead=f"Download Kinviva for Mac or Windows. No account, no subscription."):
+def cta(title="Free, local-first, and yours.", lead=f"Download the Kinviva Community Edition for Mac or Windows. No account, no subscription."):
     return f'''    <section><div class="wrap"><div class="cta-band reveal"><h2>{title}</h2><p class="lead">{lead}</p><a class="btn btn-primary btn-big" href="download.html">Download Kinviva</a></div></div></section>
 '''
 
@@ -235,6 +238,7 @@ def home():
         </div>
       </div>
     </section>
+{editions_band()}
 {cta()}'''
     o += foot()
     write("index.html", o)
@@ -484,6 +488,7 @@ def privacy():
         <tr><td><b>Whiteboard, charts, notes</b></td><td>Stored in your local database. Generating or editing sends only the text needed, to your answer engine.</td></tr>
         <tr><td><b>Technical Copilot</b></td><td>Never runs a command. Suggested commands are read-only and are only copied by you.</td></tr>
         <tr><td><b>Diagrams</b></td><td>Diagram source is checked and cleaned before it is drawn: no links, scripts or HTML.</td></tr>
+        <tr><td><b>Early Access form</b></td><td>Only if you fill it in on this website: your name, email, use case, optional company and your consent are stored by the Early Access service so we can contact selected participants. Nothing from the app is sent. <a href="{GH}/blob/main/docs/PRIVACY.md">Full details and deletion</a>.</td></tr>
       </tbody></table>
     </div></section>
     <section><div class="wrap">
@@ -572,7 +577,114 @@ def download():
     o += foot()
     write("download.html", o)
 
+# ------------------------------------------------------------------ Editions, Community, Early Access, Documentation
+def editions_band():
+    return f"""    <section class="alt"><div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Editions</p><h2>Free today. More to come.</h2><p class="lead">The Community Edition is the whole app you can download now. Pro and Business are planned and are not available yet.</p></div>
+      <div class="grid g3">
+        {card("check", "green", "Community", "Local transcription, bring your own answer engine, explanations and history, interview and classroom help, technical troubleshooting and diagrams, Notes, Whiteboard. Free, no account.", "community.html", None, "About Community")}
+        {card("code", "purple", "Pro (planned)", "Advanced technical investigations, richer diagrams and reports, enhanced interview and learning workflows, an optional managed AI service. Not built yet.", "early-access.html", None, "Join Early Access")}
+        {card("board", "blue", "Business (planned)", "Organization accounts, central administration, shared workflows, usage management and security policies. Not built yet.", "early-access.html", None, "Join Early Access")}
+      </div>
+    </div></section>
+"""
+
+def community():
+    o = head("Community Edition · Kinviva", "The free Kinviva Community Edition: local transcription, your own AI, explanations, history, interview and classroom help, and basic technical tools.", "community.html")
+    o += page_head("Community", "The Community Edition.", "Everything you can download today. Free to use, local-first, with no account. Nothing in it is a trial.")
+    o += f"""    <section><div class="wrap">
+      <div class="grid g3">
+        {card("mic", "blue", "Local transcription", "A built-in speech engine on your computer. Or add Deepgram with your own key.")}
+        {card("chat", "purple", "Your own AI", "Connect a local model or any OpenAI-compatible service with your own key. Your keys stay in the system keychain.")}
+        {card("note", "teal", "Explanations and history", "Plain-English explanations, replies, recaps, decisions, saved sessions, a Trash, and exports to Word, Markdown and text.")}
+        {card("chat", "rose", "Interview and classroom", "Practise and answer interview questions; lecture notes, study guides, flashcards and quizzes.")}
+        {card("code", "teal", "Technical basics", "Safe read-only troubleshooting plans, an incident tracker, and architecture diagrams from the conversation.")}
+        {card("board", "amber", "Notes, whiteboard, visuals", "Rich notes with folders and tags, an editable whiteboard, charts from your own numbers, and a presentation maker.")}
+      </div>
+    </div></section>
+    <section class="alt"><div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Our promise</p><h2>What stays free.</h2></div>
+      <table class="table reveal"><tbody>
+        <tr><td><b>Everything above</b></td><td>It stays in the Community Edition. Paid editions will add new things; they will not take these away.</td></tr>
+        <tr><td><b>Your data</b></td><td>Reading, exporting and deleting your own data is never paid.</td></tr>
+        <tr><td><b>Privacy</b></td><td>No telemetry and no Kinviva account in the Community Edition. <a href="privacy.html">See exactly what is sent in each setup.</a></td></tr>
+      </tbody></table>
+    </div></section>
+    <section><div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Source and licence</p><h2>The code is public. The licence is being decided.</h2><p class="lead">The source is on GitHub for you to read. It is currently published under an all-rights-reserved licence, so it is <b>not yet open source</b>. We are choosing an open-source licence for the Community code. We will announce it here when it is decided.</p></div>
+      <div class="grid g3">
+        {card("book", "blue", "Read the code", "Browse the source, the architecture notes and the third-party notices.", GH, None, "Open GitHub")}
+        {card("check", "green", "Report an issue", "Bug reports and ideas are welcome. Please never paste keys or private meeting content.", GH + "/issues", None, "Open issues")}
+        {card("shield", "teal", "Security", "Report a vulnerability privately. We reply within 7 days.", GH + "/security/policy", None, "Security policy")}
+      </div>
+      <p class="muted" style="margin-top:20px">Contributing: see <a href="{GH}/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Outside pull requests can be reviewed now; merging starts once contributor terms are in place.</p>
+    </div></section>
+{cta()}"""
+    o += foot()
+    write("community.html", o)
+
+USE_CASES = [("meetings", "Meetings"), ("interviews", "Interviews"), ("learning", "Learning and classes"), ("technical", "Technical work (engineering, operations)"), ("team", "My team or company"), ("other", "Something else")]
+
+def early_access():
+    ep = esc(EA_ENDPOINT)
+    opts = "".join(f'<option value="{k}">{v}</option>' for k, v in USE_CASES)
+    open_ = bool(EA_ENDPOINT)
+    notice = "" if open_ else '<p class="notice-line" role="status"><b>Signup is not open yet.</b> The form will start accepting sign-ups when the Early Access service goes live. Please check back soon.</p>'
+    o = head("Pro Early Access · Kinviva", "Join Early Access for advanced AI workflows, technical copilots, and productivity features in future Kinviva editions.", "early-access.html")
+    o += page_head("Pro Early Access", "Discover what's next with Kinviva.", esc(EA_MESSAGE))
+    o += f"""    <section><div class="wrap ea-wrap">
+      <div class="ea-form card">
+        <h2>Join Early Access</h2>
+        {notice}
+        <form id="ea-form" data-endpoint="{ep}" novalidate>
+          <label>Your name<input name="name" type="text" autocomplete="name" maxlength="100" required></label>
+          <label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+          <label>What would you use Kinviva for?<select name="use_case" required><option value="">Choose one</option>{opts}</select></label>
+          <label>Company (optional)<input name="company" type="text" autocomplete="organization" maxlength="100"></label>
+          <label class="ea-hp" aria-hidden="true">Leave this empty<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+          <label class="ea-consent"><input name="consent" type="checkbox" required> <span>I agree that Kinviva stores my name, email and answers so it can contact me about Early Access. I can ask for deletion at any time. <a href="{GH}/blob/main/docs/PRIVACY.md">How my data is used</a>.</span></label>
+          <button class="btn btn-primary btn-big" type="submit"{"" if open_ else " disabled"}>Join Early Access</button>
+          <p id="ea-status" class="ea-status" role="status" aria-live="polite"></p>
+        </form>
+        <noscript><p>This form needs JavaScript.</p></noscript>
+      </div>
+      <aside class="ea-side">
+        <h2>What is planned</h2>
+        <p class="muted">These are planned for future editions. <b>None of them is available yet</b>, and joining does not buy or reserve anything.</p>
+        <ul class="ea-list">
+          <li><b>Pro:</b> agent-driven technical investigations, advanced diagrams and reports, enhanced interview and learning workflows, an optional managed AI service.</li>
+          <li><b>Business:</b> organization accounts, central administration, shared workflows, usage management and security policies.</li>
+        </ul>
+        <h2>What stays free</h2>
+        <p class="muted">Everything in the <a href="community.html">Community Edition</a>.</p>
+        <h2>Your data</h2>
+        <p class="muted">We collect your name, email, use case and optional company, the time you agreed, and nothing else. We use it only to contact selected participants. See the <a href="privacy.html">privacy page</a>.</p>
+      </aside>
+    </div></section>
+"""
+    o += foot()
+    write("early-access.html", o)
+
+def docs_page():
+    B = GH + "/blob/main/"
+    items = [
+        ("Get started", [("README: install, set up and build", B + "README.md"), ("Download Kinviva", "download.html"), ("What you need before you install", "download.html")]),
+        ("Using Kinviva", [("Features", "features.html"), ("Answers: how they are made and checked", B + "docs/ANSWERS.md"), ("Interview mode", B + "docs/INTERVIEW.md"), ("Sessions and courses", B + "docs/SESSIONS.md")]),
+        ("Privacy and security", [("What is sent in each setup", "privacy.html"), ("Privacy and consent (full text)", B + "docs/PRIVACY.md"), ("Security policy", B + "SECURITY.md")]),
+        ("For developers", [("Architecture", B + "docs/ARCHITECTURE.md"), ("Feature audit", B + "docs/FEATURE_AUDIT.md"), ("Open-core plan", B + "docs/OPEN_CORE_PLAN.md"), ("Contributing", B + "CONTRIBUTING.md"), ("Third-party notices", B + "THIRD_PARTY_NOTICES.md")]),
+        ("Releases", [("Release notes and downloads", REL), ("Release readiness checklist", B + "docs/RELEASE_READINESS.md")]),
+    ]
+    o = head("Documentation · Kinviva", "Guides, architecture and policies for Kinviva.", "docs.html")
+    o += page_head("Documentation", "Guides and references.", "Everything is written down in the open. Most documents live in the GitHub repository.")
+    o += '    <section><div class="wrap"><div class="grid g3">\n'
+    for title, links in items:
+        li = "".join(f'<li><a href="{h}">{esc(l)}</a></li>' for l, h in links)
+        o += f'      <article class="card reveal"><h3>{title}</h3><ul class="doc-list">{li}</ul></article>\n'
+    o += "    </div></div></section>\n"
+    o += foot()
+    write("docs.html", o)
+
 if __name__ == "__main__":
-    for f in (home, features, technical, whiteboard, discover, interview, privacy, download):
+    for f in (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page):
         f()
-    print("Wrote 8 pages to", SITE)
+    print("Wrote 11 pages to", SITE)
