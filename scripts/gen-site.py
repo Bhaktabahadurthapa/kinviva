@@ -84,6 +84,10 @@ def head(title, desc, page, og=OG):
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu"><span></span><span></span><span></span></button>
       <nav id="site-nav" aria-label="Primary">
 {links}
+        <span class="nav-social" role="group" aria-label="Kinviva on social media">
+          <a class="soc soc-in" href="https://www.linkedin.com/company/kinviva/" rel="noopener" target="_blank" aria-label="Kinviva on LinkedIn (opens in a new tab)"><b aria-hidden="true">in</b><span>LinkedIn</span></a>
+          <a class="soc soc-fb" href="https://www.facebook.com/kinvivacare" rel="noopener" target="_blank" aria-label="Kinviva on Facebook (opens in a new tab)"><b aria-hidden="true">f</b><span>Facebook</span></a>
+        </span>
         <a class="btn btn-primary btn-small" href="download.html">Download</a>
       </nav>
     </div>
