@@ -8,6 +8,7 @@ pub mod commands;
 pub mod db;
 pub mod demo;
 pub mod discover;
+pub mod migrate;
 pub mod docs;
 pub mod export;
 pub mod interview;
@@ -167,7 +168,8 @@ pub fn run() {
                 None => app.path().app_data_dir()?,
             };
             std::fs::create_dir_all(&data_dir)?;
-            let db = db::Db::open(&data_dir.join("meetinglens.sqlite"))?;
+            let db_path = migrate::choose_database(&data_dir);
+            let db = db::Db::open(&db_path)?;
             db.close_dangling_meetings()?;
             let state = AppState {
                 paused: Default::default(),

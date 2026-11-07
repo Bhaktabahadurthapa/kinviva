@@ -17,7 +17,7 @@ Of particular interest:
 
 - Exposure of API keys (credential store handling, logs, IPC to the web view)
 - Meeting audio or text reaching a destination the user did not choose
-- Local data at rest (`~/Library/Application Support/app.meetinglens.desktop/`)
+- Local data at rest (`~/Library/Application Support/app.kinviva.desktop/`)
 - Tauri capability or content-security-policy bypasses
 
 ## Supported versions

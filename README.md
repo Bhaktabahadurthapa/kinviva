@@ -229,8 +229,8 @@ Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
   [Code of conduct](CODE_OF_CONDUCT.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 
-Data lives in `~/Library/Application Support/app.meetinglens.desktop/`; keys
-are under the credential-store service `app.meetinglens.desktop`.
+Data lives in `~/Library/Application Support/app.kinviva.desktop/`; keys
+are under the credential-store service `app.kinviva.desktop`.
 
 ## License
 

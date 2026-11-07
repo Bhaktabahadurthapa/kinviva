@@ -44,10 +44,10 @@ to each other.
 
 | Item | Kinviva | Notes |
 |---|---|---|
-| Bundle identifier | `app.meetinglens.desktop` | NexQ uses `com.nexq.app` |
-| Data + database | `~/Library/Application Support/app.meetinglens.desktop/meetinglens.sqlite` | NexQ's `com.nexq.app` folder, caches and WebKit data are never read, written, migrated or deleted |
+| Bundle identifier | `app.kinviva.desktop` | NexQ uses `com.nexq.app` |
+| Data + database | `~/Library/Application Support/app.kinviva.desktop/kinviva.sqlite` | NexQ's `com.nexq.app` folder, caches and WebKit data are never read, written, migrated or deleted |
 | Settings | `settings` table in the Kinviva database | |
-| Credentials | Keychain / Credential Manager service `app.meetinglens.desktop` (`deepgram_api_key`, `llm_api_key`) | |
+| Credentials | Keychain / Credential Manager service `app.kinviva.desktop` (`deepgram_api_key`, `llm_api_key`) | |
 | Updates | None configured: no updater plugin, endpoint or signing key; the app never checks for updates | Add one deliberately before any public release |
 
 ## Audio backpressure

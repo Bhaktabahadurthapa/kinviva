@@ -21,6 +21,6 @@ Build `Kinviva.dmg` and the Windows installer (`scripts/build-mac-app.sh`, the W
 then the site download buttons work. Until then the live downloads are v0.1.4 named MeetingLens.
 
 ## 5. Later: internal app ID
-The bundle id and keychain service are still `app.meetinglens.desktop`, and the data file is `meetinglens.sqlite`.
+The bundle id and keychain service are still `app.kinviva.desktop`, and the data file is `meetinglens.sqlite`.
 Change them only together with a first-launch migration (copy the data folder, re-save the API keys) and tell users to grant
 microphone and screen recording again.

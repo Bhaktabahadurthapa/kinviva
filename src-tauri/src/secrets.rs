@@ -5,7 +5,9 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-const SERVICE: &str = "app.meetinglens.desktop";
+const SERVICE: &str = "app.kinviva.desktop";
+/// The service name used before the product was renamed. Keys saved there are copied over the first time they are read.
+const LEGACY_SERVICE: &str = "app.meetinglens.desktop";
 
 /// Keys already read from the credential store in this run. macOS can ask for
 /// the login password on every read, so each key is read once and kept in memory
@@ -52,7 +54,14 @@ pub fn set(name: &str, value: &str) -> Result<(), String> {
 pub fn get(name: &str) -> Result<Option<String>, String> {
     cached(name, || match entry(name)?.get_password() {
         Ok(v) => Ok(Some(v)),
-        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(keyring::Error::NoEntry) => {
+            // A key saved under the old product name moves to the new name the first time it is needed.
+            let old = keyring::Entry::new(LEGACY_SERVICE, name).ok().and_then(|e| e.get_password().ok());
+            if let Some(v) = &old {
+                let _ = entry(name).and_then(|e| e.set_password(v).map_err(|x| x.to_string()));
+            }
+            Ok(old)
+        }
         Err(e) => Err(format!("Could not read key: {e}")),
     })
 }
