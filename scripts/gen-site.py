@@ -107,7 +107,7 @@ def foot():
     cols = [
         ("Product", [("features.html", "All features"), ("technical.html", "Technical Copilot"), ("whiteboard.html", "Whiteboard &amp; charts"), ("discover.html", "Discover &amp; skills"), ("download.html", "Download")]),
         ("Use cases", [("features.html#meetings", "Meetings"), ("interview.html", "Interview"), ("features.html#classroom", "Classroom"), ("features.html#presentation", "Presentation")]),
-        ("Resources", [("docs.html", "Documentation"), ("community.html", "Community"), ("early-access.html", "Early Access"), ("privacy.html", "Privacy"), (GH + "/blob/main/THIRD_PARTY_NOTICES.md", "Third-party notices")]),
+        ("Resources", [("docs.html", "Documentation"), ("community.html", "Community"), ("compare.html", "Compare with other tools"), ("early-access.html", "Early Access"), ("privacy.html", "Privacy"), (GH + "/blob/main/THIRD_PARTY_NOTICES.md", "Third-party notices")]),
         ("Follow", [(GH, "GitHub"), ("https://www.linkedin.com/company/kinviva/", "LinkedIn"), ("https://www.facebook.com/kinvivacare", "Facebook")]),
     ]
     def col(t, links):
@@ -329,13 +329,8 @@ def home():
           <div class="wf-col reveal"><h3>Typical meeting-notes workflow</h3><ol><li>Capture and transcribe the discussion</li><li>Generate a summary</li><li>Review and search the notes</li><li>Identify follow-up items</li></ol></div>
           <div class="wf-col wf-us reveal"><h3>Kinviva's approach</h3><ol><li>Follow the discussion as it happens</li><li>Explain complex information</li><li>Prepare context-aware responses</li><li>Provide specialised technical guidance</li><li>Support actionable follow-through</li></ol></div>
         </div>
-        <h3 class="cmp-h">How it compares with other tools</h3>
-        <div class="cmp-wrap" role="region" aria-label="Comparison table, scrolls sideways on small screens" tabindex="0"><table class="cmp">
-          <caption class="sr-only">Capabilities of Otter.ai, Fireflies.ai, Granola, Fathom and Kinviva, as stated on each vendor's own pages</caption>
-          <thead><tr><th scope="col">Capability</th><th scope="col">Otter.ai</th><th scope="col">Fireflies.ai</th><th scope="col">Granola</th><th scope="col">Fathom</th><th scope="col" class="cmp-us">Kinviva</th></tr></thead>
-          <tbody><tr><th scope="row">Live transcription</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Real-time help during the meeting</th><td><span class="st st-yes">Available</span></td><td><span class="st st-lim">Limited or plan-dependent</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Notes and summaries</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Action items from the conversation</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-lim">Limited or plan-dependent</span></td><td><span class="st st-yes">Available (notes and quotes)</span></td></tr><tr><th scope="row">Works without a meeting bot</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-lim">Beta</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Where transcripts and notes are processed or stored</th><td><span class="st st-txt">Cloud storage</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-txt">Cloud processing</span></td><td><span class="st st-txt">US cloud storage</span></td><td><span class="st st-yes">Your computer (local engine)</span></td></tr><tr><th scope="row">Local AI model option</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Technical troubleshooting and diagrams</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available, partly tested</span></td></tr><tr><th scope="row">Starts from your calendar automatically</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-txt">Manual start</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-txt">Not available: you press Start</span></td></tr><tr><th scope="row">Human-approved agent workflows</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-plan">Planned</span></td></tr></tbody></table></div>
-        <p class="cmp-key"><b>Available</b> means the vendor's own pages describe it. <b>Limited or plan-dependent</b> means partly offered, in beta, or on some plans. <b>Planned</b> means not built yet. <b>Not verified</b> means we did not find it on a page we read; it does not mean the product lacks it. Checked 8 November 2026 and likely to change.</p>
-        <p class="cmp-src">Sources: Otter.ai <a href="https://otter.ai/">home</a> and <a href="https://help.otter.ai/hc/en-us/articles/17016733191703-Otter-AI-Chat-FAQs">AI Chat FAQs</a> · Fireflies.ai <a href="https://guide.fireflies.ai/articles/6032274417-learn-about-fireflies-live-assist-get-real-time-suggestions-answers-and-notes-live-during-the-meeting">Live Assist guide</a> · Granola <a href="https://www.granola.ai/">home</a> and <a href="https://www.granola.ai/blog/local-first-ai-notetaker-vs-cloud">where it runs</a> · Fathom <a href="https://fathom.ai/pricing">pricing</a>, <a href="https://help.fathom.video/en/articles/296512">security</a> and <a href="https://help.fathom.video/en/articles/5290881">free vs. premium</a> · Kinviva: <a href="{GH}/blob/main/docs/FEATURE_AUDIT.md">feature audit</a>. We have no test results comparing speed, accuracy or security, and make no such claim.</p>
+        <p class="cmp-tease reveal">Otter.ai, Fireflies.ai, Granola and Fathom are strong tools, and several offer real-time help and action items. Where Kinviva differs is where the work happens: on your computer, with a local model option, plus technical guidance. See every capability side by side, with official sources.</p>
+        <p class="reveal"><a class="btn btn-primary" href="compare.html">See the full comparison</a></p>
       </div>
     </section>
 
@@ -828,12 +823,74 @@ def docs_page():
     o += foot()
     write("docs.html", o)
 
+
+# ------------------------------------------------------------------ Compare page
+def _chip(k, t): return f'<span class="st st-{k}">{t}</span>'
+def compare():
+    OT, OTH = "https://otter.ai/", "https://help.otter.ai/hc/en-us/articles/17016733191703-Otter-AI-Chat-FAQs"
+    FFG = "https://guide.fireflies.ai/articles/6032274417-learn-about-fireflies-live-assist-get-real-time-suggestions-answers-and-notes-live-during-the-meeting"
+    GRB, GR = "https://www.granola.ai/blog/local-first-ai-notetaker-vs-cloud", "https://www.granola.ai/"
+    FP, FH, FH2 = "https://fathom.ai/pricing", "https://help.fathom.video/en/articles/296512", "https://help.fathom.video/en/articles/5290881"
+    Y = lambda t="Available": _chip("yes", t)
+    L = lambda t="Limited or plan-dependent": _chip("lim", t)
+    P = lambda t="Planned": _chip("plan", t)
+    N = lambda t="Not verified": _chip("nv", t)
+    T = lambda t: _chip("txt", t)
+    groups = [
+      ("While the conversation is happening", [
+        ("Live transcription", Y(), Y(), Y(), N(), Y()),
+        ("Real-time help during the meeting", Y(), L(), N(), N(), Y()),
+        ("Explains complex or technical points in plain words", N(), N(), N(), N(), Y()),
+        ("Drafts a reply for you to edit", N(), L("Follow-up suggestions"), N(), N(), Y()),
+        ("Technical troubleshooting and diagrams", N(), N(), N(), N(), Y("Available, partly tested"))]),
+      ("After the conversation", [
+        ("Notes and summaries", Y(), Y(), Y(), Y(), Y()),
+        ("Action items from the conversation", Y(), Y(), Y(), L("Premium plan"), Y("Available (notes and quotes)")),
+        ("Human-approved agent workflows", N(), N(), N(), N(), P())]),
+      ("Privacy and control", [
+        ("Works without a meeting bot", Y(), Y(), Y(), L("Beta"), Y()),
+        ("Where transcripts and notes are processed or stored", T("Cloud storage"), N(), T("Cloud processing"), T("US cloud storage"), T("Your computer (local engine)")),
+        ("Local AI model option", N(), N(), N(), N(), Y()),
+        ("Independent security certification (SOC 2)", N(), N(), Y("SOC 2 Type 2, per Granola"), Y("SOC 2 Type II, per Fathom"), T("Not available yet"))]),
+      ("Setup and teams", [
+        ("Starts from your calendar automatically", N(), Y(), T("Manual start"), N(), T("Not available: you press Start")),
+        ("Integrations with team tools (Slack, CRM)", Y(), N(), N(), N(), T("Not available"))]),
+    ]
+    body = ""
+    for title, rows in groups:
+        body += f'<tr class="cmp-group"><th scope="colgroup" colspan="6">{title}</th></tr>'
+        for r in rows:
+            body += '<tr><th scope="row">' + r[0] + '</th>' + "".join(f'<td>{c}</td>' for c in r[1:]) + '</tr>'
+    table = (f'<div class="cmp-wrap" role="region" aria-label="Comparison table, scrolls sideways on small screens" tabindex="0"><table class="cmp">'
+             '<caption class="sr-only">Capabilities of Otter.ai, Fireflies.ai, Granola, Fathom and Kinviva, as stated on each vendor\'s own pages</caption>'
+             '<thead><tr><th scope="col">Capability</th><th scope="col">Otter.ai</th><th scope="col">Fireflies.ai</th><th scope="col">Granola</th><th scope="col">Fathom</th><th scope="col" class="cmp-us">Kinviva</th></tr></thead>'
+             f'<tbody>{body}</tbody></table></div>')
+    o = head("Kinviva compared with other AI meeting tools", "A fair, sourced comparison of Kinviva with Otter.ai, Fireflies.ai, Granola and Fathom: what each does, where data is processed, and what is planned or not verified.", "compare.html")
+    o += page_head("Compare", "Kinviva and other AI meeting tools.", "Several tools do real-time help and action items well. This page shows what each vendor says it offers, where Kinviva is different, and where it is not ahead.")
+    o += f'''    <section><div class="wrap">
+        <div class="wf">
+          <div class="wf-col"><h2 class="h3">Typical meeting-notes workflow</h2><ol><li>Capture and transcribe the discussion</li><li>Generate a summary</li><li>Review and search the notes</li><li>Identify follow-up items</li></ol></div>
+          <div class="wf-col wf-us"><h2 class="h3">Kinviva's approach</h2><ol><li>Follow the discussion as it happens</li><li>Explain complex information</li><li>Prepare context-aware responses</li><li>Provide specialised technical guidance</li><li>Support actionable follow-through</li></ol></div>
+        </div>
+        <h2 class="cmp-h">Capability by capability</h2>
+        {table}
+        <p class="cmp-key"><b>Available</b> means the vendor's own pages describe it. <b>Limited or plan-dependent</b> means partly offered, in beta, or on some plans. <b>Planned</b> means not built yet. <b>Not verified</b> means we did not find it on a page we read; it does not mean the product lacks it. Checked 8 November 2026. Products and plans change, so check each vendor before you decide.</p>
+        <div class="fit">
+          <div><h2 class="h3">Kinviva may suit you if</h2><ul><li>You want explanations and reply drafts while the conversation is happening</li><li>You need the work to stay on your computer, with a local model option</li><li>Your conversations are technical, or you learn from lectures and videos</li><li>You prefer no account and no Kinviva server</li></ul></div>
+          <div><h2 class="h3">Another tool may suit you better if</h2><ul><li>You want meetings captured automatically from your calendar</li><li>Your team needs shared workspaces and integrations such as Slack or a CRM</li><li>You need a vendor with an independent security certification today. Kinviva has none yet</li><li>You want mobile apps. Kinviva is a Mac and Windows desktop app, with Windows still experimental</li></ul></div>
+        </div>
+        <p class="cmp-src">Sources: Otter.ai <a href="{OT}">home</a> and <a href="{OTH}">AI Chat FAQs</a> · Fireflies.ai <a href="{FFG}">Live Assist guide</a> · Granola <a href="{GR}">home</a> and <a href="{GRB}">where it runs</a> · Fathom <a href="{FP}">pricing</a>, <a href="{FH}">security</a> and <a href="{FH2}">free vs. premium</a> · Kinviva <a href="{GH}/blob/main/docs/FEATURE_AUDIT.md">feature audit</a> and <a href="{GH}/blob/main/docs/COMPETITOR_RESEARCH.md">research notes</a>. We have no test results comparing speed, accuracy or security and make no such claim. Found something out of date? <a href="{GH}/issues">Tell us</a>.</p>
+      </div></section>
+{ea_cta()}'''
+    o += foot()
+    write("compare.html", o)
+
 if __name__ == "__main__":
-    PAGES = (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page)
+    PAGES = (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page, compare)
     for f in PAGES:
         f()
-    print("Wrote 11 pages to", SITE)
+    print(f"Wrote {len(PAGES)} pages to", SITE)
     if MOVED:  # only when building for the new address
-        urls = "".join(f"  <url><loc>{BASE}{'' if f.__name__ == 'home' else {'docs_page': 'docs', 'early_access': 'early-access'}.get(f.__name__, f.__name__) + '.html'}</loc></url>\n" for f in PAGES)
+        urls = "".join(f"  <url><loc>{BASE}{'' if f.__name__ == 'home' else {'docs_page': 'docs', 'early_access': 'early-access', 'compare': 'compare'}.get(f.__name__, f.__name__) + '.html'}</loc></url>\n" for f in PAGES)
         (SITE / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
         (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {BASE}sitemap.xml\n")
