@@ -557,3 +557,86 @@ h2.h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; font-variati
 }
 .ea-consent input { width: 22px; height: 22px; flex: none; margin-top: 2px; }
 .ea-consent { min-height: 44px; align-items: flex-start; }
+
+
+/* ===== Reference-inspired layer: graph paper, grotesk headlines, monospaced body, bracketed labels =====
+   Studied from basisfellowship.org with REA (public page; fonts, colours, spacing and structure observed).
+   Nothing is copied: the fonts are the open-licence families Space Grotesk and IBM Plex Mono, self-hosted;
+   the palette, copy, layout and components are Kinviva's own. */
+@font-face { font-family: "Space Grotesk"; src: url("fonts/space-grotesk-latin-wght-normal.woff2") format("woff2"); font-weight: 300 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "IBM Plex Mono"; src: url("fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+:root {
+  --paper: #FBFBF7; --paper-2: #F2F2EA; --paper-3: #E9E9DF;
+  --ink: #0B1020; --ink-2: #2A2F3B; --ink-3: #596072;
+  --serif: "Space Grotesk", "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --sans: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --maxw: 1040px; --rule: rgba(11, 16, 32, .14); --rule-strong: rgba(11, 16, 32, .8);
+  --blue-ink: #1D4ED8;
+}
+body { background-color: var(--paper); background-image: linear-gradient(rgba(11, 16, 32, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(11, 16, 32, .05) 1px, transparent 1px); background-size: 24px 24px; font-size: 15px; line-height: 1.65; color: var(--ink-2); }
+body::before { display: none; }
+b, strong { font-weight: 600; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 700; letter-spacing: -0.02em; font-variation-settings: normal; color: var(--ink); }
+h1 { font-size: clamp(42px, 6vw, 72px); line-height: 1.04; letter-spacing: -0.025em; }
+h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.12; }
+h3 { font-size: 20px; line-height: 1.25; }
+h1 em, h2 em, .why-sub, .brand em, .foot-brand em { font-style: normal; }
+.hero h1 { font-size: clamp(44px, 6.6vw, 84px); line-height: .98; letter-spacing: -0.03em; font-weight: 700; }
+.lead { font-size: 16.5px; line-height: 1.7; max-width: 62ch; }
+.why-sub { font: 700 clamp(22px, 2.6vw, 30px)/1.2 var(--serif); letter-spacing: -0.02em; color: var(--blue-ink); }
+.brand { font: 700 26px var(--serif); }
+.foot-brand b { font: 700 26px var(--serif); }
+.wrap { width: min(var(--maxw), 100% - 48px); }
+@media (min-width: 1680px) { :root { --maxw: 1160px; } }
+section { padding: 72px 0; }
+section + section { border-top: 1px solid var(--rule-strong); }
+.alt { background: rgba(11, 16, 32, .028); border-block: 0; }
+.hero + .glance-sec { border-top: 1px solid var(--rule-strong); }
+
+/* Labels in brackets, and the top bar */
+.lab { font: 600 11.5px/1.5 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--blue-ink); }
+.lab b { font-weight: 600; }
+.hero-def { text-transform: none; letter-spacing: .02em; color: var(--ink-3); font-weight: 400; display: block; margin-bottom: 18px; max-width: 70ch; }
+.hero-def b { color: var(--blue-ink); letter-spacing: .14em; margin-right: 8px; }
+.page-head .lab { margin-bottom: 6px; }
+.sec-head .lab { margin-bottom: 2px; }
+.topbar { display: flex; justify-content: space-between; gap: 16px; padding: 9px 24px; border-bottom: 1px solid var(--rule); font: 500 11.5px/1.4 var(--mono); letter-spacing: .1em; color: var(--ink-3); background: rgba(251, 251, 247, .96); }
+.topbar b { color: var(--ink); font-weight: 600; }
+.nav { top: 0; border-bottom: 1px solid var(--rule-strong); }
+.nav nav a:not(.btn) { font: 500 13px var(--mono); letter-spacing: .02em; }
+
+/* Flat, square buttons */
+.btn { font: 500 14px var(--mono); letter-spacing: .01em; border-radius: 0; box-shadow: none; }
+.btn-primary { background: #2563EB; border-color: #2563EB; color: #fff; box-shadow: none; }
+.btn-primary:hover { background: #1D4ED8; border-color: #1D4ED8; color: #fff; transform: none; box-shadow: none; }
+.btn-primary:active { transform: none; box-shadow: none; }
+.btn-ghost, .btn { border-radius: 0; }
+.nav .btn-primary { transform: none; }
+.cta-band .btn-primary { background: #fff; color: var(--navy); border-color: #fff; }
+.cta-band .btn-primary:hover { background: var(--paper-2); color: var(--navy); }
+.cta-band { box-shadow: none; border-radius: 0; }
+
+/* Numerals and small type in the grotesk */
+.step::before, .flow li::before, .diff-n, .p-num { font-style: normal; font-family: var(--serif); font-weight: 700; }
+.flow li::before { font-size: 40px; color: var(--blue-ink); }
+.diff h3, .prob h3, .prob3 h3, .fc-steps b, .watch-steps li b, .flow li b, .faq summary { font-family: var(--serif); font-weight: 700; letter-spacing: -0.01em; }
+.faq summary { font-size: 19px; }
+.diff h3 { font-size: 24px; } .prob3 h3 { font-size: 21px; }
+.table th, .cmp thead th, .glance dt, .where b { letter-spacing: .06em; }
+.tr-who, .tr-note b { font-weight: 600; }
+.transcript, .plate, .shot, .sbs-screen, .sbs-notes, .ea-form, .flowcard { box-shadow: none; border-width: 1px; }
+.transcript { background: rgba(255, 255, 255, .72); }
+.cmp-wrap, .wf-col, .fit > div, .status-box, .table { border-width: 1px; }
+.cmp { font-size: 13.5px; }
+.st { font-family: var(--mono); font-size: 11.5px; letter-spacing: .02em; }
+.badge { font-family: var(--mono); font-size: 11px; }
+.prob3 .how, .prob .how { font-size: 15.5px; }
+.fc-said { font-size: clamp(20px, 2.3vw, 28px); font-family: var(--serif); font-weight: 700; letter-spacing: -0.02em; }
+.sbs-screen { background-image: linear-gradient(135deg, rgba(37, 99, 235, .3), rgba(124, 58, 237, .2)); }
+.diff p, .prob3 .eg, .fc-steps p, .watch-steps li, .flow li p, .step p { font-size: 14.5px; }
+.footer-note { font-size: 13px; }
+h1 em, h2 em { font-weight: 700; }
+.topbar { padding-inline: max(24px, calc((100% - var(--maxw)) / 2)); }
+.hero-def { font-size: 12px; }
+.lab, .topbar, .st, .badge, .tr-who, .tr-note b, .plate-bar, .shot figcaption, .sbs-label, .where b { font-size: 12px; }

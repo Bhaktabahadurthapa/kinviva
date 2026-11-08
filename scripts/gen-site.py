@@ -86,6 +86,7 @@ def head(title, desc, page, og=OG):
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
+  <div class="topbar"><span><b>FREE DESKTOP APP</b> &middot; MAC AND WINDOWS &middot; LOCAL-FIRST</span><span>VERSION {INSTALLER}</span></div>
   <header class="nav">
     <div class="wrap">
       <a class="brand" href="index.html" aria-label="Kinviva home"><img src="logo.svg" width="42" height="42" alt=""><span>Kin<em>viva</em></span></a>
@@ -137,7 +138,7 @@ def page_head(eyebrow, title, lead, toc=None):
     t = ""
     if toc:
         t = '<nav class="toc" aria-label="On this page">' + "".join(f'<a href="#{a}">{l}</a>' for a, l in toc) + "</nav>"
-    return f'''    <div class="page-head"><div class="wrap"><p class="eyebrow">{eyebrow}</p><h1>{title}</h1><p class="lead">{lead}</p>{t}</div></div>
+    return f'''    <div class="page-head"><div class="wrap"><p class="lab">[ {eyebrow.upper()} ]</p><h1>{title}</h1><p class="lead">{lead}</p>{t}</div></div>
 '''
 
 def card(icon, tone, title, text, href=None, badge=None, more="Learn more"):
@@ -175,8 +176,14 @@ _EYEBROW = re.compile(r'<p class="eyebrow[^"]*">[^<]*</p>\s*')
 _H3 = re.compile(r'<h3>(.*?)</h3>', re.S)
 _HEADING_SKIP = {"community.html", "docs.html", "technical.html"}
 
+_LABELS = {"What problems does it solve?": "PROBLEM", "How does it work?": "HOW IT WORKS", "Learning from a video? Watch it with an explainer beside you.": "VIDEO ASSIST",
+           "What does it look like?": "SCREENS", "Why Kinviva?": "WHY KINVIVA", "Not just what was said. What comes next.": "COMPARE",
+           "When conversations get technical, stay in control.": "EXAMPLE", "What works today?": "STATUS", "Straight answers.": "FAQ", "Free today. More to come.": "EDITIONS"}
+
 def write(name, content):
     content = _EYEBROW.sub("", content)
+    for t, l in _LABELS.items():
+        content = content.replace('<div class="sec-head"><h2>' + t, '<div class="sec-head"><p class="lab">[ ' + l + ' ]</p><h2>' + t)
     if name in _HEADING_SKIP:  # these pages go from h1 straight to card titles: make them h2 so the outline has no gap
         content = _H3.sub(r'<h2 class="h3">\1</h2>', content)
     content = _IMG.sub(_picture, content)
@@ -193,7 +200,7 @@ def home():
       <div class="wrap">
         <div class="hero-grid">
           <div>
-            <p class="eyebrow hero-anim d1">Free desktop app for Mac and Windows</p>
+            <p class="lab hero-def hero-anim d1"><b>[ KINVIVA ]</b> (n.) a conversation copilot that explains what is said, on your own computer</p>
             <h1 class="hero-anim d2" style="margin-top:18px">Every conversation, <em><span class="mark">clearer.</span></em></h1>
             <p class="lead hero-anim d3">Kinviva listens to a meeting, call, interview or lecture on your computer, explains each point in plain words, and helps you answer. Your conversations stay on your device unless you choose a cloud AI service.</p>
             <div class="cta hero-anim d4"><a class="btn btn-primary btn-big" href="download.html">Download free</a><a class="btn btn-ghost btn-big" href="features.html">Explore Features</a></div>
