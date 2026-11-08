@@ -918,6 +918,14 @@ def blog():
         # the nav should show Blog as current on posts
         h = h.replace('<a href="blog.html">Blog</a>', '<a href="blog.html" aria-current="page">Blog</a>', 1)
         short = "".join(f"<li>{x}</li>" for x in p["short"])
+        # readable structure: give every section heading an id and build an "On this page" list from them
+        heads = []
+        def _id(m):
+            t = m.group(1); sid = re.sub(r"[^a-z0-9]+", "-", re.sub(r"<[^>]+>", "", t).lower()).strip("-"); heads.append((sid, re.sub(r"<[^>]+>", "", t)))
+            return f'<h2 id="{sid}">{t}</h2>'
+        body_html = re.sub(r"<h2>(.*?)</h2>", _id, p["body"])
+        toc = '<nav class="post-toc" aria-label="On this page"><b>On this page</b><ol>' + "".join(f'<li><a href="#{a}">{b}</a></li>' for a, b in heads) + "</ol></nav>" if len(heads) > 2 else ""
+        h = h.replace("<body>", '<body class="post-page">', 1)
         fig = f'''<figure class="post-fig"><picture><img src="media/{p["image"]}" alt="{esc(p["image_alt"])}" width="1504" height="1049" loading="lazy"></picture><figcaption>Sample data</figcaption></figure>''' if p["image"] else ""
         others = [q for q in POSTS if q["slug"] != p["slug"]]
         more = "".join(f'<li><a href="blog-{q["slug"]}.html">{q["title"]}</a><span>{q["minutes"]} min read</span></li>' for q in others[:3])
@@ -928,8 +936,9 @@ def blog():
     </div></div>
     <article class="post"><div class="wrap post-wrap">
       <aside class="post-short" aria-label="In short"><b>In short</b><ul>{short}</ul></aside>
+      {toc}
       {fig}
-      <div class="post-body">{p["body"]}</div>
+      <div class="post-body">{body_html}</div>
       <div class="post-cta"><p><b>Try it.</b> Kinviva is free for Mac and Windows, with no account.</p><p><a class="btn btn-primary" href="download.html">Download free</a> <a class="btn" href="{DISCORD}" rel="noopener" target="_blank">Ask on Discord</a></p></div>
       <nav class="post-more" aria-label="More posts"><h2 class="h3">More from the blog</h2><ul>{more}</ul><p><a href="blog.html">All posts &rarr;</a></p></nav>
     </div></article>'''

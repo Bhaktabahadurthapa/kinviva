@@ -18,11 +18,11 @@
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=0cde824452">
+  <link rel="stylesheet" href="style.css?v=6dd4ff6c43">
   <script>document.documentElement.className = "js";</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Technical Copilot: troubleshooting without surprises","datePublished":"2026-11-08","description":"How Kinviva helps in an engineering conversation: plain-English explanations, read-only plans, and diagrams that say how sure they are.","author":{"@type":"Organization","name":"Kinviva"},"publisher":{"@type":"Organization","name":"Kinviva"},"mainEntityOfPage":"https://bhaktathapa.com.np/kinviva/blog-technical-copilot.html"}</script>
 </head>
-<body>
+<body class="post-page">
   <a class="skip" href="#main">Skip to content</a>
   <div class="topbar"><span><b>FREE DESKTOP APP</b> &middot; MAC AND WINDOWS &middot; LOCAL-FIRST</span><span class="tb-right"><a class="tb-discord" href="https://discord.gg/FbRuQTapz" rel="noopener" target="_blank"><b>JOIN OUR DISCORD</b> &rarr;</a><span class="tb-ver">VERSION 0.1.5</span></span></div>
   <header class="nav">
@@ -53,14 +53,15 @@
     </div></div>
     <article class="post"><div class="wrap post-wrap">
       <aside class="post-short" aria-label="In short"><b>In short</b><ul><li>Causes are hypotheses. Commands are read-only and copied, never run.</li><li>Diagram boxes are labelled verified, mentioned or inferred.</li><li>Available now, and still early: it has been tried but not measured.</li></ul></aside>
+      <nav class="post-toc" aria-label="On this page"><b>On this page</b><ol><li><a href="#explain">Explain</a></li><li><a href="#plan-a-safe-investigation">Plan a safe investigation</a></li><li><a href="#track-the-incident">Track the incident</a></li><li><a href="#draw-the-architecture">Draw the architecture</a></li></ol></nav>
       <figure class="post-fig"><picture><picture><source type="image/webp" srcset="media/v2-troubleshoot-panel-800.webp 800w, media/v2-troubleshoot-panel-1504.webp 1504w" sizes="(min-width: 1100px) 1000px, 100vw"><img src="media/v2-troubleshoot-panel.jpg" alt="The Technical Copilot troubleshooting screen with possible causes, evidence to collect and read-only commands, shown with sample data" width="1504" height="1049" loading="lazy" decoding="async"></picture></picture><figcaption>Sample data</figcaption></figure>
       <div class="post-body">
 <p>Engineering talk is full of terms that sound alike and mean different things. Technical Copilot is for the moments when someone says, "our pods keep restarting after deployment," and you need to follow the problem, ask a good question or write it up.</p>
 
-<h2>Explain</h2>
+<h2 id="explain">Explain</h2>
 <p>Paste a term or the latest point and get it in simple words first, then more depth. This works for cloud, DevOps, system design and AI engineering topics.</p>
 
-<h2>Plan a safe investigation</h2>
+<h2 id="plan-a-safe-investigation">Plan a safe investigation</h2>
 <p>Describe a problem and Kinviva builds a plan with four parts:</p>
 <ul>
   <li><b>Possible causes</b>, each marked as a hypothesis, not a fact.</li>
@@ -70,10 +71,10 @@
 </ul>
 <p>Kinviva <b>never runs a command</b>. You copy it, read it and run it yourself.</p>
 
-<h2>Track the incident</h2>
+<h2 id="track-the-incident">Track the incident</h2>
 <p>The incident tracker keeps symptoms, hypotheses, evidence, actions and decisions together. It does not let you mark a root cause without supporting evidence.</p>
 
-<h2>Draw the architecture</h2>
+<h2 id="draw-the-architecture">Draw the architecture</h2>
 <p>Kinviva can turn a conversation about AWS, Kubernetes, CI/CD, databases or an incident into a diagram you can zoom, edit as Mermaid text, and export as SVG or PNG. Every box and line carries one of three labels:</p>
 <ul>
   <li><b>Verified:</b> a document you selected mentions it.</li>

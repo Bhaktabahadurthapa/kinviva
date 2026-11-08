@@ -18,11 +18,11 @@
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=0cde824452">
+  <link rel="stylesheet" href="style.css?v=6dd4ff6c43">
   <script>document.documentElement.className = "js";</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"What stays on your computer, and what does not","datePublished":"2026-11-08","description":"Kinviva has no server, no account and no tracking. Here is exactly what leaves your computer, and only when you set it up that way.","author":{"@type":"Organization","name":"Kinviva"},"publisher":{"@type":"Organization","name":"Kinviva"},"mainEntityOfPage":"https://bhaktathapa.com.np/kinviva/blog-what-stays-on-your-computer.html"}</script>
 </head>
-<body>
+<body class="post-page">
   <a class="skip" href="#main">Skip to content</a>
   <div class="topbar"><span><b>FREE DESKTOP APP</b> &middot; MAC AND WINDOWS &middot; LOCAL-FIRST</span><span class="tb-right"><a class="tb-discord" href="https://discord.gg/FbRuQTapz" rel="noopener" target="_blank"><b>JOIN OUR DISCORD</b> &rarr;</a><span class="tb-ver">VERSION 0.1.5</span></span></div>
   <header class="nav">
@@ -53,11 +53,12 @@
     </div></div>
     <article class="post"><div class="wrap post-wrap">
       <aside class="post-short" aria-label="In short"><b>In short</b><ul><li>Transcripts, notes and keys stay on your computer.</li><li>Text goes to an answer engine only if you pick a cloud one.</li><li>A local model plus local speech recognition means nothing leaves.</li></ul></aside>
+      <nav class="post-toc" aria-label="On this page"><b>On this page</b><ol><li><a href="#always-local">Always local</a></li><li><a href="#leaves-your-computer-only-if-you-choose-it">Leaves your computer only if you choose it</a></li><li><a href="#the-simplest-fully-private-setup">The simplest fully private setup</a></li><li><a href="#if-you-pick-a-cloud-answer-engine">If you pick a cloud answer engine</a></li><li><a href="#your-controls">Your controls</a></li></ol></nav>
       
       <div class="post-body">
 <p>Privacy is easy to claim and hard to check, so this post lists the facts. It is written from the app's own code and from <a href="https://github.com/Bhaktabahadurthapa/kinviva/blob/main/docs/PRIVACY.md">the privacy document</a> in the repository.</p>
 
-<h2>Always local</h2>
+<h2 id="always-local">Always local</h2>
 <ul>
   <li>Sessions, transcripts, notes, boards, charts, documents and settings live in a local database on your computer.</li>
   <li>API keys are kept in the operating system's credential store (macOS Keychain or Windows Credential Manager), never in files, logs or exports.</li>
@@ -65,7 +66,7 @@
   <li>Kinviva has no accounts, no analytics, no telemetry and no crash reporting, and it does not contact any Kinviva server.</li>
 </ul>
 
-<h2>Leaves your computer only if you choose it</h2>
+<h2 id="leaves-your-computer-only-if-you-choose-it">Leaves your computer only if you choose it</h2>
 <table class="table post-table">
   <thead><tr><th>What</th><th>Goes to</th><th>When</th></tr></thead>
   <tbody>
@@ -77,13 +78,13 @@
   </tbody>
 </table>
 
-<h2>The simplest fully private setup</h2>
+<h2 id="the-simplest-fully-private-setup">The simplest fully private setup</h2>
 <p>Choose the built-in speech engine and a local model (for example through Ollama). In that setup, the transcript, the notes and the AI processing all stay on your computer. We have not tested every combination of local model and hardware, so quality varies with the model you choose.</p>
 
-<h2>If you pick a cloud answer engine</h2>
+<h2 id="if-you-pick-a-cloud-answer-engine">If you pick a cloud answer engine</h2>
 <p>Whatever that provider receives is covered by its own terms. Kinviva states in Settings which endpoint is in use. This is the same trade-off you accept with any cloud AI service: better answers from a larger model, in exchange for sending text to its owner.</p>
 
-<h2>Your controls</h2>
+<h2 id="your-controls">Your controls</h2>
 <p>Delete any session (Trash first, then delete permanently, optionally with linked notes). Turn off Discover, web search, automatic help and audio saving. Remove keys in Settings. Export your data to Word, Markdown, text, CSV or PowerPoint. Or delete the app's data folder to remove everything.</p>
 
 <div class="post-note"><b>Recording and consent.</b> Kinviva hears the audio your computer plays. Follow the rules of your school, employer and local law on recording, and tell people where required.</div>

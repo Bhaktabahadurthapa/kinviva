@@ -755,3 +755,42 @@ footer { background: var(--panel-deep); }
 @media (max-width: 620px) { .tb-ver { display: none; } .topbar { flex-wrap: wrap; } .tb-right { margin-left: auto; } }
 .tb-discord { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; }
 .topbar { align-items: center; padding-block: 4px; }
+
+/* Blog readability: solid page, larger and darker text, clear sections, readable figures */
+.post-page { background-image: none; }
+.post-page .post-head { background: var(--paper-2); padding: 52px 0 40px; }
+.post-page .post-wrap { max-width: 740px; }
+.post-page .post-head h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.08; max-width: 20ch; }
+.post-page .post { padding: 40px 0 24px; background: var(--paper); }
+.post-page .post-body { max-width: none; font-size: 19px; line-height: 1.8; color: var(--ink); font-weight: 450; }
+.post-page .post-body p { margin: 0 0 22px; max-width: 64ch; }
+.post-page .post-body h2 { font-size: clamp(26px, 3vw, 32px); line-height: 1.15; margin: 56px 0 16px; padding-top: 28px; border-top: 1px solid var(--rule-strong); scroll-margin-top: 90px; }
+.post-page .post-body h2:first-child { margin-top: 8px; border-top: 0; padding-top: 0; }
+.post-page .post-body ul, .post-page .post-body ol { max-width: 64ch; gap: 14px; margin-bottom: 26px; }
+.post-page .post-body li::marker { color: var(--blue-ink); font-weight: 700; }
+.post-page .post-body b { font-weight: 700; color: var(--ink); }
+.post-page .post-body code { font-size: .85em; padding: 2px 7px; }
+.post-page .post-short { background: var(--blue-mark); border: 1px solid rgba(29, 78, 216, .4); padding: 20px 24px; }
+.post-page .post-short ul { font-size: 18px; line-height: 1.55; gap: 8px; }
+.post-toc { margin: 0 0 32px; padding: 16px 22px; border: 1px solid var(--rule-strong); background: var(--surface); }
+.post-toc b { font: 650 13px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.post-toc ol { margin: 10px 0 0; padding-left: 22px; display: grid; gap: 6px; font-size: 16.5px; }
+.post-toc a { color: var(--ink); text-decoration: none; } .post-toc a:hover { color: var(--blue-ink); text-decoration: underline; }
+.post-page .post-note { font-size: 17px; max-width: 64ch; border-left-width: 1px; }
+.post-page .post-table { font-size: 15.5px; }
+.post-page .post-table th, .post-page .post-table td { padding: 12px 14px; }
+.post-fig { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.post-fig picture { display: block; } .post-fig img { width: 100%; height: auto; aspect-ratio: 1504 / 1049; object-fit: contain; }
+@media (max-width: 700px) {
+  .post-page .post-body { font-size: 18px; line-height: 1.75; }
+  .post-fig picture { min-width: 780px; }
+  .post-fig figcaption::after { content: " \00b7  swipe sideways to read"; }
+}
+.post-toc ol { list-style: none; padding-left: 0; }
+.post-short { margin-bottom: 20px; }
+.post-page .post-note, .post-page .post-cta { border: 1px solid var(--edge); }
+.post-page .post-note { background: var(--blue-mark); padding: 18px 22px; margin: 34px 0; }
+.post-page .post-cta { background: var(--surface); padding: 28px 30px; }
+.post-more li { align-items: baseline; flex-wrap: wrap; } .post-more li span { margin-left: auto; padding-left: 16px; }
+.post-more li a { color: var(--ink); font-weight: 600; text-underline-offset: 4px; }
+.post-cta { margin-bottom: 44px; } .post-more { margin-top: 12px; }
