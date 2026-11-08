@@ -15,7 +15,7 @@
   <meta name="theme-color" content="#232a40">
   <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=1ecbcb8ca2">
+  <link rel="stylesheet" href="style.css?v=ffc86680e5">
   <script>document.documentElement.className = "js";</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Kinviva","applicationCategory":"BusinessApplication","operatingSystem":"macOS, Windows","description":"A privacy-first, local-first AI copilot for meetings, technical discussions, interviews and learning.","url":"https://bhaktathapa.com.np/kinviva/"}</script>
 </head>
@@ -71,7 +71,7 @@
         <div><dt>What it costs</dt><dd>Nothing to download or use. If you pick a cloud AI service, that service bills you directly. A local model is free.</dd></div>
       </dl>
       <nav class="qa-jump" aria-label="Jump to a question">
-        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#watch">Learning from a video?</a><a href="#why">Why Kinviva?</a>
+        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#watch">Learning from a video?</a><a href="#why">Why Kinviva?</a><a href="#compare">How it compares</a>
       </nav>
     </div></section>
 
@@ -170,25 +170,50 @@
 
     <section id="why">
       <div class="wrap">
-        <div class="why">
-          <div class="why-lead reveal">
-            <h2>Why Kinviva?</h2>
-            <p class="why-sub">Beyond the transcript. Built for understanding.</p>
-            <p class="lead">Meeting notes tell you what happened. Kinviva is designed to help you understand what is happening.</p>
-            <p class="lead">With real-time conversation assistance, plain-language explanations and specialised technical intelligence, Kinviva brings clarity to complex discussions.</p>
-          </div>
-          <div class="why-list reveal">
-            <h3>What makes our approach different?</h3>
-            <ul>
-              <li><b>Understand as you listen.</b> Follow complex ideas and technical discussions in real time.</li>
-              <li><b>Respond with context.</b> Prepare clearer questions and thoughtful responses.</li>
-              <li><b>Go deeper with Technical Copilot.</b> Explore engineering problems, troubleshooting approaches and technical decisions.</li>
-              <li><b>Stay in control.</b> A local-first design built around privacy and user choice.</li>
-              <li><b>Move from discussion to action.</b> Today: notes, decisions and action items with the quote behind each. Our vision is human-approved AI agents that turn important conversations into follow-through. <span class="badge b-next">Planned, not built yet</span></li>
-            </ul>
-          </div>
+        <div class="sec-head"><h2>Why Kinviva?</h2><p class="why-sub">Beyond meeting notes. Intelligence that moves with you.</p><p class="lead">Meetings are more than conversations to remember. Kinviva helps you understand complex discussions, prepare thoughtful responses, and focus on what comes next.</p></div>
+        <ol class="diff">
+          <li class="reveal"><span class="diff-n">01</span><div><h3>Real-time understanding</h3><p>Make complex conversations easier to follow with contextual explanations and simplified information.</p></div><div class="diff-st"><span class="st st-yes">Available</span></div></li>
+          <li class="reveal"><span class="diff-n">02</span><div><h3>Context-aware responses</h3><p>Organise your thoughts, prepare better questions and communicate confidently. Replies are drafts for you to edit; nothing is typed into the call.</p></div><div class="diff-st"><span class="st st-yes">Available</span></div></li>
+          <li class="reveal"><span class="diff-n">03</span><div><h3>Technical intelligence</h3><p>Specialised context for engineering discussions: cloud infrastructure, Kubernetes, DevOps, troubleshooting and incident response. Commands are read-only and copied, never run for you.</p></div><div class="diff-st"><span class="st st-yes">Available, partly tested</span></div></li>
+          <li class="reveal"><span class="diff-n">04</span><div><h3>Privacy-first by design</h3><p>A local-first app with no Kinviva server, no account and no telemetry. What is processed where depends on the setup you choose:</p>
+            <div class="where"><div><b>Stays on your computer</b><ul><li>Transcript, notes, sessions and documents</li><li>Speech recognition, with the built-in local engine</li><li>API keys, in the system keychain</li></ul></div><div><b>Leaves only if you choose</b><ul><li>Text of what was said and matching document passages go to the answer engine you pick. Nothing leaves with a local model.</li><li>Audio goes to Deepgram only if you select it.</li><li>A screenshot goes to your answer engine only when you press "Read my screen".</li></ul></div></div>
+            <p class="diff-link"><a href="privacy.html">Read the full privacy details</a></p></div><div class="diff-st"><span class="st st-yes">Available</span></div></li>
+          <li class="reveal"><span class="diff-n">05</span><div><h3>From conversation to action</h3><p>Today: decisions and action items, each with the quote behind it, for you to review. Planned: structured, human-approved workflows run by AI agents. They are not built yet.</p></div><div class="diff-st"><span class="st st-yes">Available: action items</span><span class="st st-plan">Planned: agent workflows</span></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="alt" id="compare">
+      <div class="wrap">
+        <div class="sec-head"><h2>Not just what was said. What comes next.</h2><p class="lead">A comparison of workflows, not a claim that other tools lack real-time or agent features. Several offer them.</p></div>
+        <div class="wf">
+          <div class="wf-col reveal"><h3>Typical meeting-notes workflow</h3><ol><li>Capture and transcribe the discussion</li><li>Generate a summary</li><li>Review and search the notes</li><li>Identify follow-up items</li></ol></div>
+          <div class="wf-col wf-us reveal"><h3>Kinviva's approach</h3><ol><li>Follow the discussion as it happens</li><li>Explain complex information</li><li>Prepare context-aware responses</li><li>Provide specialised technical guidance</li><li>Support actionable follow-through</li></ol></div>
         </div>
-        <p class="why-tag reveal">Kinviva. Understand more. Respond with confidence.</p>
+        <h3 class="cmp-h">How it compares with other tools</h3>
+        <div class="cmp-wrap" role="region" aria-label="Comparison table, scrolls sideways on small screens" tabindex="0"><table class="cmp">
+          <caption class="sr-only">Capabilities of Otter.ai, Fireflies.ai, Granola, Fathom and Kinviva, as stated on each vendor's own pages</caption>
+          <thead><tr><th scope="col">Capability</th><th scope="col">Otter.ai</th><th scope="col">Fireflies.ai</th><th scope="col">Granola</th><th scope="col">Fathom</th><th scope="col" class="cmp-us">Kinviva</th></tr></thead>
+          <tbody><tr><th scope="row">Live transcription</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Real-time help during the meeting</th><td><span class="st st-yes">Available</span></td><td><span class="st st-lim">Limited or plan-dependent</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Notes and summaries</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Action items from the conversation</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-lim">Limited or plan-dependent</span></td><td><span class="st st-yes">Available (notes and quotes)</span></td></tr><tr><th scope="row">Works without a meeting bot</th><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-lim">Beta</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Where transcripts and notes are processed or stored</th><td><span class="st st-txt">Cloud storage</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-txt">Cloud processing</span></td><td><span class="st st-txt">US cloud storage</span></td><td><span class="st st-yes">Your computer (local engine)</span></td></tr><tr><th scope="row">Local AI model option</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td></tr><tr><th scope="row">Technical troubleshooting and diagrams</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available, partly tested</span></td></tr><tr><th scope="row">Starts from your calendar automatically</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-yes">Available</span></td><td><span class="st st-txt">Manual start</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-txt">Not available: you press Start</span></td></tr><tr><th scope="row">Human-approved agent workflows</th><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-nv">Not verified</span></td><td><span class="st st-plan">Planned</span></td></tr></tbody></table></div>
+        <p class="cmp-key"><b>Available</b> means the vendor's own pages describe it. <b>Limited or plan-dependent</b> means partly offered, in beta, or on some plans. <b>Planned</b> means not built yet. <b>Not verified</b> means we did not find it on a page we read; it does not mean the product lacks it. Checked 8 November 2026 and likely to change.</p>
+        <p class="cmp-src">Sources: Otter.ai <a href="https://otter.ai/">home</a> and <a href="https://help.otter.ai/hc/en-us/articles/17016733191703-Otter-AI-Chat-FAQs">AI Chat FAQs</a> · Fireflies.ai <a href="https://guide.fireflies.ai/articles/6032274417-learn-about-fireflies-live-assist-get-real-time-suggestions-answers-and-notes-live-during-the-meeting">Live Assist guide</a> · Granola <a href="https://www.granola.ai/">home</a> and <a href="https://www.granola.ai/blog/local-first-ai-notetaker-vs-cloud">where it runs</a> · Fathom <a href="https://fathom.ai/pricing">pricing</a>, <a href="https://help.fathom.video/en/articles/296512">security</a> and <a href="https://help.fathom.video/en/articles/5290881">free vs. premium</a> · Kinviva: <a href="https://github.com/Bhaktabahadurthapa/kinviva/blob/main/docs/FEATURE_AUDIT.md">feature audit</a>. We have no test results comparing speed, accuracy or security, and make no such claim.</p>
+      </div>
+    </section>
+
+    <section id="example">
+      <div class="wrap">
+        <div class="sec-head"><h2>When conversations get technical, stay in control.</h2><p class="lead">An illustrative workflow, built from Kinviva's existing tools. It is not a recording of a real session.</p></div>
+        <div class="flowcard reveal">
+          <p class="fc-said"><span>Someone says</span>&ldquo;Our Kubernetes pods keep restarting after deployment.&rdquo;</p>
+          <ol class="fc-steps">
+            <li><b>1. Recognise the technical discussion</b><p>Kinviva treats it as a technical question and applies its cloud and DevOps guidance.</p></li>
+            <li><b>2. Explain possible causes in plain English</b><p>Hypotheses, not facts: the memory limit may be too low, a health check may be failing, or the app may crash at start because of a bad setting.</p></li>
+            <li><b>3. Suggest diagnostic questions and commands</b><p>Did this start after the last deploy? What does the previous container's log say? Read-only commands to copy: <code>kubectl describe pod</code>, <code>kubectl get events</code>, <code>kubectl logs --previous</code>.</p></li>
+            <li><b>4. Prepare a relevant response</b><p>&ldquo;Let me check the pod events and the previous logs before I name a cause.&rdquo; You edit it; nothing is sent into the call.</p></li>
+            <li><b>5. Organise the next action for human review</b><p>A draft action item, "Check memory limit and health-check settings", is shown for you to review, edit or discard before anything is saved.</p></li>
+          </ol>
+          <p class="fc-note">You run every command yourself. Kinviva does not run commands, assign tasks or contact anyone.</p>
+        </div>
       </div>
     </section>
 
@@ -222,7 +247,7 @@
       </div>
     </div></section>
 
-    <section><div class="wrap"><div class="cta-band reveal"><h2>Early Access is coming soon.</h2><p class="lead">We're preparing the next chapter of Kinviva. Explore the product today and return when registrations open.</p><div class="cta"><a class="btn btn-primary btn-big" href="early-access.html">About Early Access</a><a class="btn btn-ghost btn-big" href="download.html">Download the free Community Edition</a></div></div></div></section>
+    <section><div class="wrap"><div class="cta-band reveal"><h2>Understand more. Respond with confidence.</h2><p class="lead">Kinviva is built for conversations where understanding matters, bringing contextual assistance, technical intelligence and thoughtful follow-through into one privacy-conscious experience.</p><div class="cta"><a class="btn btn-primary btn-big" href="download.html">Download free</a><a class="btn btn-ghost btn-big" href="early-access.html">Early Access: coming soon</a></div></div></div></section>
   </main>
   <footer>
     <div class="wrap">
