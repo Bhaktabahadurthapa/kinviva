@@ -23,7 +23,7 @@ CURRENT_BASE = "https://bhaktathapa.com.np/kinviva/"
 BASE = os.environ.get("KINVIVA_SITE_BASE", CURRENT_BASE)
 if not BASE.endswith("/"): BASE += "/"
 MOVED = BASE != CURRENT_BASE
-OG = CURRENT_BASE + "media/v2-dashboard.jpg"
+OG = CURRENT_BASE + "media/v2-meeting-dark-panel.jpg"
 # Address of the deployed Early Access service. Empty until the owner approves deploying it; the form then stays closed.
 EA_ENDPOINT = os.environ.get("KINVIVA_EA_ENDPOINT", "")
 EA_MESSAGE = "Discover what's next with Kinviva. Join Early Access for advanced AI workflows, technical copilots, and productivity features. We'll contact selected participants as access becomes available."
@@ -125,7 +125,7 @@ def foot():
         </div>
         {"".join(col(t, l) for t, l in cols)}
       </div>
-      <div class="legal"><p>&copy; 2026 Bhakta Thapa &middot; Built by BKT AI</p><p>Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p></div>
+      <div class="legal"><p>&copy; 2026 Kinviva</p><p>Screenshots on this site use sample data. Use Kinviva within the rules of your school, employer and local law on recording.</p></div>
     </div>
   </footer>
   <script src="site.js?v={asset_v("site.js")}"></script>
