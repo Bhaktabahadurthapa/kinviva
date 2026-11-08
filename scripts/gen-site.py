@@ -226,7 +226,7 @@ def home():
         <div><dt>What it costs</dt><dd>Nothing to download or use. If you pick a cloud AI service, that service bills you directly. A local model is free.</dd></div>
       </dl>
       <nav class="qa-jump" aria-label="Jump to a question">
-        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#watch">Learning from a video?</a><a href="#why">Why is it different?</a>
+        <a href="#problems">What problem does it solve?</a><a href="#how">How does it work?</a><a href="#watch">Learning from a video?</a><a href="#why">Why Kinviva?</a>
       </nav>
     </div></section>
 
@@ -313,12 +313,25 @@ def home():
 
     <section id="why">
       <div class="wrap">
-        <div class="sec-head"><h2>Why is it different?</h2><p class="lead">Kinviva is built to do all three together, on your own computer.</p></div>
-        <div class="three">
-          <div class="reveal"><h3>Understand it live</h3><p>It explains what someone is saying as they say it, not only in a summary after the meeting.</p></div>
-          <div class="reveal"><h3>Keep it private</h3><p>Local speech recognition and a local AI model mean your conversation never has to reach an outside cloud model. There is no Kinviva server, no account and no tracking.</p></div>
-          <div class="reveal"><h3>Turn it into action</h3><p>Today it gives you notes, decisions and action items with the quote behind each one. Completing approved follow-up tasks for you is not built yet.</p></div>
+        <div class="why">
+          <div class="why-lead reveal">
+            <h2>Why Kinviva?</h2>
+            <p class="why-sub">Beyond the transcript. Built for understanding.</p>
+            <p class="lead">Meeting notes tell you what happened. Kinviva is designed to help you understand what is happening.</p>
+            <p class="lead">With real-time conversation assistance, plain-language explanations and specialised technical intelligence, Kinviva brings clarity to complex discussions.</p>
+          </div>
+          <div class="why-list reveal">
+            <h3>What makes our approach different?</h3>
+            <ul>
+              <li><b>Understand as you listen.</b> Follow complex ideas and technical discussions in real time.</li>
+              <li><b>Respond with context.</b> Prepare clearer questions and thoughtful responses.</li>
+              <li><b>Go deeper with Technical Copilot.</b> Explore engineering problems, troubleshooting approaches and technical decisions.</li>
+              <li><b>Stay in control.</b> A local-first design built around privacy and user choice.</li>
+              <li><b>Move from discussion to action.</b> Today: notes, decisions and action items with the quote behind each. Our vision is human-approved AI agents that turn important conversations into follow-through. <span class="badge b-next">Planned, not built yet</span></li>
+            </ul>
+          </div>
         </div>
+        <p class="why-tag reveal">Kinviva. Understand more. Respond with confidence.</p>
       </div>
     </section>
 

@@ -457,3 +457,16 @@ h2.h3 { font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; font-variati
 .qa-jump a:hover, .qa-jump a:focus-visible:hover { color: #fff; }
 .flow-note a, .notice-line a { color: var(--navy); }
 .skip, .skip:hover, .skip:focus { color: #fff; }
+
+/* Why Kinviva */
+.why { display: grid; grid-template-columns: 1fr 1.1fr; gap: 72px; align-items: start; }
+.why-lead { display: grid; gap: 18px; }
+.why-sub { font: italic 400 clamp(26px, 3vw, 38px)/1.15 var(--serif); color: var(--blue-ink); letter-spacing: -0.02em; }
+.why-list { border-top: 2px solid var(--navy); padding-top: 22px; }
+.why-list h3 { font-size: 26px; margin-bottom: 8px; }
+.why-list ul { list-style: none; margin: 0; padding: 0; }
+.why-list li { padding: 16px 0; border-bottom: 1px solid var(--rule-strong); color: var(--ink-2); font-size: 17px; line-height: 1.55; }
+.why-list li b { color: var(--ink); display: block; font: 500 21px var(--serif); margin-bottom: 4px; }
+.why-list .badge { margin-top: 8px; display: inline-block; }
+.why-tag { margin-top: 56px; padding-top: 24px; border-top: 1.5px solid var(--navy); font: 450 clamp(26px, 3.6vw, 46px)/1.1 var(--serif); letter-spacing: -0.02em; color: var(--ink); }
+@media (max-width: 1000px) { .why { grid-template-columns: 1fr; gap: 36px; } }
