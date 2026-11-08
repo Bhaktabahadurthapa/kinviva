@@ -753,3 +753,5 @@ footer { background: var(--panel-deep); }
 .tb-discord:hover { background: #5865F2; color: #fff; } .tb-discord:hover b { color: #fff; }
 .tb-discord:focus-visible { outline: 3px solid #5865F2; outline-offset: 2px; }
 @media (max-width: 620px) { .tb-ver { display: none; } .topbar { flex-wrap: wrap; } .tb-right { margin-left: auto; } }
+.tb-discord { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; }
+.topbar { align-items: center; padding-block: 4px; }
