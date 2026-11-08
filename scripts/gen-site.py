@@ -89,7 +89,7 @@ def head(title, desc, page, og=OG):
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="topbar"><span><b>FREE DESKTOP APP</b> &middot; MAC AND WINDOWS &middot; LOCAL-FIRST</span><span>VERSION {INSTALLER}</span></div>
+  <div class="topbar"><span><b>FREE DESKTOP APP</b> &middot; MAC AND WINDOWS &middot; LOCAL-FIRST</span><span class="tb-right"><a class="tb-discord" href="{DISCORD}" rel="noopener" target="_blank"><b>JOIN OUR DISCORD</b> &rarr;</a><span class="tb-ver">VERSION {INSTALLER}</span></span></div>
   <header class="nav">
     <div class="wrap">
       <a class="brand" href="index.html" aria-label="Kinviva home"><img src="logo.svg" width="42" height="42" alt=""><span>Kin<em>viva</em></span></a>
@@ -97,6 +97,7 @@ def head(title, desc, page, og=OG):
       <nav id="site-nav" aria-label="Primary">
 {links}
         <span class="nav-social" role="group" aria-label="Kinviva on social media">
+          <a class="soc soc-dc" href="{DISCORD}" rel="noopener" target="_blank" aria-label="Join the Kinviva Discord community (opens in a new tab)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3.5V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><circle cx="9" cy="11" r="1.1"/><circle cx="15" cy="11" r="1.1"/></svg><span>Discord</span></a>
           <a class="soc soc-in" href="https://www.linkedin.com/company/kinviva/" rel="noopener" target="_blank" aria-label="Kinviva on LinkedIn (opens in a new tab)"><b aria-hidden="true">in</b><span>LinkedIn</span></a>
           <a class="soc soc-fb" href="https://www.facebook.com/kinvivacare" rel="noopener" target="_blank" aria-label="Kinviva on Facebook (opens in a new tab)"><b aria-hidden="true">f</b><span>Facebook</span></a>
         </span>

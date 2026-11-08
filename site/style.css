@@ -739,3 +739,17 @@ footer { background: var(--panel-deep); }
 .cmp tbody th { width: 21%; }
 .cmp .st { white-space: normal; line-height: 1.3; }
 @media (min-width: 1280px) { .cmp-wrap { margin-left: -90px; margin-right: -90px; } }
+
+/* Discord: a 3D key in the header and a call-out in the top bar */
+.soc svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.soc-dc svg circle { fill: currentColor; stroke: none; }
+.soc-dc { background: linear-gradient(180deg, #7C8BFF 0%, #5865F2 100%); color: #fff; box-shadow: 0 4px 0 #2B3499, 0 9px 14px -4px rgba(88, 101, 242, .6), inset 0 1.5px 0 rgba(255, 255, 255, .4); }
+.soc-dc:hover { background: linear-gradient(180deg, #8E9BFF 0%, #6370F5 100%); color: #fff; transform: translateY(-4px); box-shadow: 0 6px 0 #2B3499, 0 14px 18px -6px rgba(88, 101, 242, .7), inset 0 1.5px 0 rgba(255, 255, 255, .4); }
+.soc-dc:active { transform: translateY(2px); box-shadow: 0 1px 0 #2B3499, 0 2px 4px -2px rgba(88, 101, 242, .6), inset 0 1.5px 0 rgba(255, 255, 255, .25); }
+.nav nav a.soc-dc, .nav nav a.soc-dc:hover { color: #fff; border: 1.5px solid #2B3499; }
+.tb-right { display: inline-flex; align-items: center; gap: 22px; }
+.tb-discord { color: var(--ink); text-decoration: none; padding: 3px 10px; border: 1px solid #5865F2; background: rgba(88, 101, 242, .14); }
+.tb-discord b { color: var(--blue-ink); font-weight: 600; letter-spacing: .12em; }
+.tb-discord:hover { background: #5865F2; color: #fff; } .tb-discord:hover b { color: #fff; }
+.tb-discord:focus-visible { outline: 3px solid #5865F2; outline-offset: 2px; }
+@media (max-width: 620px) { .tb-ver { display: none; } .topbar { flex-wrap: wrap; } .tb-right { margin-left: auto; } }
