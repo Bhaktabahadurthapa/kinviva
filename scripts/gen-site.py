@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generates the whole Kinviva website in site/ (home, features, technical, whiteboard, discover,
 interview, video, privacy, download). Only site files are written. Run: python3 scripts/gen-site.py"""
-import hashlib, html, os, pathlib
+import hashlib, html, json, os, pathlib, sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 SITE = pathlib.Path(__file__).resolve().parent.parent / "site"
 
 def asset_v(name):
@@ -30,7 +31,7 @@ EA_ENDPOINT = os.environ.get("KINVIVA_EA_ENDPOINT", "")
 EA_MESSAGE = "Discover what's next with Kinviva. Join Early Access for advanced AI workflows, technical copilots, and productivity features. We'll contact selected participants as access becomes available."
 
 # Four links only. The logo goes home, Download is the one button, GitHub lives in the footer and on the Community page.
-NAV = [("features.html", "Features"), ("community.html", "Community"), ("docs.html", "Documentation"), ("early-access.html", "Early Access")]
+NAV = [("features.html", "Features"), ("blog.html", "Blog"), ("community.html", "Community"), ("docs.html", "Documentation"), ("early-access.html", "Early Access")]
 
 ICON = {
  "home": "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
@@ -113,7 +114,7 @@ def foot():
     cols = [
         ("Product", [("features.html", "All features"), ("technical.html", "Technical Copilot"), ("whiteboard.html", "Whiteboard &amp; charts"), ("discover.html", "Discover &amp; skills"), ("download.html", "Download")]),
         ("Use cases", [("features.html#meetings", "Meetings"), ("interview.html", "Interview"), ("features.html#classroom", "Classroom"), ("features.html#presentation", "Presentation")]),
-        ("Resources", [("docs.html", "Documentation"), ("community.html", "Community"), ("compare.html", "Compare with other tools"), ("early-access.html", "Early Access"), ("privacy.html", "Privacy"), (GH + "/blob/main/THIRD_PARTY_NOTICES.md", "Third-party notices")]),
+        ("Resources", [("blog.html", "Blog"), ("docs.html", "Documentation"), ("community.html", "Community"), ("compare.html", "Compare with other tools"), ("early-access.html", "Early Access"), ("privacy.html", "Privacy"), (GH + "/blob/main/THIRD_PARTY_NOTICES.md", "Third-party notices")]),
         ("Follow", [(DISCORD, "Discord community"), (GH, "GitHub"), ("https://www.linkedin.com/company/kinviva/", "LinkedIn"), ("https://www.facebook.com/kinvivacare", "Facebook")]),
     ]
     def col(t, links):
@@ -888,12 +889,61 @@ def compare():
     o += foot()
     write("compare.html", o)
 
+
+# ------------------------------------------------------------------ Blog
+def blog():
+    from blog_posts import POSTS, DATE, ISO
+    o = head("Kinviva blog: how it works, in plain words", "Plain-language posts about Kinviva: what it is, how it explains conversations, what stays on your computer, and what each feature does and does not do.", "blog.html")
+    o += page_head("Blog", "How Kinviva works, in plain words.", "Short posts about what Kinviva does, how to use it, and where its limits are. Every post is checked against the app as it ships today, and planned features are labelled planned.")
+    cards = ""
+    for i, p in enumerate(POSTS):
+        img = f'<picture class="bp-img"><img src="media/{p["image"]}" alt="" loading="lazy" width="1504" height="1049"></picture>' if p["image"] else ""
+        cards += f'''<article class="bp{" bp-first" if i == 0 else ""} reveal">
+          {img}
+          <div class="bp-text"><p class="bp-meta"><span class="bp-tag">{p["tag"]}</span> <time datetime="{ISO}">{DATE}</time> &middot; {p["minutes"]} min read</p>
+          <h2 class="h3"><a href="blog-{p["slug"]}.html">{p["title"]}</a></h2>
+          <p>{p["summary"]}</p>
+          <p><a class="more-link" href="blog-{p["slug"]}.html">Read the post &rarr;</a></p></div>
+        </article>'''
+    o += f'''    <section><div class="wrap"><div class="bp-list">{cards}</div></div></section>
+{ea_cta()}'''
+    o += foot()
+    write("blog.html", o)
+    for i, p in enumerate(POSTS):
+        page = f"blog-{p['slug']}.html"
+        og = (CURRENT_BASE + "media/" + p["image"]) if p["image"] else OG
+        h = head(p["title"] + " | Kinviva", p["summary"], page, og)
+        h = h.replace('<meta property="og:type" content="website">', '<meta property="og:type" content="article">\n  <meta property="article:published_time" content="' + ISO + '">', 1)
+        h = h.replace("</head>", '  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":' + json.dumps(p["title"]) + ',"datePublished":"' + ISO + '","description":' + json.dumps(p["summary"]) + ',"author":{"@type":"Organization","name":"Kinviva"},"publisher":{"@type":"Organization","name":"Kinviva"},"mainEntityOfPage":"' + BASE + page + '"}</script>\n</head>', 1)
+        # the nav should show Blog as current on posts
+        h = h.replace('<a href="blog.html">Blog</a>', '<a href="blog.html" aria-current="page">Blog</a>', 1)
+        short = "".join(f"<li>{x}</li>" for x in p["short"])
+        fig = f'''<figure class="post-fig"><picture><img src="media/{p["image"]}" alt="{esc(p["image_alt"])}" width="1504" height="1049" loading="lazy"></picture><figcaption>Sample data</figcaption></figure>''' if p["image"] else ""
+        others = [q for q in POSTS if q["slug"] != p["slug"]]
+        more = "".join(f'<li><a href="blog-{q["slug"]}.html">{q["title"]}</a><span>{q["minutes"]} min read</span></li>' for q in others[:3])
+        o = h + f'''    <div class="post-head"><div class="wrap post-wrap">
+      <p class="lab">[ {p["tag"].upper()} ]</p>
+      <h1>{p["title"]}</h1>
+      <p class="post-by">By the Kinviva team &middot; <time datetime="{ISO}">{DATE}</time> &middot; {p["minutes"]} min read</p>
+    </div></div>
+    <article class="post"><div class="wrap post-wrap">
+      <aside class="post-short" aria-label="In short"><b>In short</b><ul>{short}</ul></aside>
+      {fig}
+      <div class="post-body">{p["body"]}</div>
+      <div class="post-cta"><p><b>Try it.</b> Kinviva is free for Mac and Windows, with no account.</p><p><a class="btn btn-primary" href="download.html">Download free</a> <a class="btn" href="{DISCORD}" rel="noopener" target="_blank">Ask on Discord</a></p></div>
+      <nav class="post-more" aria-label="More posts"><h2 class="h3">More from the blog</h2><ul>{more}</ul><p><a href="blog.html">All posts &rarr;</a></p></nav>
+    </div></article>'''
+        o += foot()
+        write(page, o)
+
 if __name__ == "__main__":
-    PAGES = (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page, compare)
+    PAGES = (home, features, technical, whiteboard, discover, interview, privacy, download, community, early_access, docs_page, compare, blog)
     for f in PAGES:
         f()
-    print(f"Wrote {len(PAGES)} pages to", SITE)
+    from blog_posts import POSTS
+    print(f"Wrote {len(PAGES) + len(POSTS)} pages to", SITE)
     if MOVED:  # only when building for the new address
-        urls = "".join(f"  <url><loc>{BASE}{'' if f.__name__ == 'home' else {'docs_page': 'docs', 'early_access': 'early-access', 'compare': 'compare'}.get(f.__name__, f.__name__) + '.html'}</loc></url>\n" for f in PAGES)
+        urls = "".join(f"  <url><loc>{BASE}{'' if f.__name__ == 'home' else {'docs_page': 'docs', 'early_access': 'early-access', 'compare': 'compare', 'blog': 'blog'}.get(f.__name__, f.__name__) + '.html'}</loc></url>\n" for f in PAGES)
+        urls += "".join(f"  <url><loc>{BASE}blog-{p['slug']}.html</loc></url>\n" for p in POSTS)
         (SITE / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "</urlset>\n")
         (SITE / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {BASE}sitemap.xml\n")
