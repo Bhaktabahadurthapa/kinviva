@@ -76,16 +76,13 @@ Answers stream as they generate and can be cancelled. With Auto-assist off, the 
 
 ## How it works
 
-```
-Them (ScreenCaptureKit) ─┐
-                         ├─► speech-to-text ─► live transcript ─► SQLite history
-Me (cpal / CoreAudio) ───┘   whisper.cpp |          │
-                             Deepgram               ▼
-                       your documents ─► assistant ─► language model
-                       (FTS5 passages)      │        Ollama | OpenAI-compatible
-                                            ▼
-                                   window + overlay
-```
+<p align="center">
+  <a href="docs/media/how-kinviva-works.png"><img src="docs/media/how-kinviva-works.png" alt="Diagram of how Kinviva works. A user on Mac or Windows picks a session type in the Kinviva desktop app. System audio and the microphone feed an audio pipeline, then speech-to-text (whisper.cpp or Deepgram), then a live transcript. The final text goes to a context builder, which also uses local documents and notes found by SQLite full-text search. The AI assistant explains, drafts replies, recaps and asks, using a local model such as Ollama or, optionally, a cloud AI service, and shows live insights in the main view and overlay. Sessions, transcripts, notes and history are saved in SQLite on the device and can be exported. A privacy boundary note says desktop processing and storage stay local, cloud speech or AI are used only when selected, AI drafts are not sent or spoken into calls, and there is no account, central Kinviva server or automatic command execution." width="900"></a>
+</p>
+
+<p align="center"><sub>Green is local, purple is the app, orange is optional cloud. Solid lines are the main flow; dashed lines are optional. Click the image for full size.</sub></p>
+
+**In words:** you pick a session type and press Start. Kinviva captures the call audio (<em>Them</em>) and your microphone (<em>Me</em>), turns speech into a live transcript, and, when an answer is needed, builds context from the transcript, matching passages of your own documents and your session instructions. A local model (or a cloud service you choose) writes the explanation or draft. You edit it. Everything is saved on your computer.
 
 One Tauri 2 app: a Rust backend for native audio, speech providers, SQLite
 and the OS keychain, and a React + TypeScript interface. No server, no
