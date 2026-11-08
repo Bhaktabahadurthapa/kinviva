@@ -109,4 +109,25 @@
         }).catch(function () { say("Could not reach the service. Please try again later.", true); btn.disabled = false; });
     });
   }
+
+  // Colour theme: system (default), light or dark. The choice is kept in this browser only.
+  var tt = document.querySelector(".theme-toggle");
+  if (tt) {
+    var root = document.documentElement, names = { "": "follows your system", light: "light", dark: "dark" }, order = ["", "light", "dark"];
+    var current = function () { return root.getAttribute("data-theme") || ""; };
+    var paint = function () {
+      var cur = current();
+      tt.setAttribute("aria-label", "Colour theme: " + names[cur] + ". Click to change.");
+      var tl = tt.querySelector(".tt-label"); if (tl) tl.textContent = "Theme: " + (cur || "system");
+      var dark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute("content", dark ? "#0c0c0c" : "#f7f8f4");
+    };
+    tt.addEventListener("click", function () {
+      var next = order[(order.indexOf(current()) + 1) % order.length];
+      if (next) root.setAttribute("data-theme", next); else root.removeAttribute("data-theme");
+      try { if (next) localStorage.setItem("kv-theme", next); else localStorage.removeItem("kv-theme"); } catch (e) { /* not essential */ }
+      paint();
+    });
+    paint();
+  }
 })();
