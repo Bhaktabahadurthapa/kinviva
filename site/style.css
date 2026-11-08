@@ -794,3 +794,4 @@ footer { background: var(--panel-deep); }
 .post-more li { align-items: baseline; flex-wrap: wrap; } .post-more li span { margin-left: auto; padding-left: 16px; }
 .post-more li a { color: var(--ink); font-weight: 600; text-underline-offset: 4px; }
 .post-cta { margin-bottom: 44px; } .post-more { margin-top: 12px; }
+.bp h2 a { display: block; padding-block: 10px; }
