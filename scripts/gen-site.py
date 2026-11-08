@@ -11,6 +11,7 @@ def asset_v(name):
         return hashlib.sha256((SITE / name).read_bytes()).hexdigest()[:10]
     except OSError:
         return "0"
+DISCORD = "https://discord.gg/FbRuQTapz"
 GH = "https://github.com/Bhaktabahadurthapa/kinviva"
 REL = GH + "/releases"
 INSTALLER = "0.1.5"   # the version people can download today (the first one named Kinviva)
@@ -112,7 +113,7 @@ def foot():
         ("Product", [("features.html", "All features"), ("technical.html", "Technical Copilot"), ("whiteboard.html", "Whiteboard &amp; charts"), ("discover.html", "Discover &amp; skills"), ("download.html", "Download")]),
         ("Use cases", [("features.html#meetings", "Meetings"), ("interview.html", "Interview"), ("features.html#classroom", "Classroom"), ("features.html#presentation", "Presentation")]),
         ("Resources", [("docs.html", "Documentation"), ("community.html", "Community"), ("compare.html", "Compare with other tools"), ("early-access.html", "Early Access"), ("privacy.html", "Privacy"), (GH + "/blob/main/THIRD_PARTY_NOTICES.md", "Third-party notices")]),
-        ("Follow", [(GH, "GitHub"), ("https://www.linkedin.com/company/kinviva/", "LinkedIn"), ("https://www.facebook.com/kinvivacare", "Facebook")]),
+        ("Follow", [(DISCORD, "Discord community"), (GH, "GitHub"), ("https://www.linkedin.com/company/kinviva/", "LinkedIn"), ("https://www.facebook.com/kinvivacare", "Facebook")]),
     ]
     def col(t, links):
         a = "".join(f'<a href="{h}"{" rel=\"noopener\" target=\"_blank\"" if h.startswith("http") else ""}>{l}</a>' for h, l in links)
@@ -615,6 +616,7 @@ def privacy():
         <tr><td><b>Whiteboard, charts, notes</b></td><td>Stored in your local database. Generating or editing sends only the text needed, to your answer engine.</td></tr>
         <tr><td><b>Technical Copilot</b></td><td>Never runs a command. Suggested commands are read-only and are only copied by you.</td></tr>
         <tr><td><b>Diagrams</b></td><td>Diagram source is checked and cleaned before it is drawn: no links, scripts or HTML.</td></tr>
+        <tr><td><b>Discord community</b></td><td>Only if you choose to join it: Discord, a third-party service, handles your account and messages under its own privacy policy. Nothing from the app is sent there, and this website does not load anything from Discord.</td></tr>
         <tr><td><b>Early Access form</b></td><td>Only if you fill it in on this website: your name, email, use case, optional company and your consent are stored by the Early Access service so we can contact selected participants. Nothing from the app is sent. <a href="{GH}/blob/main/docs/PRIVACY.md">Full details and deletion</a>.</td></tr>
       </tbody></table>
     </div></section>
@@ -737,6 +739,11 @@ def community():
         <tr><td><b>Privacy</b></td><td>No telemetry and no Kinviva account in the Community Edition. <a href="privacy.html">See exactly what is sent in each setup.</a></td></tr>
       </tbody></table>
     </div></section>
+    <section id="discord"><div class="wrap">
+      <div class="sec-head"><h2>Join the Kinviva Discord.</h2><p class="lead">Ask for help, share how you use Kinviva, and suggest features. It is run by the Kinviva maker and volunteers, with no response-time guarantee. For confirmed bugs, please also open a GitHub issue.</p></div>
+      <p><a class="btn btn-primary btn-big" href="{DISCORD}" rel="noopener" target="_blank">Join the Discord</a></p>
+      <p class="muted" style="margin-top:18px;max-width:70ch">Discord is a third-party service with its own privacy policy and collects data about its members. Kinviva itself, the app and this website, has no accounts and no tracking. Please never share meeting content, recordings or API keys there. Pro and Business are planned and not available yet.</p>
+    </div></section>
     <section><div class="wrap">
       <div class="sec-head"><p class="eyebrow">Source and licence</p><h2>The code is public. The licence is being decided.</h2><p class="lead">The source is on GitHub for you to read. It is currently published under an all-rights-reserved licence, so it is <b>not yet open source</b>. We are choosing an open-source licence for the Community code. We will announce it here when it is decided.</p></div>
       <div class="grid g3">
@@ -789,6 +796,8 @@ def early_access():
         </ul>
         <h2>What stays free</h2>
         <p class="muted">Everything in the <a href="community.html">Community Edition</a>.</p>
+        <h2>Questions meanwhile?</h2>
+        <p class="muted">Join the <a href="{DISCORD}" rel="noopener" target="_blank">Kinviva Discord</a>. Community help only, no response-time guarantee.</p>
         <h2>Your data</h2>
         <p class="muted">We collect your name, email, use case and optional company, the time you agreed, and nothing else. We use it only to contact selected participants. See the <a href="privacy.html">privacy page</a>.</p>
       </aside>

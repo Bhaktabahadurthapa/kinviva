@@ -206,6 +206,10 @@ Full results and known limitations: [docs/TESTING.md](docs/TESTING.md).
 
 This repository is the **Community Edition**: free, local-first, no account. **Pro** and **Business** editions are *planned* and are **not available yet**; nothing in this repository implements them. See [docs/OPEN_CORE_PLAN.md](docs/OPEN_CORE_PLAN.md) and [docs/FEATURE_AUDIT.md](docs/FEATURE_AUDIT.md) for what exists today and what does not. The code is public to read, but it is currently under an all-rights-reserved licence ([licensing review](docs/LICENSING_REVIEW.md)).
 
+## Community
+
+Join the [Kinviva Discord](https://discord.gg/FbRuQTapz) for help and ideas (community support, no response-time guarantee; Discord is a third-party service). Confirmed bugs belong in [GitHub issues](https://github.com/Bhaktabahadurthapa/kinviva/issues).
+
 ## Docs
 
 - [How answers are written](docs/ANSWERS.md): format, sources and citation checking
