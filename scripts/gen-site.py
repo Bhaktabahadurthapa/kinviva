@@ -248,7 +248,7 @@ def home():
         <div class="sec-head"><h2>How does it work?</h2><p class="lead">Four steps, in plain terms.</p></div>
         <ol class="flow">
           <li class="reveal"><b>Set it up once</b><p>Install the app and choose its answer engine: your own key (for example Gemini) or a free local model through Ollama. Allow microphone and system-audio access when your computer asks.</p></li>
-          <li class="reveal"><b>Press Start</b><p>Kinviva hears the call (<em>Them</em>, from your computer's audio) and your voice (<em>Me</em>, from the microphone) and writes the transcript on your computer.</p></li>
+          <li class="reveal"><b>Press Start</b><p>Kinviva hears the call (<em>Them</em>, from your computer's audio) and your voice (<em>Me</em>, from the microphone) and writes the transcript on your computer. It works with a call in any app or a video in your browser; nothing is installed in the other app.</p></li>
           <li class="reveal"><b>Read as it goes</b><p>Each finished point is explained in simple words. Questions get a draft answer. You can also press Explain, Suggest reply, Recap or Ask.</p></li>
           <li class="reveal"><b>Keep and use it</b><p>The session is saved. Export notes to Word, Markdown or text, list decisions, draw a diagram, or make a quiz. Everything is searchable.</p></li>
         </ol>
@@ -278,23 +278,6 @@ def home():
           <li><b>Keep what you learned</b>Save notes, make a study guide or a short quiz, and search it later.</li>
         </ol>
         <p class="flow-note">Honest limits: this was tried with YouTube and is still early. It depends on the video site allowing playback inside the app, and on clear audio. Explanations come from the AI you connect and can be wrong, so check important facts.</p>
-      </div>
-    </section>
-
-    <section id="when">
-      <div class="wrap">
-        <div class="sec-head"><h2>When and where do you use it?</h2><p class="lead">It listens to the audio on your computer, so it works with a call in any app or a video in your browser. Nothing is installed in the other app.</p></div>
-        <table class="table reveal">
-          <thead><tr><th>Situation</th><th>When you would use it</th><th>What you get</th></tr></thead>
-          <tbody>
-            <tr><td><b>Work meetings</b></td><td>Planning calls, stand-ups, client calls</td><td>Live transcript, plain-English points, decisions and action items, a recap</td></tr>
-            <tr><td><b>Technical calls</b></td><td>Incidents, design reviews, engineering talk</td><td>Terms explained, a safe read-only troubleshooting plan, architecture diagrams labelled by evidence <span class="badge b-next">New in 0.1.5</span></td></tr>
-            <tr><td><b>Interviews</b></td><td>Live interviews and practice sessions</td><td>Each question beside an editable answer in your style; mock questions with feedback</td></tr>
-            <tr><td><b>Classes and lectures</b></td><td>During and after a lecture</td><td>A catch-up when you are lost, homework dates the teacher actually said, notes, study guides and quizzes <span class="badge b-next">New in 0.1.5</span></td></tr>
-            <tr><td><b>Online videos and lectures</b></td><td>Watching a long lecture or tutorial you do not understand <span class="badge b-exp">Partly tested</span></td><td>The video plays inside Kinviva with live explanations beside it, follow-up questions, then notes and a quiz</td></tr>
-            <tr><td><b>Presentations</b></td><td>Before and while you present</td><td>An editable PowerPoint from your notes, speaker notes, rehearsal feedback, audience-question answers <span class="badge b-next">New in 0.1.5</span></td></tr>
-          </tbody>
-        </table>
       </div>
     </section>
 
@@ -354,7 +337,7 @@ def home():
     <section class="alt" id="today">
       <div class="wrap">
         <div class="sec-head"><h2>What works today?</h2><p class="lead">What is in the version you can download now, and what is not.</p></div>
-        <table class="table status reveal"><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Live meeting transcription</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically explain conversations</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Detect questions and suggest replies</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Save and search meeting history</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Search your documents with AI</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Generate architecture diagrams</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Local AI for privacy</td><td><span class="badge b-sup">Supported</span></td></tr><tr><td>Floating meeting assistant (overlay)</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically detect Zoom or Teams meetings</td><td><span class="badge b-nv">Not verified</span></td></tr><tr><td>Automatically create and assign follow-up tasks</td><td><span class="badge b-nv">Not fully implemented</span></td></tr><tr><td>Autonomous multi-step AI agents</td><td><span class="badge b-na">Not available. Planned for Pro.</span></td></tr><tr><td>Team integrations and collaboration</td><td><span class="badge b-na">Not available. Planned for Business.</span></td></tr></tbody></table>
+        <details class="status-box reveal"><summary><span>Full checklist: 7 implemented, 1 supported, 1 not verified, 1 not fully built, 2 planned</span></summary><table class="table status"><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Live meeting transcription</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically explain conversations</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Detect questions and suggest replies</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Save and search meeting history</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Search your documents with AI</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Generate architecture diagrams</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Local AI for privacy</td><td><span class="badge b-sup">Supported</span></td></tr><tr><td>Floating meeting assistant (overlay)</td><td><span class="badge b-now">Implemented</span></td></tr><tr><td>Automatically detect Zoom or Teams meetings</td><td><span class="badge b-nv">Not verified</span></td></tr><tr><td>Automatically create and assign follow-up tasks</td><td><span class="badge b-nv">Not fully implemented</span></td></tr><tr><td>Autonomous multi-step AI agents</td><td><span class="badge b-na">Not available. Planned for Pro.</span></td></tr><tr><td>Team integrations and collaboration</td><td><span class="badge b-na">Not available. Planned for Business.</span></td></tr></tbody></table></details>
         <div class="notice limits reveal"><b>Good to know</b><p>You press Start to begin; Kinviva does not detect meetings by itself yet. Answers come from the AI you connect and can be wrong, so you decide what to say. You need an answer engine (a cloud key or a local model). It works best on a Mac with Apple silicon; the Windows version is experimental and has not been tested on real hardware by us. It is built for English today. The source is public on GitHub but is not yet open source licensed.</p></div>
       </div>
     </section>
