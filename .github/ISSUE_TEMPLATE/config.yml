@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask for help on Discord
+    url: https://discord.gg/FbRuQTapz
+    about: Community help for setup and usage questions. No response-time guarantee. Discord is a third-party service.
+  - name: Report a security vulnerability
+    url: https://github.com/Bhaktabahadurthapa/kinviva/security/advisories/new
+    about: Please report vulnerabilities privately, not as a public issue.

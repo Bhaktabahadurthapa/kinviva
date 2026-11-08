@@ -1,44 +1,76 @@
 <div align="center">
 
+<img src="site/logo.svg" alt="Kinviva" width="96" height="96">
+
+# Kinviva
+
+### Every conversation, clearer.
+
+A free, local-first desktop app that listens to a meeting, call, interview or lecture,
+explains each point in plain words, and helps you answer. For Mac and Windows. No account.
+
+[![CI](https://github.com/Bhaktabahadurthapa/kinviva/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhaktabahadurthapa/kinviva/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Bhaktabahadurthapa/kinviva?label=release&color=2563EB)](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20(experimental)-0B1020)
+![Tauri 2](https://img.shields.io/badge/Tauri-2-0B1020)
+![Local-first](https://img.shields.io/badge/local--first-no%20telemetry-2563EB)
+![Licence](https://img.shields.io/badge/licence-source--available%20%C2%B7%20all%20rights%20reserved-596072)
+
+**[Download](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest)** &nbsp;·&nbsp;
+**[Website](https://kinviva.tech/)** &nbsp;·&nbsp;
+**[Compare](https://kinviva.tech/compare.html)** &nbsp;·&nbsp;
+**[Blog](https://kinviva.tech/blog.html)** &nbsp;·&nbsp;
+**[Discord](https://discord.gg/FbRuQTapz)** &nbsp;·&nbsp;
+**[Docs](#docs)**
+
 <br>
 
-### A desktop meeting assistant that hears the call, explains it in plain English, and drafts a reply you can edit. Local-first. No telemetry.
+<img src="site/media/v2-meeting-dark-panel.jpg" alt="The Kinviva Meetings screen: a live transcript on the left and a plain-English answer with a suggested reply on the right, shown with sample data" width="860">
 
-<br>
-
-![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20(experimental)-1b1814?style=flat-square&labelColor=110f0d)
-![tauri](https://img.shields.io/badge/Tauri-2-1b1814?style=flat-square&labelColor=110f0d)
-![rust](https://img.shields.io/badge/Rust-backend-1b1814?style=flat-square&labelColor=110f0d)
-![react](https://img.shields.io/badge/React-18%20%2B%20TS-1b1814?style=flat-square&labelColor=110f0d)
-![tests](https://img.shields.io/badge/tests-49%20passing%20(local)-9cc8a0?style=flat-square&labelColor=110f0d)
-![local-first](https://img.shields.io/badge/local--first-whisper.cpp%20%2B%20Ollama-ff5f2e?style=flat-square&labelColor=110f0d)
-![license](https://img.shields.io/badge/license-proprietary-463e34?style=flat-square&labelColor=110f0d)
-
-**[⬇ Download](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg)** · **[Website](https://bhaktathapa.com.np/kinviva/)** · **[Demo](#demo)** · **[Features](#features)** · **[How it works](#how-it-works)** · **[Quickstart](#quickstart)** · **[Privacy](#privacy)** · **[Docs](#docs)**
+<sub>Meetings screen, sample data.</sub>
 
 </div>
 
 ---
 
-## Screenshots
+## What it is
 
-See the screens on the website: https://bhaktathapa.com.np/kinviva/
+Kinviva hears the audio your computer plays and your microphone, writes a live transcript on your computer,
+explains each finished point in simple words, and, when someone asks a question, drafts an answer you can edit.
+Nothing is typed into the call. Sessions, notes and keys stay on your computer unless you choose a cloud AI service.
+
+| | |
+|---|---|
+| **Understand it live** | Plain-English explanations beside a live transcript, with hard words listed |
+| **Respond with context** | Question detection and editable reply drafts grounded in your notes and documents |
+| **Keep what mattered** | Saved, searchable sessions; decisions and action items with the quote behind each; export to Word, Markdown or text |
+| **Technical Copilot** | Read-only troubleshooting plans, an incident tracker, and architecture diagrams labelled verified, mentioned or inferred |
+| **Interview, classroom, presentation** | Practice and feedback, study guides and quizzes, an editable PowerPoint maker |
+| **Private by design** | No account, no Kinviva server, no telemetry. Local speech recognition and a local-model option |
+
+**What is planned, not built:** Pro and Business editions, including AI agents that complete approved tasks, organisation accounts and shared workflows. See [Editions](#editions).
+
+## Get it
+
+- **Mac (Apple silicon, macOS 13+):** download [Kinviva.dmg](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg).
+- **Windows 10/11 (experimental):** download [Kinviva-Windows-Setup.exe](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva-Windows-Setup.exe). It has not been tested on real Windows hardware by the maintainer.
+- You also need an answer engine: your own cloud key, or a free local model through [Ollama](https://ollama.com). Setup steps are in [Quickstart](#quickstart).
 
 ## Features
 
 | | |
 |---|---|
-| 🎧 **Two channels** | Other participants ("Them", system audio) and you ("Me", microphone), each with status, a level meter and clear errors. Switch microphones mid-meeting. |
-| 📝 **Live transcript** | Partial text appears as people talk and settles into timecoded final lines. |
-| ⚡ **Hands-free reading view** | **Auto-assist** (on by default): the screen splits into *Live transcript* on one side and *Live insights* on the other. When someone else finishes a sentence, its meaning appears below in large, plain language, and questions get a draft answer — no clicks. Switch to *Explain only* or *Off* any time. |
-| 🗺 **Architecture diagrams** | The **Architecture** screen turns what people describe (AWS, Kubernetes, CI/CD, databases, incidents) into a diagram with zoom, pan, full screen, editable Mermaid source and SVG/PNG export. Every box is labelled *verified*, *mentioned* or *inferred*. See `docs/architecture/architecture-visualization.md`. |
-| 💬 **Explain** | The latest point in short, plain-English sentences that keep the speaker's meaning and flag what the transcript left unclear. |
-| ✍️ **Suggest reply** | A short, editable draft grounded in the transcript, your notes and your documents. It never invents your experience, and nothing is sent into the meeting. |
-| 🧭 **Recap and Ask** | Bullet recap of the meeting so far, or a direct question answered from what was said. |
-| 📚 **Documents** | TXT, Markdown and PDF, indexed with SQLite FTS5. Every answer lists the passages it used. |
-| 🪟 **Overlay** | A movable, resizable, always-on-top companion window. |
-| 🗂️ **History** | Search, rename, reopen in the assistant, export Markdown or text. |
-| ⌨️ **Shortcuts** | Configurable global shortcuts, plus optional question highlighting with cooldown and duplicate suppression. |
+| **Two channels** | Other participants ("Them", system audio) and you ("Me", microphone), each with status, a level meter and clear errors. Switch microphones mid-meeting. |
+| **Live transcript** | Partial text appears as people talk and settles into timecoded final lines. |
+| **Hands-free reading view** | **Auto-assist** (on by default): the screen splits into *Live transcript* on one side and *Live insights* on the other. When someone else finishes a sentence, its meaning appears below in large, plain language, and questions get a draft answer — no clicks. Switch to *Explain only* or *Off* any time. |
+| **Architecture diagrams** | The **Architecture** screen turns what people describe (AWS, Kubernetes, CI/CD, databases, incidents) into a diagram with zoom, pan, full screen, editable Mermaid source and SVG/PNG export. Every box is labelled *verified*, *mentioned* or *inferred*. See `docs/architecture/architecture-visualization.md`. |
+| **Explain** | The latest point in short, plain-English sentences that keep the speaker's meaning and flag what the transcript left unclear. |
+| **Suggest reply** | A short, editable draft grounded in the transcript, your notes and your documents. It never invents your experience, and nothing is sent into the meeting. |
+| **Recap and Ask** | Bullet recap of the meeting so far, or a direct question answered from what was said. |
+| **Documents** | TXT, Markdown and PDF, indexed with SQLite FTS5. Every answer lists the passages it used. |
+| **Overlay** | A movable, resizable, always-on-top companion window. |
+| **History** | Search, rename, reopen in the assistant, export Markdown or text. |
+| **Shortcuts** | Configurable global shortcuts, plus optional question highlighting with cooldown and duplicate suppression. |
 
 Answers stream as they generate and can be cancelled. With Auto-assist off, the AI runs only when you press a button.
 
@@ -108,7 +140,7 @@ DEMO, so you can try the AI actions.
 **Just want the app?** **[⬇ Download Kinviva.dmg](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg)**
 (direct download, 7.9 MB, Apple Silicon). Checksums and notes are on the
 [release page](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest);
-the [website](https://bhaktathapa.com.np/kinviva/) has the same button.
+the [website](https://kinviva.tech/) has the same button.
 
 To build it yourself instead, create a normal app you can drag into Applications (Apple Silicon Mac, macOS 13+):
 
@@ -210,6 +242,10 @@ This repository is the **Community Edition**: free, local-first, no account. **P
 
 Join the [Kinviva Discord](https://discord.gg/FbRuQTapz) for help and ideas (community support, no response-time guarantee; Discord is a third-party service). Confirmed bugs belong in [GitHub issues](https://github.com/Bhaktabahadurthapa/kinviva/issues).
 
+## Tests
+
+Rust: 179 unit tests (2 need network and are ignored). Front end: 83 tests. Early Access service: 10 tests. They run on every push in [CI](.github/workflows/ci.yml). Tests cover logic, validators and prompt construction; they do not drive real audio devices or a real answer engine. Details and known limits: [docs/TESTING.md](docs/TESTING.md).
+
 ## Docs
 
 - [How answers are written](docs/ANSWERS.md): format, sources and citation checking
@@ -237,7 +273,3 @@ modify or redistribute it is granted without a separate written license or
 subscription agreement. Third-party components keep their own licenses; see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-<div align="center">
-<br>
-<sub>Built by <b>Bhakta Thapa</b> · <b>BKT AI</b></sub>
-</div>
