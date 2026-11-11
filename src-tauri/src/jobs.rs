@@ -43,9 +43,19 @@ pub struct JobsQuery {
     pub keywords: String,
     #[serde(default)]
     pub remote_only: bool,
+    /// Where you want to work: "Austin, TX", "Texas", "USA", "Toronto, Canada". Empty means anywhere.
+    #[serde(default)]
+    pub location: String,
+    /// With a location set, also show remote jobs you could do from there.
+    #[serde(default = "yes")]
+    pub include_remote: bool,
     /// Company boards the user added, like "greenhouse:stripe" or "lever:netflix".
     #[serde(default)]
     pub boards: Vec<String>,
+}
+
+fn yes() -> bool {
+    true
 }
 
 /// Category id, label words used to match titles, the Remotive slug and The Muse category.
@@ -240,6 +250,94 @@ pub fn title_fits(title: &str, words: &[&str], keywords: &str) -> bool {
     words.iter().any(|w| t.contains(w)) || kw.iter().any(|k| t.contains(k.as_str()))
 }
 
+// ---- Location ----
+
+const US_STATES: [(&str, &str); 51] = [
+    ("al", "alabama"), ("ak", "alaska"), ("az", "arizona"), ("ar", "arkansas"), ("ca", "california"), ("co", "colorado"), ("ct", "connecticut"), ("de", "delaware"), ("dc", "district of columbia"),
+    ("fl", "florida"), ("ga", "georgia"), ("hi", "hawaii"), ("id", "idaho"), ("il", "illinois"), ("in", "indiana"), ("ia", "iowa"), ("ks", "kansas"), ("ky", "kentucky"), ("la", "louisiana"),
+    ("me", "maine"), ("md", "maryland"), ("ma", "massachusetts"), ("mi", "michigan"), ("mn", "minnesota"), ("ms", "mississippi"), ("mo", "missouri"), ("mt", "montana"), ("ne", "nebraska"),
+    ("nv", "nevada"), ("nh", "new hampshire"), ("nj", "new jersey"), ("nm", "new mexico"), ("ny", "new york"), ("nc", "north carolina"), ("nd", "north dakota"), ("oh", "ohio"), ("ok", "oklahoma"),
+    ("or", "oregon"), ("pa", "pennsylvania"), ("ri", "rhode island"), ("sc", "south carolina"), ("sd", "south dakota"), ("tn", "tennessee"), ("tx", "texas"), ("ut", "utah"), ("vt", "vermont"),
+    ("va", "virginia"), ("wa", "washington"), ("wv", "west virginia"), ("wi", "wisconsin"), ("wy", "wyoming"),
+];
+const US_NAMES: [&str; 4] = ["usa", "us", "united states", "united states of america"];
+const ELSEWHERE: [&str; 24] = [
+    "europe", "emea", "uk", "united kingdom", "canada", "india", "apac", "latam", "latin america", "asia", "australia", "germany", "france", "spain", "poland", "brazil", "mexico", "netherlands", "ireland",
+    "portugal", "new zealand", "israel", "africa", "singapore",
+];
+
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct Place {
+    tokens: Vec<String>,
+    us: bool,
+}
+
+/// " word word " with only letters and digits, so whole words can be searched for.
+fn norm(s: &str) -> String {
+    let w: Vec<String> = s.to_lowercase().split(|c: char| !c.is_alphanumeric()).filter(|x| !x.is_empty()).map(String::from).collect();
+    if w.is_empty() { String::new() } else { format!(" {} ", w.join(" ")) }
+}
+
+/// What the user typed as a place: cities, states and countries, with US states known by name and by letters.
+pub fn parse_place(input: &str) -> Place {
+    let mut p = Place::default();
+    for part in input.split([',', ';', '/']) {
+        let t = norm(part).trim().to_string();
+        if t.is_empty() {
+            continue;
+        }
+        if US_NAMES.contains(&t.as_str()) {
+            p.us = true;
+            p.tokens.extend(["usa", "us", "united states"].map(String::from));
+        } else if let Some((ab, name)) = US_STATES.iter().find(|(ab, name)| *ab == t || *name == t) {
+            p.us = true;
+            p.tokens.push(ab.to_string());
+            p.tokens.push(name.to_string());
+        } else {
+            p.tokens.push(t);
+        }
+    }
+    p.tokens.sort();
+    p.tokens.dedup();
+    p
+}
+
+fn has_word(hay: &str, needle: &str) -> bool {
+    hay.contains(&format!(" {needle} "))
+}
+
+/// Whether a remote job's stated region allows someone in the chosen place.
+fn remote_region_ok(job_loc: &str, p: &Place) -> bool {
+    let n = norm(job_loc);
+    if n.is_empty() || ["worldwide", "anywhere", "global", "americas", "north america", "remote"].iter().any(|w| has_word(&n, w)) && !ELSEWHERE.iter().any(|w| has_word(&n, w)) {
+        return true;
+    }
+    let us_text = US_NAMES.iter().any(|w| has_word(&n, w));
+    if p.us {
+        us_text || !ELSEWHERE.iter().any(|w| has_word(&n, w))
+    } else {
+        p.tokens.iter().any(|t| has_word(&n, t)) || (!us_text && !n.is_empty())
+    }
+}
+
+/// Keeps a job when it is in the chosen place, or is remote and open to people there. No place means keep everything.
+pub fn location_fits(job_loc: &str, job_remote: bool, p: &Place, include_remote: bool) -> bool {
+    if p.tokens.is_empty() {
+        return true;
+    }
+    let n = norm(job_loc);
+    if p.tokens.iter().any(|t| has_word(&n, t)) {
+        return true;
+    }
+    job_remote && include_remote && remote_region_ok(job_loc, p)
+}
+
+/// "Austin, TX" style value for The Muse, which filters by city and state.
+fn muse_location(input: &str) -> Option<String> {
+    let parts: Vec<&str> = input.split(',').map(str::trim).collect();
+    (parts.len() == 2 && parts[1].len() == 2 && !parts[0].is_empty()).then(|| format!("{}, {}", parts[0], parts[1].to_uppercase()))
+}
+
 type Task = std::pin::Pin<Box<dyn std::future::Future<Output = (String, Result<Vec<Job>, String>)> + Send>>;
 
 pub async fn search(q: &JobsQuery) -> JobsReport {
@@ -259,8 +357,13 @@ pub async fn search(q: &JobsQuery) -> JobsReport {
     }
     for cat in muse_cats {
         if !q.remote_only {
+            let muse_loc = muse_location(&q.location);
             tasks.push(Box::pin(async move {
-                ("The Muse".to_string(), get("https://www.themuse.com/api/public/jobs", &[("category", cat.to_string()), ("page", "1".to_string())]).await.map(|b| parse_muse(&b)))
+                let mut qs = vec![("category", cat.to_string()), ("page", "1".to_string())];
+                if let Some(l) = muse_loc {
+                    qs.push(("location", l));
+                }
+                ("The Muse".to_string(), get("https://www.themuse.com/api/public/jobs", &qs).await.map(|b| parse_muse(&b)))
             }));
         }
     }
@@ -284,6 +387,7 @@ pub async fn search(q: &JobsQuery) -> JobsReport {
     }
     let mut report = JobsReport::default();
     let words = category_words(&q.categories);
+    let place = parse_place(&q.location);
     let mut seen = std::collections::HashSet::new();
     for (name, r) in join_all(tasks).await {
         match r {
@@ -295,6 +399,9 @@ pub async fn search(q: &JobsQuery) -> JobsReport {
                         continue;
                     }
                     if q.remote_only && !j.remote {
+                        continue;
+                    }
+                    if !location_fits(&j.location, j.remote, &place, q.include_remote) {
                         continue;
                     }
                     if seen.insert(format!("{}|{}", j.title.to_lowercase(), j.company.to_lowercase())) {
@@ -601,6 +708,33 @@ mod tests {
         assert!(m[1].content.contains("<resume>"));
         let d = plain_doc("Cover letter", "SRE, Acme", "Dear Hiring Team,\n\nHello.");
         assert!(crate::export::render(&d, "docx").unwrap().starts_with(b"PK"));
+    }
+
+    #[test]
+    fn places_match_cities_states_and_countries() {
+        let tx = parse_place("Austin, TX");
+        assert!(tx.us && tx.tokens.contains(&"texas".to_string()));
+        assert!(location_fits("Austin, TX", false, &tx, true));
+        assert!(location_fits("Austin, Texas, United States", false, &tx, false));
+        assert!(!location_fits("Denver, CO", false, &tx, true));
+        // Remote jobs: open to the US or worldwide count, other regions do not.
+        assert!(location_fits("Worldwide", true, &tx, true));
+        assert!(location_fits("USA Only", true, &tx, true));
+        assert!(!location_fits("Europe", true, &tx, true));
+        assert!(!location_fits("UK", true, &tx, true));
+        assert!(!location_fits("Worldwide", true, &tx, false));
+        assert!(location_fits("Remote", true, &tx, true));
+        let ca = parse_place("Toronto, Canada");
+        assert!(!ca.us);
+        assert!(location_fits("Toronto, Ontario, Canada", false, &ca, true));
+        assert!(!location_fits("USA Only", true, &ca, true));
+        assert!(location_fits("Worldwide", true, &ca, true));
+        // Whole words only: "in" is not found inside "Berlin", and an empty place keeps everything.
+        assert!(!location_fits("Berlin", false, &parse_place("IN"), true));
+        assert!(location_fits("Anywhere", false, &parse_place(""), true));
+        assert_eq!(parse_place("USA").tokens, vec!["united states", "us", "usa"]);
+        assert_eq!(muse_location("Austin, tx"), Some("Austin, TX".into()));
+        assert_eq!(muse_location("Texas"), None);
     }
 
     #[test]

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TEMPLATES, headingOf, pageHint, parseResume, parseRole, usChecks, wordCount } from "./resume";
+import { TEMPLATES, diffLines, headingOf, pageHint, parseResume, parseRole, usChecks, wordCount } from "./resume";
 
 const TEXT = `Jane Doe
 Austin, TX | (512) 555-0100 | jane@example.com | linkedin.com/in/janedoe
@@ -69,5 +69,18 @@ describe("US checks and length", () => {
     expect(pageHint("word ".repeat(300), TEMPLATES[0])).toBe("about 1 page");
     expect(pageHint("word ".repeat(900), TEMPLATES[0])).toBe("about 2 pages");
     expect(pageHint("word ".repeat(2000), TEMPLATES[0])).toContain("more than 2");
+  });
+});
+
+describe("diffLines", () => {
+  it("shows added, removed and unchanged lines, ignoring spacing", () => {
+    const d = diffLines("Jane\nSKILLS\nAWS, K8s\n- Cut deploy time", "Jane\nSKILLS\nAWS,  Kubernetes\n- Cut deploy time\n- New line");
+    expect(d.map((x) => x.kind)).toEqual(["same", "same", "del", "add", "same", "add"]);
+    expect(d[3].text).toBe("AWS,  Kubernetes");
+  });
+  it("is all same for identical text and handles empty input", () => {
+    expect(diffLines("a\nb", "a\nb").every((x) => x.kind === "same")).toBe(true);
+    expect(diffLines("", "x")).toEqual([{ kind: "add", text: "x" }]);
+    expect(diffLines("", "")).toEqual([]);
   });
 });

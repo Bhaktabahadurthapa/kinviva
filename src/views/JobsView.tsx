@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { ResumeFormat } from "../components/ResumeFormat";
 import { chooseSavePath, safeName } from "../lib/download";
-import { parseResume, type TemplateId } from "../lib/resume";
+import { diffLines, parseResume, type TemplateId } from "../lib/resume";
 import {
   APPS_KEY, CATEGORIES, LAST_KEY, PREFS_KEY, RESUME_KEY, SEEN_KEY, STATUSES, STATUS_LABEL, ageLabel, agentDue, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen,
   reminderLabel, reminders, scoreLabel,
@@ -70,7 +70,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
     setReport(null);
     setOpenId(null);
     try {
-      const r = await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, boards: parseBoards(prefs.boards) });
+      const r = await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, location: prefs.location, include_remote: prefs.includeRemote, boards: parseBoards(prefs.boards) });
       const seen = parseSeen(read(SEEN_KEY));
       const last = read(LAST_KEY);
       setFresh(newJobIds(r.jobs, seen, last !== null));
@@ -176,6 +176,12 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
           </button>
         ))}
       </div>
+      <ol className="jb-steps" aria-label="How it works">
+        <li className={resume.trim() ? "done" : ""}><button onClick={() => setSection("resume")}><b>1</b> Add your resume</button></li>
+        <li className={report ? "done" : ""}><button onClick={() => setSection("find")}><b>2</b> Search jobs for your location</button></li>
+        <li className={apps.some((a) => a.resume) ? "done" : ""}><button onClick={() => setSection("find")}><b>3</b> Tailor your resume to a job</button></li>
+        <li className={apps.some((a) => a.status === "applied" || a.status === "interview" || a.status === "offer") ? "done" : ""}><button onClick={() => setSection("tracker")}><b>4</b> Apply and track</button></li>
+      </ol>
       {note && <p className="hint" role="status">{note}</p>}
 
       {section === "resume" && (
@@ -205,7 +211,8 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
       {section === "find" && (
         <>
           <section className="dash-card">
-            <header><h2>What are you looking for?</h2></header>
+            <header><h2>Search settings</h2></header>
+            <p className="jb-label">1. Job type <span className="hint">(pick one or more)</span></p>
             <div className="disc-chips" role="group" aria-label="Categories">
               {CATEGORIES.map((c) => (
                 <button key={c.id} className={`chip ${prefs.categories.includes(c.id) ? "on" : ""}`} aria-pressed={prefs.categories.includes(c.id)} onClick={() => setPrefs({ ...prefs, categories: prefs.categories.includes(c.id) ? prefs.categories.filter((x) => x !== c.id) : [...prefs.categories, c.id] })}>
@@ -213,9 +220,18 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                 </button>
               ))}
             </div>
+            <p className="jb-label">2. Location</p>
             <div className="disc-row">
-              <input value={prefs.keywords} onChange={(e) => setPrefs({ ...prefs, keywords: e.target.value })} placeholder="Keywords, separated by commas (for example: kubernetes, platform)" aria-label="Keywords" />
-              <label className="check"><input type="checkbox" checked={prefs.remoteOnly} onChange={(e) => setPrefs({ ...prefs, remoteOnly: e.target.checked })} /> Remote only</label>
+              <input value={prefs.location} onChange={(e) => setPrefs({ ...prefs, location: e.target.value })} placeholder="City, state or country. For example: Austin, TX   or   Texas   or   USA" aria-label="Location" />
+            </div>
+            <div className="disc-row">
+              <label className="check"><input type="checkbox" checked={prefs.includeRemote} onChange={(e) => setPrefs({ ...prefs, includeRemote: e.target.checked })} disabled={prefs.remoteOnly} /> Also show remote jobs I could do from there</label>
+              <label className="check"><input type="checkbox" checked={prefs.remoteOnly} onChange={(e) => setPrefs({ ...prefs, remoteOnly: e.target.checked })} /> Remote jobs only</label>
+            </div>
+            <p className="hint">Leave the location empty to see jobs anywhere. Remote jobs that name another region (for example Europe only) are hidden when your location is in the US.</p>
+            <p className="jb-label">3. Keywords <span className="hint">(optional)</span></p>
+            <div className="disc-row">
+              <input value={prefs.keywords} onChange={(e) => setPrefs({ ...prefs, keywords: e.target.value })} placeholder="Words in the job title, separated by commas. For example: kubernetes, platform" aria-label="Keywords" />
             </div>
             <label className="check"><input type="checkbox" checked={prefs.agent} onChange={(e) => setPrefs({ ...prefs, agent: e.target.checked })} /> Job agent: search again by itself when I open Jobs, about every 12 hours</label>
             {prefs.agent && <p className="hint">It runs only while Kinviva is open, uses the choices above, and marks jobs that are new since your last search. It never applies for you.</p>}
@@ -235,7 +251,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
             <>
               {report.errors.length > 0 && <p className="hint jb-errors">Some sources did not answer: {report.errors.join("; ")}.</p>}
               <div className="disc-row">
-                <strong>{scored.length} job{scored.length === 1 ? "" : "s"}</strong>
+                <strong>{scored.length} job{scored.length === 1 ? "" : "s"}{prefs.location.trim() ? ` for ${prefs.location.trim()}` : ""}</strong>
                 {fresh.size > 0 && <span className="chip on">{fresh.size} new since your last search</span>}
                 <span className="spacer" />
                 <div className="seg" aria-label="Sort">
@@ -243,7 +259,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                   <button className={sort === "new" ? "active" : ""} onClick={() => setSort("new")}>Newest</button>
                 </div>
               </div>
-              {scored.length === 0 && <p className="hint">No jobs matched. Try other categories or fewer keywords.</p>}
+              {scored.length === 0 && <p className="hint">No jobs matched. Try other job types, a wider location (a state or country instead of a city), fewer keywords, or turn on remote jobs.</p>}
               <div className="jb-list">
                 {scored.map(({ job, match }) => (
                   <div key={job.id} className={`dash-card jb-job ${openId === job.id ? "open" : ""}`}>
@@ -361,6 +377,7 @@ function TailorPanel({ job, master, template, onTemplate, t, onChange, onExport,
           This version mentions things your own resume does not: {[...claims.skills, ...claims.numbers].join(", ")}. Remove them unless they are true.
         </div>
       )}
+      <WhatChanged before={master} after={t.text} />
       {t.changes.length > 0 && <ul className="jb-changes">{t.changes.map((c, i) => <li key={i}>{c}</li>)}</ul>}
       <textarea className="jb-text" value={t.text} onChange={(e) => onChange(e.target.value)} rows={16} aria-label="Tailored resume" />
       <details>
@@ -390,5 +407,30 @@ function TailorPanel({ job, master, template, onTemplate, t, onChange, onExport,
       )}
       <p className="hint">Kinviva does not send applications for you. You press Submit on the employer's page. That keeps you in control of what is sent.</p>
     </div>
+  );
+}
+
+/** Exactly which lines of your resume were removed or added for this job. Unchanged lines are folded away. */
+function WhatChanged({ before, after }: { before: string; after: string }) {
+  const d = diffLines(before, after);
+  const changed = d.filter((x) => x.kind !== "same").length;
+  const rows: { key: string; kind: "add" | "del" | "same"; text: string }[] = [];
+  let run = 0;
+  d.forEach((x, i) => {
+    if (x.kind === "same") run++;
+    else {
+      if (run) rows.push({ key: `s${i}`, kind: "same", text: `${run} unchanged line${run === 1 ? "" : "s"}` });
+      run = 0;
+      rows.push({ key: `c${i}`, kind: x.kind, text: x.text });
+    }
+  });
+  if (run) rows.push({ key: "end", kind: "same", text: `${run} unchanged line${run === 1 ? "" : "s"}` });
+  return (
+    <details open={changed > 0 && changed <= 40}>
+      <summary>{changed === 0 ? "No lines changed from your resume" : `What changed from your resume: ${changed} line${changed === 1 ? "" : "s"}`}</summary>
+      <div className="jb-diff" aria-label="Changes">
+        {rows.map((r) => <div key={r.key} className={`jb-d-${r.kind}`}>{r.kind === "add" ? "+ " : r.kind === "del" ? "− " : "  "}{r.text}</div>)}
+      </div>
+    </details>
   );
 }

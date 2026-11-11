@@ -2603,3 +2603,16 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .rp-compact .rp-name { font-size: 19px; }
 .rp b, .rp span, .rp div { color: #111; }
 .rp-modern h4 { color: #1f3a5f; }
+
+/* Jobs: steps, labels, diff */
+.jb-steps { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--s-2); margin: 0; padding: 0; }
+.jb-steps li button { width: 100%; display: flex; gap: 8px; align-items: center; text-align: left; padding: 8px 10px; border: 1px solid var(--c-line-strong); border-radius: 10px; background: var(--c-surface); color: var(--c-text-2); font: inherit; font-size: 13px; cursor: pointer; }
+.jb-steps li b { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--c-sunken); font-size: 12px; }
+.jb-steps li.done button { border-color: #16a34a; color: var(--c-text); }
+.jb-steps li.done b { background: #16a34a; color: #fff; }
+.jb-label { margin: var(--s-2) 0 0; font-weight: 600; font-size: 13px; }
+.jb-diff { font-family: var(--f-mono); font-size: 12px; line-height: 1.5; border: 1px solid var(--c-line); border-radius: 8px; overflow: hidden; margin-top: 6px; white-space: pre-wrap; }
+.jb-diff div { padding: 1px 10px; }
+.jb-d-add { background: rgba(22,163,74,.16); }
+.jb-d-del { background: rgba(220,38,38,.16); text-decoration: line-through; text-decoration-color: rgba(220,38,38,.5); }
+.jb-d-same { color: var(--c-text-3); font-style: italic; }
