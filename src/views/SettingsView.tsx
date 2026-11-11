@@ -377,14 +377,14 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         </label>
         <label className="check">
           <input type="checkbox" checked={s.web_search} onChange={(e) => set("web_search", e.target.checked)} />
-          Search the web for answers (Tavily)
+          Back answers with research papers and web sources
         </label>
         {s.web_search && (
           <>
             <p className="hint">
-              Sends only the question being answered (not the whole meeting) to Tavily, using your own key from tavily.com, and adds a few result snippets to the request. Results can be wrong, so check them.
+              Sends only the question being answered (not the whole meeting) to find peer-reviewed papers (OpenAlex, no key needed) and, if you add a Tavily key from tavily.com, general web pages. A few snippets are added to the request and the answer lists the sources it used. Sources can still be wrong or off-topic, so check them.
             </p>
-            <KeyField name="web_search_key" label="Tavily API key" has={!!secrets.web_search_key} onChange={loadSecrets} />
+            <KeyField name="web_search_key" label="Tavily API key (optional, for web pages)" has={!!secrets.web_search_key} onChange={loadSecrets} />
           </>
         )}
       </section>

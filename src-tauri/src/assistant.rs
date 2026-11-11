@@ -316,9 +316,30 @@ fn web_query_for(action: Action, transcript: &str, focus: Option<&str>, question
     (!q.is_empty()).then_some(q)
 }
 
+/// General web results (Tavily, only when a key is saved) plus research papers (OpenAlex, no key).
+/// Either part may fail without blocking the other; an error is returned only when nothing was found.
 async fn web_results(query: &str, cancel: &CancellationToken) -> Result<Vec<websearch::WebSource>, String> {
-    let key = secrets::get("web_search_key")?.ok_or("Add your web search key in Settings → Answer engine.")?;
-    websearch::search(websearch::DEFAULT_ENDPOINT, &key, query, cancel).await
+    let key = secrets::get("web_search_key").ok().flatten();
+    let web = async {
+        match &key {
+            Some(k) => websearch::search(websearch::DEFAULT_ENDPOINT, k, query, cancel).await,
+            None => Ok(Vec::new()),
+        }
+    };
+    let (web, papers) = tokio::join!(web, websearch::scholar_search(websearch::SCHOLAR_ENDPOINT, query, cancel));
+    let mut out = Vec::new();
+    let mut first_err = None;
+    // Papers first: they are the stronger evidence.
+    for r in [papers, web] {
+        match r {
+            Ok(mut v) => out.append(&mut v),
+            Err(e) => first_err = first_err.or(Some(e)),
+        }
+    }
+    match (out.is_empty(), first_err) {
+        (true, Some(e)) => Err(e),
+        _ => Ok(out),
+    }
 }
 
 /// Each distinct web-search problem is reported once, not on every answer.
