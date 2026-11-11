@@ -93,7 +93,7 @@ export default function Overlay() {
     }
   };
   const [err, setErr] = useState<string | null>(null);
-  const [view, setView] = useState<"assist" | "transcript" | "script">("assist");
+  const [view, setView] = useState<"assist" | "transcript" | "script" | "both">("assist");
   const st = live.status;
   const running = st?.state === "running";
 
@@ -132,6 +132,9 @@ export default function Overlay() {
           <button className={view === "script" ? "active" : ""} onClick={() => setView("script")} title="Your own written script, shown a line at a time">
             Script
           </button>
+          <button className={view === "both" ? "active" : ""} onClick={() => setView("both")} title="Your script on top, with the automatic assist below it">
+            Both
+          </button>
           <button title="Open main window" onClick={() => api.showMain()}>
             ⤢
           </button>
@@ -153,12 +156,14 @@ export default function Overlay() {
           <TranscriptView transcript={live.transcript} compact emptyHint={running ? "Listening…" : "No meeting running."} />
         ) : auto !== "off" ? (
           <>
+            {view === "both" && <ScriptPrompter transcript={live.transcript} running={!!running} />}
             <InterviewAnswer />
             <ManualAnswers live={live} />
             <SimpleStream finals={live.transcript.finals} side={live.side} running={!!running} />
           </>
         ) : (
           <>
+            {view === "both" && <ScriptPrompter transcript={live.transcript} running={!!running} />}
             <div className="ov-latest">
               <TranscriptView
                 transcript={{ finals: live.transcript.finals.slice(-2), partials: live.transcript.partials }}
