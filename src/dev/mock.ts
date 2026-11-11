@@ -35,6 +35,7 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     ] },
     jobs_tailor: ["Jane Doe\njane@example.com | +1 512 555 0100\nSUMMARY\nCloud engineer with AWS and Kubernetes, focused on CI/CD and reliability.\nSKILLS\nAWS, Kubernetes, Terraform, CI/CD, Python, Prometheus, Docker\nEXPERIENCE\nSRE, Acme, 2020-2024\n- Cut deploy time by 40% using CI/CD pipelines\nEDUCATION\nBSc Computer Science", ["Moved Kubernetes and Terraform to the front of Skills", "Aimed the summary at CI/CD and reliability"]],
     resume_export: "/tmp/resume.docx",
+    resume_reformat: "Jane Doe\nAustin, TX | (512) 555-0100 | jane@example.com\nSUMMARY\nCloud engineer with AWS and Kubernetes.\nSKILLS\nCloud: AWS, Kubernetes\nTools: Terraform, Python, Prometheus\nEXPERIENCE\nSite Reliability Engineer | Acme | Austin, TX | 2020 - 2024\n- Cut deploy time by 40% using CI/CD pipelines\nEDUCATION\nBSc Computer Science | State University | 2016",
     jobs_cover_letter: "Dear Hiring Team,\n\nI am a cloud engineer with AWS and Kubernetes experience. At Acme I cut deploy time by 40% using CI/CD pipelines.\n\nSincerely,\nJane Doe",
     letter_export: "/tmp/letter.docx",
     interview_saved_count: 3,

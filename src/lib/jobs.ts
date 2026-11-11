@@ -4,6 +4,8 @@
  * counting skills and words, so the same input always gives the same result.
  */
 
+import { TEMPLATES, type TemplateId } from "./resume";
+
 export interface Job {
   id: string;
   title: string;
@@ -181,9 +183,11 @@ export interface JobPrefs {
   boards: string;
   /** Search again by itself when you open Jobs and the last search is old. Only while Kinviva is open. */
   agent: boolean;
+  /** Resume layout used for the preview and the saved file. */
+  template: TemplateId;
 }
 
-export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", agent: false };
+export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", agent: false, template: "classic" };
 export const SEEN_KEY = "ml.jobs.seen1";
 export const LAST_KEY = "ml.jobs.last1";
 export const AGENT_EVERY_MS = 12 * 3_600_000;
@@ -215,6 +219,7 @@ export function parsePrefs(raw: string | null): JobPrefs {
       remoteOnly: v.remoteOnly === true,
       boards: typeof v.boards === "string" ? v.boards : "",
       agent: v.agent === true,
+      template: TEMPLATES.some((t) => t.id === v.template) ? (v.template as TemplateId) : "classic",
     };
   } catch {
     return { ...DEFAULT_PREFS };

@@ -1,4 +1,5 @@
 import type { JobsReport } from "./jobs";
+import type { ResumeDoc } from "./resume";
 import { invoke } from "@tauri-apps/api/core";
 import type {
   AiAction,
@@ -96,7 +97,8 @@ export const api = {
   jobsCoverLetter: (requestId: string, resume: string, title: string, company: string, description: string) =>
     invoke<string>("jobs_cover_letter", { requestId, resume, title, company, description }),
   letterExport: (text: string, heading: string, format: "docx" | "txt", path: string) => invoke<string>("letter_export", { text, heading, format, path }),
-  resumeExport: (text: string, format: "docx" | "txt", path: string) => invoke<string>("resume_export", { text, format, path }),
+  resumeExport: (doc: ResumeDoc, template: string, format: "docx" | "txt", path: string) => invoke<string>("resume_export", { doc, template, format, path }),
+  resumeReformat: (requestId: string, resume: string) => invoke<string>("resume_reformat", { requestId, resume }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
   quizTopics: () => invoke<TopicScore[]>("quiz_topics"),
   interviewSkills: () => invoke<SkillInfo[]>("interview_skills"),

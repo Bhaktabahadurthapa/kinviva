@@ -385,13 +385,18 @@ pub fn render_docx(d: &Doc) -> Result<Vec<u8>, String> {
     let document = format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body>{body}<w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/><w:pgMar w:top=\"1200\" w:right=\"1200\" w:bottom=\"1200\" w:left=\"1200\"/></w:sectPr></w:body></w:document>"
     );
+    docx_package(&document)
+}
+
+/// Wraps a finished `word/document.xml` in the minimal .docx package.
+pub fn docx_package(document: &str) -> Result<Vec<u8>, String> {
     let types = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>";
     let rels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>";
     let mut buf = std::io::Cursor::new(Vec::new());
     {
         let mut z = zip::ZipWriter::new(&mut buf);
         let opts = zip::write::SimpleFileOptions::default();
-        for (name, data) in [("[Content_Types].xml", types.to_string()), ("_rels/.rels", rels.to_string()), ("word/document.xml", document)] {
+        for (name, data) in [("[Content_Types].xml", types.to_string()), ("_rels/.rels", rels.to_string()), ("word/document.xml", document.to_string())] {
             z.start_file(name, opts).map_err(|e| e.to_string())?;
             z.write_all(data.as_bytes()).map_err(|e| e.to_string())?;
         }

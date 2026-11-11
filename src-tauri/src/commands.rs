@@ -456,13 +456,32 @@ pub fn letter_export(text: String, heading: String, format: String, path: String
     Ok(path)
 }
 
-/// Saves resume text as Word or plain text.
+/// Reformats the resume into the standard US layout without changing what it says. Returns the new text.
 #[tauri::command]
-pub fn resume_export(text: String, format: String, path: String) -> R<String> {
-    if format != "docx" && format != "txt" {
-        return Err("Choose Word or text.".into());
+pub async fn resume_reformat(state: State<'_, AppState>, request_id: String, resume: String) -> R<String> {
+    if resume.trim().is_empty() {
+        return Err("Add your resume first.".into());
     }
-    let bytes = export::render(&crate::jobs::resume_doc(&text), &format)?;
+    let cfg = assistant::llm_config(&state)?;
+    let cancel = tokio_util::sync::CancellationToken::new();
+    state.ai_tasks.lock().unwrap().insert(request_id.clone(), cancel.clone());
+    let result = crate::llm::stream_chat(&cfg, crate::jobs::format_messages(&resume), cancel, |_| {}).await;
+    state.ai_tasks.lock().unwrap().remove(&request_id);
+    match result {
+        Ok(t) if !t.trim().is_empty() => Ok(crate::jobs::split_tailored(&t).0),
+        Ok(_) => Err("The answer engine sent an empty resume. Try again.".into()),
+        Err(crate::llm::LlmError::Cancelled) => Err("Cancelled.".into()),
+        Err(crate::llm::LlmError::Failed(m)) => Err(m),
+    }
+}
+
+/// Saves a resume as Word or plain text in one of the US templates (classic, modern, compact).
+#[tauri::command]
+pub fn resume_export(doc: crate::jobs::RDoc, template: String, format: String, path: String) -> R<String> {
+    if doc.name.trim().is_empty() && doc.sections.is_empty() {
+        return Err("The resume is empty.".into());
+    }
+    let bytes = crate::jobs::render_resume(&doc, &template, &format)?;
     std::fs::write(&path, bytes).map_err(|e| format!("Could not write file: {e}"))?;
     Ok(path)
 }

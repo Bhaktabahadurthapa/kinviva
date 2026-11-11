@@ -1,10 +1,12 @@
 import { open } from "@tauri-apps/plugin-dialog";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
+import { ResumeFormat } from "../components/ResumeFormat";
 import { chooseSavePath, safeName } from "../lib/download";
+import { parseResume, type TemplateId } from "../lib/resume";
 import {
   APPS_KEY, CATEGORIES, LAST_KEY, PREFS_KEY, RESUME_KEY, SEEN_KEY, STATUSES, STATUS_LABEL, ageLabel, agentDue, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen,
-  reminderLabel, reminders, resumeChecks, scoreLabel,
+  reminderLabel, reminders, scoreLabel,
   type Application, type Job, type JobsReport, type Status,
 } from "../lib/jobs";
 
@@ -122,9 +124,26 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
   const exportResume = async (text: string, format: "docx" | "txt", stem: string) => {
     try {
       const path = await chooseSavePath(safeName(stem, "Resume"), format);
-      if (path) setNote(`Saved ${await api.resumeExport(text, format, path)}`);
+      if (path) setNote(`Saved ${await api.resumeExport(parseResume(text), prefs.template, format, path)}`);
     } catch (e) {
       fail(e);
+    }
+  };
+
+  const [formatting, setFormatting] = useState(false);
+  const [before, setBefore] = useState<string | null>(null);
+  const reformat = async () => {
+    if (!resume.trim()) return onError("Add your resume first.");
+    setFormatting(true);
+    try {
+      const text = await api.resumeReformat(crypto.randomUUID(), resume);
+      setBefore(resume);
+      setResume(text);
+      setNote("Reformatted to the US standard. Read it through: names, dates and numbers must match your original.");
+    } catch (e) {
+      if (errorText(e) !== "Cancelled.") fail(e);
+    } finally {
+      setFormatting(false);
     }
   };
 
@@ -139,7 +158,6 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
 
   const setStatus = (id: string, status: Status) => setApps((all) => all.map((a) => (a.id === id ? { ...a, status, updated: Date.now() } : a)));
 
-  const checks = resumeChecks(resume);
   const due = useMemo(() => reminders(apps), [apps]);
 
   return (
@@ -170,11 +188,17 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
           </div>
           <textarea className="jb-text" value={resume} onChange={(e) => setResume(e.target.value)} placeholder={"Paste your resume text here, or open a file.\nPut your name first, then contact details, then headings such as SKILLS, EXPERIENCE and EDUCATION."} aria-label="Your resume" rows={18} />
           {resume.trim() && (
-            <ul className="jb-checks" aria-label="Resume checks">
-              {checks.map((c) => <li key={c.label} className={c.ok ? "ok" : "warn"}>{c.ok ? "✓" : "!"} {c.label}</li>)}
-            </ul>
+            <>
+              <div className="disc-row">
+                <button className="btn btn-primary" onClick={() => void reformat()} disabled={formatting}>{formatting ? "Reformatting…" : "Reformat to US standard"}</button>
+                {before !== null && <button className="btn" onClick={() => (setResume(before), setBefore(null), setNote("Back to your original text."))}>Undo</button>}
+                <button className="btn" onClick={() => void exportResume(resume, "docx", "Resume")}>Save as Word</button>
+                <button className="btn" onClick={() => void exportResume(resume, "txt", "Resume")}>Save as text</button>
+              </div>
+              <p className="hint">Reformatting changes layout only. It sends your resume to your answer engine. The Word file uses the layout you pick below.</p>
+              <ResumeFormat text={resume} template={prefs.template} onTemplate={(t: TemplateId) => setPrefs({ ...prefs, template: t })} />
+            </>
           )}
-          <p className="hint">These checks look for common things applicant tracking systems read. Every employer's system is different, so they are a guide and not a guarantee.</p>
         </section>
       )}
 
@@ -245,7 +269,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                           <button className="btn" onClick={() => (upsert(job, {}, match.score), setNote("Saved to your tracker."))}>Save job</button>
                           <button className="btn" onClick={() => void api.openLink(job.url).catch(fail)}>Open the application page</button>
                         </div>
-                        {tailor?.jobId === job.id && <TailorPanel job={job} master={resume} t={tailor} onChange={(text) => (setTailor({ ...tailor, text }), upsert(job, { resume: text }, match.score))} onExport={exportResume} onApplied={() => (setStatus(job.id, "applied"), setNote("Marked as applied in your tracker."))} onLetter={(letter) => upsert(job, { letter }, match.score)} onNote={setNote} onError={fail} />}
+                        {tailor?.jobId === job.id && <TailorPanel job={job} master={resume} template={prefs.template} onTemplate={(tp) => setPrefs({ ...prefs, template: tp })} t={tailor} onChange={(text) => (setTailor({ ...tailor, text }), upsert(job, { resume: text }, match.score))} onExport={exportResume} onApplied={() => (setStatus(job.id, "applied"), setNote("Marked as applied in your tracker."))} onLetter={(letter) => upsert(job, { letter }, match.score)} onNote={setNote} onError={fail} />}
                         <h3>Job description</h3>
                         <pre className="jb-desc">{job.description}</pre>
                       </div>
@@ -301,7 +325,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
   );
 }
 
-function TailorPanel({ job, master, t, onChange, onExport, onApplied, onLetter, onNote, onError }: { job: Job; master: string; t: { text: string; changes: string[] }; onChange: (s: string) => void; onExport: (text: string, f: "docx" | "txt", stem: string) => void; onApplied: () => void; onLetter: (s: string) => void; onNote: (s: string) => void; onError: (e: unknown) => void }) {
+function TailorPanel({ job, master, template, onTemplate, t, onChange, onExport, onApplied, onLetter, onNote, onError }: { job: Job; master: string; template: TemplateId; onTemplate: (t: TemplateId) => void; t: { text: string; changes: string[] }; onChange: (s: string) => void; onExport: (text: string, f: "docx" | "txt", stem: string) => void; onApplied: () => void; onLetter: (s: string) => void; onNote: (s: string) => void; onError: (e: unknown) => void }) {
   const [letter, setLetter] = useState("");
   const [writing, setWriting] = useState(false);
   const claims = newClaims(master, t.text);
@@ -339,6 +363,10 @@ function TailorPanel({ job, master, t, onChange, onExport, onApplied, onLetter, 
       )}
       {t.changes.length > 0 && <ul className="jb-changes">{t.changes.map((c, i) => <li key={i}>{c}</li>)}</ul>}
       <textarea className="jb-text" value={t.text} onChange={(e) => onChange(e.target.value)} rows={16} aria-label="Tailored resume" />
+      <details>
+        <summary>Layout and preview (US format)</summary>
+        <ResumeFormat text={t.text} template={template} onTemplate={onTemplate} />
+      </details>
       <div className="disc-row">
         <button className="btn btn-primary" onClick={() => onExport(t.text, "docx", `${job.company} ${job.title} resume`)}>Save as Word</button>
         <button className="btn" onClick={() => onExport(t.text, "txt", `${job.company} ${job.title} resume`)}>Save as text</button>
