@@ -8,6 +8,7 @@ import { AiPanel } from "./components/AiPanel";
 import { TranscriptView } from "./components/TranscriptView";
 import { api, errorText, inTauri } from "./lib/api";
 import { ScreenAssist } from "./components/ScreenAssist";
+import { ScriptPrompter } from "./components/ScriptPrompter";
 import { useLive } from "./lib/useLive";
 import { renderMarked, renderTerm } from "./lib/highlight";
 import type { InterviewEvent, InterviewParsed } from "./lib/types";
@@ -92,7 +93,7 @@ export default function Overlay() {
     }
   };
   const [err, setErr] = useState<string | null>(null);
-  const [view, setView] = useState<"assist" | "transcript">("assist");
+  const [view, setView] = useState<"assist" | "transcript" | "script">("assist");
   const st = live.status;
   const running = st?.state === "running";
 
@@ -128,6 +129,9 @@ export default function Overlay() {
           <button className={view === "transcript" ? "active" : ""} onClick={() => setView("transcript")}>
             Transcript
           </button>
+          <button className={view === "script" ? "active" : ""} onClick={() => setView("script")} title="Your own written script, shown a line at a time">
+            Script
+          </button>
           <button title="Open main window" onClick={() => api.showMain()}>
             ⤢
           </button>
@@ -143,7 +147,9 @@ export default function Overlay() {
       )}
       <div className="ov-body">
         <ScreenAssist compact />
-        {view === "transcript" ? (
+        {view === "script" ? (
+          <ScriptPrompter transcript={live.transcript} running={!!running} />
+        ) : view === "transcript" ? (
           <TranscriptView transcript={live.transcript} compact emptyHint={running ? "Listening…" : "No meeting running."} />
         ) : auto !== "off" ? (
           <>
