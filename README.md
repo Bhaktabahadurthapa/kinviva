@@ -135,7 +135,7 @@ DEMO, so you can try the AI actions.
 ## Install as a Mac app
 
 **Just want the app?** **[⬇ Download Kinviva.dmg](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest/download/Kinviva.dmg)**
-(direct download, 7.9 MB, Apple Silicon). Checksums and notes are on the
+(direct download, 15 MB, Apple Silicon). Checksums and notes are on the
 [release page](https://github.com/Bhaktabahadurthapa/kinviva/releases/latest);
 the [website](https://kinviva.tech/) has the same button.
 
@@ -145,7 +145,7 @@ To build it yourself instead, create a normal app you can drag into Applications
 ./scripts/build-mac-app.sh
 ```
 
-This creates `dist-mac/Kinviva.app` and `dist-mac/Kinviva_0.1.5_aarch64.dmg`.
+This creates `dist-mac/Kinviva.app` and `dist-mac/Kinviva_0.1.6_aarch64.dmg`.
 Open the DMG, drag **Kinviva** onto **Applications**, then open it from
 Launchpad. On first start macOS asks for **Microphone** and **Screen & System
 Audio Recording** permission; allow both, then quit and reopen the app once.

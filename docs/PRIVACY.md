@@ -1,6 +1,6 @@
 # Privacy and consent
 
-Plain statement of what Kinviva does with your data. Written from the code as of version 0.1.5. If the code changes, this file changes with it.
+Plain statement of what Kinviva does with your data. Written from the code as of version 0.1.6. If the code changes, this file changes with it.
 
 ## The app (Community Edition)
 
@@ -18,6 +18,9 @@ Plain statement of what Kinviva does with your data. Written from the code as of
 | A screenshot of your main display | The same answer engine | When you press "Read my screen", or automatically if you turn on automatic screen help |
 | Audio | Deepgram, only if you pick it as the speech provider and add your key | While a session is running |
 | A search query | The web search provider you add a key for | Only for answers you request, only if you enabled web search |
+| The question being answered | OpenAlex (research papers, no key) | Only for answers you request, only if you enabled "Back answers with research papers and web sources". The whole meeting is not sent. |
+| Job search words (categories, keywords, company board names) | Remotive, The Muse, Arbeitnow, and Greenhouse or Lever for boards you add | Only when you press Search jobs. Your resume is not sent to these. |
+| Your resume text and one job description | The answer engine you chose | Only when you press Tailor my resume. The resume is otherwise kept only on this computer. |
 | Requests for public RSS feeds and GitHub search, and pictures for items | Public sources (for example the Kubernetes blog, GitHub) | Only if you turn on Discover, then about once an hour while the app is open. Your interests are used to match items on your computer; they are not sent as a profile. |
 | The page of the video you open | The site you chose (for example YouTube) inside an embedded web view; for YouTube the app also asks YouTube's public oEmbed address for the title and channel | When you press Play in Video Assist. That site's own terms and cookies apply. |
 

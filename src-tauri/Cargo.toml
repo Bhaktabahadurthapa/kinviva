@@ -1,6 +1,6 @@
 [package]
 name = "kinviva"
-version = "0.1.5"
+version = "0.1.6"
 description = "Kinviva - local-first desktop meeting assistant"
 edition = "2021"
 license-file = "../LICENSE"
