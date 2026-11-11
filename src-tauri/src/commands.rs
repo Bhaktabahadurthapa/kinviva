@@ -361,6 +361,78 @@ pub fn discover_trends(state: State<AppState>) -> R<Vec<crate::discover::Trend>>
     state.db.discover_trends(now_ms())
 }
 
+/// Opens a source or job link in the default browser. Only plain https links to a named site are allowed
+/// (no addresses, no logins in the link), and only when the user clicks it.
+#[tauri::command]
+pub fn open_link(url: String) -> R<()> {
+    let p = url::Url::parse(url.trim()).map_err(|_| "That link cannot be opened from here.".to_string())?;
+    let host = p.host_str().unwrap_or("");
+    let ok = p.scheme() == "https" && host.contains('.') && p.username().is_empty() && p.password().is_none() && !host.chars().all(|c| c.is_ascii_digit() || c == '.') && !host.contains(':');
+    if !ok || host == "localhost" || host.ends_with(".local") {
+        return Err("That link cannot be opened from here.".into());
+    }
+    #[cfg(target_os = "macos")]
+    let mut cmd = std::process::Command::new("open");
+    #[cfg(target_os = "windows")]
+    let mut cmd = { let mut c = std::process::Command::new("cmd"); c.args(["/C", "start", ""]); c };
+    #[cfg(all(not(target_os = "macos"), not(target_os = "windows")))]
+    let mut cmd = std::process::Command::new("xdg-open");
+    cmd.arg(p.as_str()).spawn().map(|_| ()).map_err(|e| format!("Could not open the link: {e}"))
+}
+
+/// Reads the text of a resume file (PDF, Word, text) so the user can check it before using it.
+#[tauri::command]
+pub fn resume_read(path: String) -> R<String> {
+    let x = crate::docs::extract(std::path::Path::new(&path))?;
+    Ok(x.text.chars().take(30000).collect())
+}
+
+/// Finds open roles in the public job feeds for the chosen categories.
+#[tauri::command]
+pub async fn jobs_search(query: crate::jobs::JobsQuery) -> R<crate::jobs::JobsReport> {
+    if query.categories.is_empty() && query.keywords.trim().is_empty() && query.boards.is_empty() {
+        return Err("Choose at least one category, type a keyword, or add a company board.".into());
+    }
+    Ok(crate::jobs::search(&query).await)
+}
+
+/// Rewrites the user's resume for one job using only what the resume already says.
+/// Returns the new resume text and the model's short list of changes.
+#[tauri::command]
+pub async fn jobs_tailor(state: State<'_, AppState>, request_id: String, resume: String, title: String, company: String, description: String) -> R<(String, Vec<String>)> {
+    if resume.trim().is_empty() {
+        return Err("Add your resume first.".into());
+    }
+    if description.trim().is_empty() {
+        return Err("This job has no description to match against.".into());
+    }
+    let cfg = assistant::llm_config(&state)?;
+    let messages = crate::jobs::tailor_messages(&resume, &title, &company, &description);
+    let cancel = tokio_util::sync::CancellationToken::new();
+    state.ai_tasks.lock().unwrap().insert(request_id.clone(), cancel.clone());
+    let result = crate::llm::stream_chat(&cfg, messages, cancel, |_| {}).await;
+    state.ai_tasks.lock().unwrap().remove(&request_id);
+    match result {
+        Ok(text) => {
+            let (r, c) = crate::jobs::split_tailored(&text);
+            if r.trim().is_empty() { Err("The answer engine sent an empty resume. Try again.".into()) } else { Ok((r, c)) }
+        }
+        Err(crate::llm::LlmError::Cancelled) => Err("Cancelled.".into()),
+        Err(crate::llm::LlmError::Failed(m)) => Err(m),
+    }
+}
+
+/// Saves resume text as Word or plain text.
+#[tauri::command]
+pub fn resume_export(text: String, format: String, path: String) -> R<String> {
+    if format != "docx" && format != "txt" {
+        return Err("Choose Word or text.".into());
+    }
+    let bytes = export::render(&crate::jobs::resume_doc(&text), &format)?;
+    std::fs::write(&path, bytes).map_err(|e| format!("Could not write file: {e}"))?;
+    Ok(path)
+}
+
 /// Opens a link from Discover in the default browser. Only links that are stored in Discover can be opened.
 #[tauri::command]
 pub fn open_external(state: State<AppState>, url: String) -> R<()> {

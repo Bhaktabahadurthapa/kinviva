@@ -1,3 +1,4 @@
+import type { JobsReport } from "./jobs";
 import { invoke } from "@tauri-apps/api/core";
 import type {
   AiAction,
@@ -87,6 +88,12 @@ export const api = {
   discoverList: (kind?: string, savedOnly = false) => invoke<[DiscoverItem[], number | null]>("discover_list", { kind: kind ?? null, savedOnly }),
   discoverMark: (id: string, field: "read" | "saved", value: boolean) => invoke<void>("discover_mark", { id, field, value }),
   discoverTrends: () => invoke<Trend[]>("discover_trends"),
+  openLink: (url: string) => invoke<void>("open_link", { url }),
+  resumeRead: (path: string) => invoke<string>("resume_read", { path }),
+  jobsSearch: (query: { categories: string[]; keywords: string; remote_only: boolean; boards: string[] }) => invoke<JobsReport>("jobs_search", { query }),
+  jobsTailor: (requestId: string, resume: string, title: string, company: string, description: string) =>
+    invoke<[string, string[]]>("jobs_tailor", { requestId, resume, title, company, description }),
+  resumeExport: (text: string, format: "docx" | "txt", path: string) => invoke<string>("resume_export", { text, format, path }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
   quizTopics: () => invoke<TopicScore[]>("quiz_topics"),
   interviewSkills: () => invoke<SkillInfo[]>("interview_skills"),

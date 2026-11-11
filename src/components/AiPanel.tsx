@@ -99,7 +99,7 @@ export function AiPanel({
               {slot.web!.map((w, i) => (
                 <blockquote key={i}>
                   <cite>
-                    <button className="link-btn" onClick={() => void api.openExternal(w.url).catch(() => undefined)} title={w.url}>
+                    <button className="link-btn" onClick={() => void api.openLink(w.url).catch(() => undefined)} title={w.url}>
                       {w.title}
                     </button>
                   </cite>

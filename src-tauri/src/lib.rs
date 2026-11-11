@@ -8,6 +8,7 @@ pub mod commands;
 pub mod db;
 pub mod demo;
 pub mod discover;
+pub mod jobs;
 pub mod edition;
 pub mod migrate;
 pub mod docs;
@@ -240,6 +241,11 @@ pub fn run() {
             commands::discover_mark,
             commands::discover_trends,
             commands::open_external,
+            commands::open_link,
+            commands::resume_read,
+            commands::jobs_search,
+            commands::jobs_tailor,
+            commands::resume_export,
             commands::quiz_topics,
             commands::global_search,
             commands::architecture_save,

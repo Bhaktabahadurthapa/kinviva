@@ -1,0 +1,285 @@
+import { open } from "@tauri-apps/plugin-dialog";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { api, errorText } from "../lib/api";
+import { chooseSavePath, safeName } from "../lib/download";
+import {
+  APPS_KEY, CATEGORIES, PREFS_KEY, RESUME_KEY, STATUSES, STATUS_LABEL, ageLabel, matchJob, newClaims, parseApps, parseBoards, parsePrefs, resumeChecks, scoreLabel,
+  type Application, type Job, type JobsReport, type Status,
+} from "../lib/jobs";
+
+type Section = "resume" | "find" | "tracker";
+const SECTIONS: [Section, string][] = [["resume", "My resume"], ["find", "Find jobs"], ["tracker", "Tracker"]];
+
+function read(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function write(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* storage unavailable: it still works until the window closes */
+  }
+}
+
+/** Find jobs, see how well your resume fits, tailor it to one job from what it already says, and track where you applied. */
+export default function JobsView({ onError }: { onError: (m: string) => void }) {
+  const [section, setSection] = useState<Section>("resume");
+  const [resume, setResume] = useState(() => read(RESUME_KEY) ?? "");
+  const [apps, setApps] = useState<Application[]>(() => parseApps(read(APPS_KEY)));
+  const [prefs, setPrefs] = useState(() => parsePrefs(read(PREFS_KEY)));
+  const [report, setReport] = useState<JobsReport | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [sort, setSort] = useState<"match" | "new">("match");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [tailor, setTailor] = useState<{ jobId: string; text: string; changes: string[] } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const reqRef = useRef<string | null>(null);
+
+  useEffect(() => write(RESUME_KEY, resume), [resume]);
+  useEffect(() => write(APPS_KEY, JSON.stringify(apps)), [apps]);
+  useEffect(() => write(PREFS_KEY, JSON.stringify(prefs)), [prefs]);
+
+  const fail = (e: unknown) => onError(errorText(e));
+  const scored = useMemo(
+    () => (report?.jobs ?? []).map((j) => ({ job: j, match: matchJob(resume, j) })).sort((a, b) => (sort === "match" ? b.match.score - a.match.score : (b.job.posted_ms ?? 0) - (a.job.posted_ms ?? 0))),
+    [report, resume, sort],
+  );
+
+  const pickFile = async () => {
+    try {
+      const picked = await open({ multiple: false, filters: [{ name: "Resume", extensions: ["pdf", "docx", "txt", "md"] }] });
+      if (typeof picked !== "string") return;
+      setResume(await api.resumeRead(picked));
+      setNote("Read from your file. Check the text below and fix anything the reader got wrong, especially names and dates.");
+    } catch (e) {
+      fail(e);
+    }
+  };
+
+  const search = async () => {
+    setSearching(true);
+    setReport(null);
+    setOpenId(null);
+    try {
+      setReport(await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, boards: parseBoards(prefs.boards) }));
+    } catch (e) {
+      fail(e);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const upsert = (job: Job, patch: Partial<Application>, score: number) =>
+    setApps((all) => {
+      const old = all.find((a) => a.id === job.id);
+      const next: Application = { id: job.id, title: job.title, company: job.company, url: job.url, status: "saved", score, notes: "", updated: Date.now(), ...old, ...patch };
+      return [next, ...all.filter((a) => a.id !== job.id)];
+    });
+
+  const doTailor = async (job: Job, score: number) => {
+    if (!resume.trim()) return onError("Add your resume first (My resume).");
+    setBusy(true);
+    setTailor(null);
+    const id = crypto.randomUUID();
+    reqRef.current = id;
+    try {
+      const [text, changes] = await api.jobsTailor(id, resume, job.title, job.company, job.description);
+      setTailor({ jobId: job.id, text, changes });
+      upsert(job, { status: "preparing", resume: text }, score);
+    } catch (e) {
+      if (errorText(e) !== "Cancelled.") fail(e);
+    } finally {
+      reqRef.current = null;
+      setBusy(false);
+    }
+  };
+
+  const exportResume = async (text: string, format: "docx" | "txt", stem: string) => {
+    try {
+      const path = await chooseSavePath(safeName(stem, "Resume"), format);
+      if (path) setNote(`Saved ${await api.resumeExport(text, format, path)}`);
+    } catch (e) {
+      fail(e);
+    }
+  };
+
+  const setStatus = (id: string, status: Status) => setApps((all) => all.map((a) => (a.id === id ? { ...a, status, updated: Date.now() } : a)));
+
+  const checks = resumeChecks(resume);
+
+  return (
+    <div className="disc jobs">
+      <header className="disc-head">
+        <div>
+          <h1>Jobs & Resume</h1>
+          <p className="hint">Find open roles, see how well your resume fits, and tailor it to one job using only what it already says. Your resume stays on this computer. It goes to your answer engine only when you press Tailor.</p>
+        </div>
+      </header>
+      <div className="seg" role="tablist" aria-label="Jobs sections">
+        {SECTIONS.map(([id, label]) => (
+          <button key={id} role="tab" aria-selected={section === id} className={section === id ? "active" : ""} onClick={() => setSection(id)}>
+            {label}
+            {id === "tracker" && apps.length > 0 ? ` (${apps.length})` : ""}
+          </button>
+        ))}
+      </div>
+      {note && <p className="hint" role="status">{note}</p>}
+
+      {section === "resume" && (
+        <section className="dash-card">
+          <header><h2>Your core resume</h2></header>
+          <p className="hint">This is the one source of truth. Every tailored version is built only from it.</p>
+          <div className="disc-row">
+            <button className="btn btn-primary" onClick={() => void pickFile()}>Open a resume file (PDF, Word, text)</button>
+            {resume && <button className="btn btn-ghost btn-sm" onClick={() => (setResume(""), setNote(""))}>Clear</button>}
+          </div>
+          <textarea className="jb-text" value={resume} onChange={(e) => setResume(e.target.value)} placeholder={"Paste your resume text here, or open a file.\nPut your name first, then contact details, then headings such as SKILLS, EXPERIENCE and EDUCATION."} aria-label="Your resume" rows={18} />
+          {resume.trim() && (
+            <ul className="jb-checks" aria-label="Resume checks">
+              {checks.map((c) => <li key={c.label} className={c.ok ? "ok" : "warn"}>{c.ok ? "✓" : "!"} {c.label}</li>)}
+            </ul>
+          )}
+          <p className="hint">These checks look for common things applicant tracking systems read. Every employer's system is different, so they are a guide and not a guarantee.</p>
+        </section>
+      )}
+
+      {section === "find" && (
+        <>
+          <section className="dash-card">
+            <header><h2>What are you looking for?</h2></header>
+            <div className="disc-chips" role="group" aria-label="Categories">
+              {CATEGORIES.map((c) => (
+                <button key={c.id} className={`chip ${prefs.categories.includes(c.id) ? "on" : ""}`} aria-pressed={prefs.categories.includes(c.id)} onClick={() => setPrefs({ ...prefs, categories: prefs.categories.includes(c.id) ? prefs.categories.filter((x) => x !== c.id) : [...prefs.categories, c.id] })}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <div className="disc-row">
+              <input value={prefs.keywords} onChange={(e) => setPrefs({ ...prefs, keywords: e.target.value })} placeholder="Keywords, separated by commas (for example: kubernetes, platform)" aria-label="Keywords" />
+              <label className="check"><input type="checkbox" checked={prefs.remoteOnly} onChange={(e) => setPrefs({ ...prefs, remoteOnly: e.target.checked })} /> Remote only</label>
+            </div>
+            <details>
+              <summary>Add company job boards (optional)</summary>
+              <p className="hint">Type one per line, like <code>greenhouse:stripe</code> or <code>lever:netflix</code>. The name is the part of the company's careers address after the site name.</p>
+              <textarea className="jb-boards" value={prefs.boards} onChange={(e) => setPrefs({ ...prefs, boards: e.target.value })} rows={3} aria-label="Company boards" />
+            </details>
+            <div className="disc-row">
+              <button className="btn btn-primary" onClick={() => void search()} disabled={searching}>{searching ? "Searching…" : "Search jobs"}</button>
+              <span className="hint">Looks only at public job feeds that allow it. It does not use LinkedIn or Indeed.</span>
+            </div>
+            {!resume.trim() && <p className="hint">Add your resume under My resume to see a match for each job.</p>}
+          </section>
+
+          {report && (
+            <>
+              {report.errors.length > 0 && <p className="hint jb-errors">Some sources did not answer: {report.errors.join("; ")}.</p>}
+              <div className="disc-row">
+                <strong>{scored.length} job{scored.length === 1 ? "" : "s"}</strong>
+                <span className="spacer" />
+                <div className="seg" aria-label="Sort">
+                  <button className={sort === "match" ? "active" : ""} onClick={() => setSort("match")}>Best match</button>
+                  <button className={sort === "new" ? "active" : ""} onClick={() => setSort("new")}>Newest</button>
+                </div>
+              </div>
+              {scored.length === 0 && <p className="hint">No jobs matched. Try other categories or fewer keywords.</p>}
+              <div className="jb-list">
+                {scored.map(({ job, match }) => (
+                  <div key={job.id} className={`dash-card jb-job ${openId === job.id ? "open" : ""}`}>
+                    <button className="jb-head" onClick={() => (setOpenId(openId === job.id ? null : job.id), setTailor(null))} aria-expanded={openId === job.id}>
+                      <span className={`jb-score s${match.score >= 75 ? "hi" : match.score >= 50 ? "mid" : "lo"}`} title={`${scoreLabel(match.score)} (estimate)`}>{resume.trim() ? match.score : "–"}</span>
+                      <span className="jb-main">
+                        <strong>{job.title}</strong>
+                        <span className="hint">{[job.company, job.location, job.remote ? "Remote" : "", ageLabel(job.posted_ms), job.source].filter(Boolean).join(" · ")}</span>
+                      </span>
+                    </button>
+                    {openId === job.id && (
+                      <div className="jb-detail">
+                        {resume.trim() && (
+                          <>
+                            <p><strong>{scoreLabel(match.score)}</strong> <span className="hint">An estimate from {match.basis === "skills" ? "the skills the posting names" : "the words the posting repeats"}, not a prediction of any employer's system.</span></p>
+                            {match.matched.length > 0 && <div className="disc-chips" aria-label="In your resume">{match.matched.map((m) => <span key={m} className="chip on">{m}</span>)}</div>}
+                            {match.missing.length > 0 && <><p className="hint">Not in your resume. Add them only if they are true for you:</p><div className="disc-chips" aria-label="Not in your resume">{match.missing.map((m) => <span key={m} className="chip jb-miss">{m}</span>)}</div></>}
+                          </>
+                        )}
+                        <div className="disc-row">
+                          <button className="btn btn-primary" onClick={() => void doTailor(job, match.score)} disabled={busy}>{busy ? "Tailoring…" : "Tailor my resume and prepare"}</button>
+                          {busy && reqRef.current && <button className="btn btn-sm" onClick={() => void api.aiCancel(reqRef.current!).catch(() => undefined)}>Cancel</button>}
+                          <button className="btn" onClick={() => (upsert(job, {}, match.score), setNote("Saved to your tracker."))}>Save job</button>
+                          <button className="btn" onClick={() => void api.openLink(job.url).catch(fail)}>Open the application page</button>
+                        </div>
+                        {tailor?.jobId === job.id && <TailorPanel job={job} master={resume} t={tailor} onChange={(text) => (setTailor({ ...tailor, text }), upsert(job, { resume: text }, match.score))} onExport={exportResume} onApplied={() => (setStatus(job.id, "applied"), setNote("Marked as applied in your tracker."))} />}
+                        <h3>Job description</h3>
+                        <pre className="jb-desc">{job.description}</pre>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {section === "tracker" && (
+        <section className="jb-board">
+          {apps.length === 0 && <p className="hint">Nothing here yet. Save a job or tailor a resume and it will appear here.</p>}
+          {STATUSES.map((st) => {
+            const col = apps.filter((a) => a.status === st);
+            return col.length || apps.length ? (
+              <div key={st} className="jb-col">
+                <h3>{STATUS_LABEL[st]} <span className="hint">{col.length}</span></h3>
+                {col.map((a) => (
+                  <div key={a.id} className="dash-card jb-card">
+                    <strong>{a.title}</strong>
+                    <span className="hint">{a.company}{a.score ? ` · match ${a.score}` : ""}</span>
+                    <select value={a.status} onChange={(e) => setStatus(a.id, e.target.value as Status)} aria-label={`Status of ${a.title}`}>
+                      {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                    </select>
+                    <input value={a.notes} placeholder="Notes" aria-label={`Notes for ${a.title}`} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, notes: e.target.value } : x)))} />
+                    <div className="disc-row">
+                      {a.url && <button className="btn btn-sm" onClick={() => void api.openLink(a.url).catch(fail)}>Open page</button>}
+                      {a.resume && <button className="btn btn-sm" onClick={() => void exportResume(a.resume!, "docx", `${a.title} resume`)}>Resume (Word)</button>}
+                      <button className="btn btn-ghost btn-sm" onClick={() => setApps((all) => all.filter((x) => x.id !== a.id))}>Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null;
+          })}
+        </section>
+      )}
+    </div>
+  );
+}
+
+function TailorPanel({ job, master, t, onChange, onExport, onApplied }: { job: Job; master: string; t: { text: string; changes: string[] }; onChange: (s: string) => void; onExport: (text: string, f: "docx" | "txt", stem: string) => void; onApplied: () => void }) {
+  const claims = newClaims(master, t.text);
+  const after = matchJob(t.text, job);
+  const before = matchJob(master, job);
+  return (
+    <div className="jb-tailor">
+      <h3>Your resume for this job</h3>
+      <p className="hint">Match estimate: {before.score} before, {after.score} after. Read it all and fix anything wrong before you send it.</p>
+      {(claims.skills.length > 0 || claims.numbers.length > 0) && (
+        <div className="banner banner-bad" role="alert">
+          This version mentions things your own resume does not: {[...claims.skills, ...claims.numbers].join(", ")}. Remove them unless they are true.
+        </div>
+      )}
+      {t.changes.length > 0 && <ul className="jb-changes">{t.changes.map((c, i) => <li key={i}>{c}</li>)}</ul>}
+      <textarea className="jb-text" value={t.text} onChange={(e) => onChange(e.target.value)} rows={16} aria-label="Tailored resume" />
+      <div className="disc-row">
+        <button className="btn btn-primary" onClick={() => onExport(t.text, "docx", `${job.company} ${job.title} resume`)}>Save as Word</button>
+        <button className="btn" onClick={() => onExport(t.text, "txt", `${job.company} ${job.title} resume`)}>Save as text</button>
+        <button className="btn" onClick={() => void navigator.clipboard?.writeText(t.text).catch(() => undefined)}>Copy</button>
+        <button className="btn" onClick={() => void api.openLink(job.url).catch(() => undefined)}>Open the application page</button>
+        <button className="btn btn-ghost" onClick={onApplied}>I applied</button>
+      </div>
+      <p className="hint">Kinviva does not send applications for you. You press Submit on the employer's page. That keeps you in control of what is sent.</p>
+    </div>
+  );
+}

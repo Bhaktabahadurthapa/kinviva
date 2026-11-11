@@ -2549,3 +2549,31 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--signal, #6d5efc); text-align: left; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .link-btn:hover { text-decoration-thickness: 2px; }
 .panel-meta details { margin-top: 6px; }
+
+/* Jobs & Resume */
+.jobs .jb-text, .jobs .jb-boards { width: 100%; font-family: var(--f-mono); font-size: 13px; line-height: 1.5; resize: vertical; }
+.jb-checks { list-style: none; margin: var(--s-2) 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 16px; font-size: 13px; }
+.jb-checks .ok { color: var(--c-text-2); }
+.jb-checks .warn { color: var(--c-warn, #b45309); font-weight: 600; }
+.jb-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.jb-job { padding: 0; }
+.jb-head { display: flex; gap: var(--s-3); align-items: center; width: 100%; text-align: left; background: none; border: 0; padding: var(--s-3) var(--s-4); cursor: pointer; color: inherit; font: inherit; }
+.jb-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.jb-score { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; border: 2px solid var(--c-line-strong); }
+.jb-score.shi { border-color: #16a34a; color: #15803d; }
+.jb-score.smid { border-color: #d97706; color: #b45309; }
+.jb-score.slo { border-color: var(--c-line-strong); color: var(--c-text-3); }
+.jb-detail { padding: 0 var(--s-4) var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); }
+.jb-detail h3 { font-size: 13px; margin: var(--s-2) 0 0; }
+.jb-desc { white-space: pre-wrap; font-family: var(--f-ui); font-size: 13px; line-height: 1.55; max-height: 280px; overflow: auto; margin: 0; padding: var(--s-2); background: var(--c-sunken); border-radius: 8px; }
+.jb-miss { border-style: dashed; }
+.jb-changes { margin: 0; padding-left: 18px; font-size: 13px; }
+.jb-tailor { display: flex; flex-direction: column; gap: var(--s-2); border-top: 1px solid var(--c-line); padding-top: var(--s-2); }
+.jb-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--s-3); align-items: start; }
+.jb-col h3 { font-size: 13px; margin: 0 0 var(--s-2); }
+.jb-card { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--s-2); padding: var(--s-3); }
+.jb-card input, .jb-card select { width: 100%; }
+.jb-errors { color: var(--c-warn, #b45309); }
+.jobs .disc-row .check input { flex: none; min-width: 0; width: auto; }
+.jobs .disc-row .spacer { flex: 1; }
+.jobs .jb-card .disc-row input { min-width: 0; }
