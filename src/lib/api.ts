@@ -93,6 +93,9 @@ export const api = {
   jobsSearch: (query: { categories: string[]; keywords: string; remote_only: boolean; boards: string[] }) => invoke<JobsReport>("jobs_search", { query }),
   jobsTailor: (requestId: string, resume: string, title: string, company: string, description: string) =>
     invoke<[string, string[]]>("jobs_tailor", { requestId, resume, title, company, description }),
+  jobsCoverLetter: (requestId: string, resume: string, title: string, company: string, description: string) =>
+    invoke<string>("jobs_cover_letter", { requestId, resume, title, company, description }),
+  letterExport: (text: string, heading: string, format: "docx" | "txt", path: string) => invoke<string>("letter_export", { text, heading, format, path }),
   resumeExport: (text: string, format: "docx" | "txt", path: string) => invoke<string>("resume_export", { text, format, path }),
   openExternal: (url: string) => invoke<void>("open_external", { url }),
   quizTopics: () => invoke<TopicScore[]>("quiz_topics"),

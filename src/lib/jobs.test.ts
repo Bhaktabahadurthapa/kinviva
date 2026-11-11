@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ageLabel, extractSkills, matchJob, newClaims, parseApps, parseBoards, parsePrefs, resumeChecks, scoreLabel } from "./jobs";
+import { agentDue, ageLabel, extractSkills, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen, reminderLabel, reminders, resumeChecks, scoreLabel, type Application, type Job } from "./jobs";
 
 const RESUME = `Jane Doe
 jane@example.com | +1 512 555 0100
@@ -88,5 +88,49 @@ describe("saved state", () => {
     const now = Date.parse("2026-11-10T00:00:00Z");
     expect(ageLabel(now - 3 * 86_400_000, now)).toBe("3 days ago");
     expect(ageLabel(null, now)).toBe("");
+  });
+});
+
+const J = (id: string): Job => ({ id, title: id, company: "", location: "", url: "https://x.io", description: "d", source: "s", posted_ms: null, remote: false });
+const A = (over: Partial<Application>): Application => ({ id: "a", title: "SRE", company: "Acme", url: "", status: "applied", score: 0, notes: "", updated: 0, ...over });
+
+describe("job agent", () => {
+  it("marks only jobs not seen before, and nothing on the first search", () => {
+    expect([...newJobIds([J("a"), J("b")], ["a"], true)]).toEqual(["b"]);
+    expect(newJobIds([J("a")], [], false).size).toBe(0);
+    expect(mergeSeen(["a"], [J("b"), J("a")])).toEqual(["b", "a"]);
+    expect(parseSeen("nope")).toEqual([]);
+    expect(parseSeen('["x",1]')).toEqual(["x"]);
+  });
+  it("searches by itself only when on and the last search is old", () => {
+    const now = 1_000_000_000_000;
+    expect(agentDue(false, null, now)).toBe(false);
+    expect(agentDue(true, null, now)).toBe(true);
+    expect(agentDue(true, now - 3_600_000, now)).toBe(false);
+    expect(agentDue(true, now - 13 * 3_600_000, now)).toBe(true);
+    expect(parsePrefs(JSON.stringify({ agent: true })).agent).toBe(true);
+    expect(parsePrefs(null).agent).toBe(false);
+  });
+});
+
+describe("reminders", () => {
+  const now = Date.parse("2026-11-10T12:00:00Z");
+  it("lists overdue and soon-due interviews and follow-ups, oldest first, and skips closed ones", () => {
+    const r = reminders([
+      A({ id: "1", interview: "2026-11-12" }),
+      A({ id: "2", followUp: "2026-11-08" }),
+      A({ id: "3", interview: "2026-12-30" }),
+      A({ id: "4", status: "rejected", followUp: "2026-11-09" }),
+      A({ id: "5", status: "offer", interview: "2026-11-11" }),
+    ], now);
+    expect(r.map((x) => [x.id, x.kind])).toEqual([["2", "follow-up"], ["1", "interview"]]);
+    expect(reminderLabel(r[0])).toBe("Follow up 2 days overdue");
+    expect(reminderLabel(r[1])).toBe("Interview in 2 days");
+  });
+  it("reads saved dates safely", () => {
+    const [a] = parseApps(JSON.stringify([{ id: "a", title: "T", status: "applied", interview: "2026-11-12", followUp: "soon", letter: "Dear" }]));
+    expect(a.interview).toBe("2026-11-12");
+    expect(a.followUp).toBeUndefined();
+    expect(a.letter).toBe("Dear");
   });
 });

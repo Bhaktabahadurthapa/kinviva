@@ -35,6 +35,8 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !("__TAURI_INTERNALS
     ] },
     jobs_tailor: ["Jane Doe\njane@example.com | +1 512 555 0100\nSUMMARY\nCloud engineer with AWS and Kubernetes, focused on CI/CD and reliability.\nSKILLS\nAWS, Kubernetes, Terraform, CI/CD, Python, Prometheus, Docker\nEXPERIENCE\nSRE, Acme, 2020-2024\n- Cut deploy time by 40% using CI/CD pipelines\nEDUCATION\nBSc Computer Science", ["Moved Kubernetes and Terraform to the front of Skills", "Aimed the summary at CI/CD and reliability"]],
     resume_export: "/tmp/resume.docx",
+    jobs_cover_letter: "Dear Hiring Team,\n\nI am a cloud engineer with AWS and Kubernetes experience. At Acme I cut deploy time by 40% using CI/CD pipelines.\n\nSincerely,\nJane Doe",
+    letter_export: "/tmp/letter.docx",
     interview_saved_count: 3,
     list_courses: [{ id: "os", name: "Operating Systems", code: "CS350", term: "Fall", created_at: 1, resources: 2 }],
     dashboard_stats: { sessions: 12, interviews: 7, notes: 5, diagrams: 3, whiteboards: 2, charts: 1, documents: 4, incidents: 0, learning_total: 6, learning_done: 2, learning_doing: 1, saved_articles: 0, sessions_week: 3, notes_week: 2, diagrams_week: 1, whiteboards_week: 1,

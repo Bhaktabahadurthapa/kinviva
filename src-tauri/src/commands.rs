@@ -422,6 +422,40 @@ pub async fn jobs_tailor(state: State<'_, AppState>, request_id: String, resume:
     }
 }
 
+/// Writes a short cover letter from the resume only. Returns the letter text.
+#[tauri::command]
+pub async fn jobs_cover_letter(state: State<'_, AppState>, request_id: String, resume: String, title: String, company: String, description: String) -> R<String> {
+    if resume.trim().is_empty() {
+        return Err("Add your resume first.".into());
+    }
+    if description.trim().is_empty() {
+        return Err("This job has no description to write for.".into());
+    }
+    let cfg = assistant::llm_config(&state)?;
+    let messages = crate::jobs::letter_messages(&resume, &title, &company, &description);
+    let cancel = tokio_util::sync::CancellationToken::new();
+    state.ai_tasks.lock().unwrap().insert(request_id.clone(), cancel.clone());
+    let result = crate::llm::stream_chat(&cfg, messages, cancel, |_| {}).await;
+    state.ai_tasks.lock().unwrap().remove(&request_id);
+    match result {
+        Ok(t) if !t.trim().is_empty() => Ok(t.trim().trim_start_matches("```").trim_end_matches("```").trim().to_string()),
+        Ok(_) => Err("The answer engine sent an empty letter. Try again.".into()),
+        Err(crate::llm::LlmError::Cancelled) => Err("Cancelled.".into()),
+        Err(crate::llm::LlmError::Failed(m)) => Err(m),
+    }
+}
+
+/// Saves a cover letter as Word or plain text.
+#[tauri::command]
+pub fn letter_export(text: String, heading: String, format: String, path: String) -> R<String> {
+    if format != "docx" && format != "txt" {
+        return Err("Choose Word or text.".into());
+    }
+    let bytes = export::render(&crate::jobs::plain_doc("Cover letter", &heading, &text), &format)?;
+    std::fs::write(&path, bytes).map_err(|e| format!("Could not write file: {e}"))?;
+    Ok(path)
+}
+
 /// Saves resume text as Word or plain text.
 #[tauri::command]
 pub fn resume_export(text: String, format: String, path: String) -> R<String> {

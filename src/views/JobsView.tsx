@@ -1,9 +1,10 @@
 import { open } from "@tauri-apps/plugin-dialog";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
 import { chooseSavePath, safeName } from "../lib/download";
 import {
-  APPS_KEY, CATEGORIES, PREFS_KEY, RESUME_KEY, STATUSES, STATUS_LABEL, ageLabel, matchJob, newClaims, parseApps, parseBoards, parsePrefs, resumeChecks, scoreLabel,
+  APPS_KEY, CATEGORIES, LAST_KEY, PREFS_KEY, RESUME_KEY, SEEN_KEY, STATUSES, STATUS_LABEL, ageLabel, agentDue, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen,
+  reminderLabel, reminders, resumeChecks, scoreLabel,
   type Application, type Job, type JobsReport, type Status,
 } from "../lib/jobs";
 
@@ -38,6 +39,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
   const [tailor, setTailor] = useState<{ jobId: string; text: string; changes: string[] } | null>(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [fresh, setFresh] = useState<Set<string>>(new Set());
   const reqRef = useRef<string | null>(null);
 
   useEffect(() => write(RESUME_KEY, resume), [resume]);
@@ -61,18 +63,36 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
     }
   };
 
-  const search = async () => {
+  const search = useCallback(async () => {
     setSearching(true);
     setReport(null);
     setOpenId(null);
     try {
-      setReport(await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, boards: parseBoards(prefs.boards) }));
+      const r = await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, boards: parseBoards(prefs.boards) });
+      const seen = parseSeen(read(SEEN_KEY));
+      const last = read(LAST_KEY);
+      setFresh(newJobIds(r.jobs, seen, last !== null));
+      write(SEEN_KEY, JSON.stringify(mergeSeen(seen, r.jobs)));
+      write(LAST_KEY, String(Date.now()));
+      setReport(r);
     } catch (e) {
-      fail(e);
+      onError(errorText(e));
     } finally {
       setSearching(false);
     }
-  };
+  }, [prefs, onError]);
+
+  // The job agent: search again by itself when it is on and the last search is old. Only while Kinviva is open.
+  const agentRan = useRef(false);
+  useEffect(() => {
+    if (agentRan.current) return;
+    agentRan.current = true;
+    const last = Number(read(LAST_KEY));
+    if (agentDue(prefs.agent, last > 0 ? last : null) && (prefs.categories.length > 0 || prefs.keywords.trim() || prefs.boards.trim())) {
+      setSection("find");
+      void search();
+    }
+  }, [prefs, search]);
 
   const upsert = (job: Job, patch: Partial<Application>, score: number) =>
     setApps((all) => {
@@ -108,9 +128,19 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
     }
   };
 
+  const exportLetter = async (a: Application) => {
+    try {
+      const path = await chooseSavePath(safeName(`${a.company} ${a.title} cover letter`, "Cover letter"), "docx");
+      if (path) setNote(`Saved ${await api.letterExport(a.letter ?? "", `${a.title}, ${a.company}`, "docx", path)}`);
+    } catch (e) {
+      fail(e);
+    }
+  };
+
   const setStatus = (id: string, status: Status) => setApps((all) => all.map((a) => (a.id === id ? { ...a, status, updated: Date.now() } : a)));
 
   const checks = resumeChecks(resume);
+  const due = useMemo(() => reminders(apps), [apps]);
 
   return (
     <div className="disc jobs">
@@ -163,9 +193,11 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
               <input value={prefs.keywords} onChange={(e) => setPrefs({ ...prefs, keywords: e.target.value })} placeholder="Keywords, separated by commas (for example: kubernetes, platform)" aria-label="Keywords" />
               <label className="check"><input type="checkbox" checked={prefs.remoteOnly} onChange={(e) => setPrefs({ ...prefs, remoteOnly: e.target.checked })} /> Remote only</label>
             </div>
+            <label className="check"><input type="checkbox" checked={prefs.agent} onChange={(e) => setPrefs({ ...prefs, agent: e.target.checked })} /> Job agent: search again by itself when I open Jobs, about every 12 hours</label>
+            {prefs.agent && <p className="hint">It runs only while Kinviva is open, uses the choices above, and marks jobs that are new since your last search. It never applies for you.</p>}
             <details>
               <summary>Add company job boards (optional)</summary>
-              <p className="hint">Type one per line, like <code>greenhouse:stripe</code> or <code>lever:netflix</code>. The name is the part of the company's careers address after the site name.</p>
+              <p className="hint">Type one per line, like <code>greenhouse:stripe</code> or <code>lever:netflix</code> or <code>ashby:linear</code>. The name is the part of the company's careers address after the site name.</p>
               <textarea className="jb-boards" value={prefs.boards} onChange={(e) => setPrefs({ ...prefs, boards: e.target.value })} rows={3} aria-label="Company boards" />
             </details>
             <div className="disc-row">
@@ -180,6 +212,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
               {report.errors.length > 0 && <p className="hint jb-errors">Some sources did not answer: {report.errors.join("; ")}.</p>}
               <div className="disc-row">
                 <strong>{scored.length} job{scored.length === 1 ? "" : "s"}</strong>
+                {fresh.size > 0 && <span className="chip on">{fresh.size} new since your last search</span>}
                 <span className="spacer" />
                 <div className="seg" aria-label="Sort">
                   <button className={sort === "match" ? "active" : ""} onClick={() => setSort("match")}>Best match</button>
@@ -193,7 +226,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                     <button className="jb-head" onClick={() => (setOpenId(openId === job.id ? null : job.id), setTailor(null))} aria-expanded={openId === job.id}>
                       <span className={`jb-score s${match.score >= 75 ? "hi" : match.score >= 50 ? "mid" : "lo"}`} title={`${scoreLabel(match.score)} (estimate)`}>{resume.trim() ? match.score : "–"}</span>
                       <span className="jb-main">
-                        <strong>{job.title}</strong>
+                        <strong>{job.title}{fresh.has(job.id) && <span className="jb-new"> New</span>}</strong>
                         <span className="hint">{[job.company, job.location, job.remote ? "Remote" : "", ageLabel(job.posted_ms), job.source].filter(Boolean).join(" · ")}</span>
                       </span>
                     </button>
@@ -212,7 +245,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                           <button className="btn" onClick={() => (upsert(job, {}, match.score), setNote("Saved to your tracker."))}>Save job</button>
                           <button className="btn" onClick={() => void api.openLink(job.url).catch(fail)}>Open the application page</button>
                         </div>
-                        {tailor?.jobId === job.id && <TailorPanel job={job} master={resume} t={tailor} onChange={(text) => (setTailor({ ...tailor, text }), upsert(job, { resume: text }, match.score))} onExport={exportResume} onApplied={() => (setStatus(job.id, "applied"), setNote("Marked as applied in your tracker."))} />}
+                        {tailor?.jobId === job.id && <TailorPanel job={job} master={resume} t={tailor} onChange={(text) => (setTailor({ ...tailor, text }), upsert(job, { resume: text }, match.score))} onExport={exportResume} onApplied={() => (setStatus(job.id, "applied"), setNote("Marked as applied in your tracker."))} onLetter={(letter) => upsert(job, { letter }, match.score)} onNote={setNote} onError={fail} />}
                         <h3>Job description</h3>
                         <pre className="jb-desc">{job.description}</pre>
                       </div>
@@ -226,6 +259,13 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
       )}
 
       {section === "tracker" && (
+        <>
+        {due.length > 0 && (
+          <section className="dash-card jb-due" aria-label="Reminders">
+            <header><h2>Coming up</h2></header>
+            <ul>{due.map((r) => <li key={`${r.id}-${r.kind}`} className={r.inDays < 0 ? "late" : ""}><strong>{r.title}</strong> at {r.company || "this company"}: {reminderLabel(r)} <span className="hint">({r.day})</span></li>)}</ul>
+          </section>
+        )}
         <section className="jb-board">
           {apps.length === 0 && <p className="hint">Nothing here yet. Save a job or tailor a resume and it will appear here.</p>}
           {STATUSES.map((st) => {
@@ -240,10 +280,13 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                     <select value={a.status} onChange={(e) => setStatus(a.id, e.target.value as Status)} aria-label={`Status of ${a.title}`}>
                       {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                     </select>
+                    <label className="jb-date">Interview <input type="date" value={a.interview ?? ""} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, interview: e.target.value || undefined } : x)))} /></label>
+                    <label className="jb-date">Follow up <input type="date" value={a.followUp ?? ""} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, followUp: e.target.value || undefined } : x)))} /></label>
                     <input value={a.notes} placeholder="Notes" aria-label={`Notes for ${a.title}`} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, notes: e.target.value } : x)))} />
                     <div className="disc-row">
                       {a.url && <button className="btn btn-sm" onClick={() => void api.openLink(a.url).catch(fail)}>Open page</button>}
                       {a.resume && <button className="btn btn-sm" onClick={() => void exportResume(a.resume!, "docx", `${a.title} resume`)}>Resume (Word)</button>}
+                      {a.letter && <button className="btn btn-sm" onClick={() => void exportLetter(a)}>Letter (Word)</button>}
                       <button className="btn btn-ghost btn-sm" onClick={() => setApps((all) => all.filter((x) => x.id !== a.id))}>Remove</button>
                     </div>
                   </div>
@@ -252,15 +295,39 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
             ) : null;
           })}
         </section>
+        </>
       )}
     </div>
   );
 }
 
-function TailorPanel({ job, master, t, onChange, onExport, onApplied }: { job: Job; master: string; t: { text: string; changes: string[] }; onChange: (s: string) => void; onExport: (text: string, f: "docx" | "txt", stem: string) => void; onApplied: () => void }) {
+function TailorPanel({ job, master, t, onChange, onExport, onApplied, onLetter, onNote, onError }: { job: Job; master: string; t: { text: string; changes: string[] }; onChange: (s: string) => void; onExport: (text: string, f: "docx" | "txt", stem: string) => void; onApplied: () => void; onLetter: (s: string) => void; onNote: (s: string) => void; onError: (e: unknown) => void }) {
+  const [letter, setLetter] = useState("");
+  const [writing, setWriting] = useState(false);
   const claims = newClaims(master, t.text);
   const after = matchJob(t.text, job);
   const before = matchJob(master, job);
+  const writeLetter = async () => {
+    setWriting(true);
+    try {
+      const text = await api.jobsCoverLetter(crypto.randomUUID(), t.text, job.title, job.company, job.description);
+      setLetter(text);
+      onLetter(text);
+    } catch (e) {
+      if (errorText(e) !== "Cancelled.") onError(e);
+    } finally {
+      setWriting(false);
+    }
+  };
+  const saveLetter = async (format: "docx" | "txt") => {
+    try {
+      const path = await chooseSavePath(safeName(`${job.company} ${job.title} cover letter`, "Cover letter"), format);
+      if (path) onNote(`Saved ${await api.letterExport(letter, `${job.title}, ${job.company}`, format, path)}`);
+    } catch (e) {
+      onError(e);
+    }
+  };
+  const letterClaims = letter ? newClaims(master, letter) : { skills: [], numbers: [] };
   return (
     <div className="jb-tailor">
       <h3>Your resume for this job</h3>
@@ -279,6 +346,20 @@ function TailorPanel({ job, master, t, onChange, onExport, onApplied }: { job: J
         <button className="btn" onClick={() => void api.openLink(job.url).catch(() => undefined)}>Open the application page</button>
         <button className="btn btn-ghost" onClick={onApplied}>I applied</button>
       </div>
+      <div className="disc-row">
+        <button className="btn" onClick={() => void writeLetter()} disabled={writing}>{writing ? "Writing…" : letter ? "Write the letter again" : "Write a cover letter"}</button>
+      </div>
+      {letter && (
+        <>
+          {(letterClaims.skills.length > 0 || letterClaims.numbers.length > 0) && <div className="banner banner-bad" role="alert">The letter mentions things your resume does not: {[...letterClaims.skills, ...letterClaims.numbers].join(", ")}. Remove them unless they are true.</div>}
+          <textarea className="jb-text" value={letter} onChange={(e) => (setLetter(e.target.value), onLetter(e.target.value))} rows={12} aria-label="Cover letter" />
+          <div className="disc-row">
+            <button className="btn btn-primary" onClick={() => void saveLetter("docx")}>Save letter as Word</button>
+            <button className="btn" onClick={() => void saveLetter("txt")}>Save as text</button>
+            <button className="btn" onClick={() => void navigator.clipboard?.writeText(letter).catch(() => undefined)}>Copy</button>
+          </div>
+        </>
+      )}
       <p className="hint">Kinviva does not send applications for you. You press Submit on the employer's page. That keeps you in control of what is sent.</p>
     </div>
   );

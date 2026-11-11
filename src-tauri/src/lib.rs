@@ -246,6 +246,8 @@ pub fn run() {
             commands::jobs_search,
             commands::jobs_tailor,
             commands::resume_export,
+            commands::jobs_cover_letter,
+            commands::letter_export,
             commands::quiz_topics,
             commands::global_search,
             commands::architecture_save,

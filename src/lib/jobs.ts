@@ -165,6 +165,12 @@ export interface Application {
   notes: string;
   /** Tailored resume for this job, if you made one. */
   resume?: string;
+  /** Cover letter for this job, if you made one. */
+  letter?: string;
+  /** Interview date, YYYY-MM-DD. */
+  interview?: string;
+  /** Day to follow up, YYYY-MM-DD. */
+  followUp?: string;
   updated: number;
 }
 
@@ -173,12 +179,19 @@ export interface JobPrefs {
   keywords: string;
   remoteOnly: boolean;
   boards: string;
+  /** Search again by itself when you open Jobs and the last search is old. Only while Kinviva is open. */
+  agent: boolean;
 }
 
-export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "" };
+export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", agent: false };
+export const SEEN_KEY = "ml.jobs.seen1";
+export const LAST_KEY = "ml.jobs.last1";
+export const AGENT_EVERY_MS = 12 * 3_600_000;
 export const RESUME_KEY = "ml.jobs.resume1";
 export const APPS_KEY = "ml.jobs.apps1";
 export const PREFS_KEY = "ml.jobs.prefs1";
+
+const isDay = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
 export function parseApps(raw: string | null): Application[] {
   try {
@@ -186,7 +199,7 @@ export function parseApps(raw: string | null): Application[] {
     if (!Array.isArray(v)) return [];
     return v
       .filter((a) => a && typeof a.id === "string" && typeof a.title === "string" && (STATUSES as readonly string[]).includes(a.status))
-      .map((a) => ({ id: a.id, title: a.title, company: String(a.company ?? ""), url: String(a.url ?? ""), status: a.status as Status, score: Number(a.score) || 0, notes: String(a.notes ?? ""), resume: typeof a.resume === "string" ? a.resume : undefined, updated: Number(a.updated) || 0 }));
+      .map((a) => ({ id: a.id, title: a.title, company: String(a.company ?? ""), url: String(a.url ?? ""), status: a.status as Status, score: Number(a.score) || 0, notes: String(a.notes ?? ""), resume: typeof a.resume === "string" ? a.resume : undefined, letter: typeof a.letter === "string" ? a.letter : undefined, interview: isDay(a.interview) ? a.interview : undefined, followUp: isDay(a.followUp) ? a.followUp : undefined, updated: Number(a.updated) || 0 }));
   } catch {
     return [];
   }
@@ -201,6 +214,7 @@ export function parsePrefs(raw: string | null): JobPrefs {
       keywords: typeof v.keywords === "string" ? v.keywords : "",
       remoteOnly: v.remoteOnly === true,
       boards: typeof v.boards === "string" ? v.boards : "",
+      agent: v.agent === true,
     };
   } catch {
     return { ...DEFAULT_PREFS };
@@ -210,4 +224,64 @@ export function parsePrefs(raw: string | null): JobPrefs {
 /** Company boards typed one per line or separated by commas. */
 export function parseBoards(text: string): string[] {
   return text.split(/[\n,;]+/).map((b) => b.trim()).filter(Boolean).slice(0, 12);
+}
+
+/** Job ids from a saved list, safely. */
+export function parseSeen(raw: string | null): string[] {
+  try {
+    const v = JSON.parse(raw ?? "[]");
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, 5000) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Jobs not seen in an earlier search. With no earlier search nothing is "new", so the first run is not all marked. */
+export function newJobIds(jobs: Job[], seen: string[], hadEarlierSearch: boolean): Set<string> {
+  if (!hadEarlierSearch) return new Set();
+  const old = new Set(seen);
+  return new Set(jobs.filter((j) => !old.has(j.id)).map((j) => j.id));
+}
+
+/** The seen list after a search: everything seen before plus these jobs, newest 5000. */
+export function mergeSeen(seen: string[], jobs: Job[]): string[] {
+  return [...new Set([...jobs.map((j) => j.id), ...seen])].slice(0, 5000);
+}
+
+/** Whether the job agent should search now. */
+export function agentDue(agentOn: boolean, lastMs: number | null, now = Date.now()): boolean {
+  return agentOn && (lastMs === null || now - lastMs >= AGENT_EVERY_MS);
+}
+
+export interface Reminder {
+  id: string;
+  title: string;
+  company: string;
+  kind: "interview" | "follow-up";
+  day: string;
+  /** Days from today: negative is overdue. */
+  inDays: number;
+}
+
+const dayNumber = (d: string) => Math.floor(Date.parse(`${d}T00:00:00Z`) / 86_400_000);
+export const todayKey = (now = Date.now()) => new Date(now - new Date(now).getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+
+/** Interviews and follow-ups that are overdue or within the next `ahead` days. Closed and offer rows are skipped. */
+export function reminders(apps: Application[], now = Date.now(), ahead = 7): Reminder[] {
+  const today = dayNumber(todayKey(now));
+  const out: Reminder[] = [];
+  for (const a of apps) {
+    if (a.status === "rejected" || a.status === "offer") continue;
+    for (const [kind, day] of [["interview", a.interview], ["follow-up", a.followUp]] as const) {
+      if (!day) continue;
+      const inDays = dayNumber(day) - today;
+      if (inDays <= ahead) out.push({ id: a.id, title: a.title, company: a.company, kind, day, inDays });
+    }
+  }
+  return out.sort((x, y) => x.inDays - y.inDays);
+}
+
+export function reminderLabel(r: Reminder): string {
+  const when = r.inDays < 0 ? `${-r.inDays} day${r.inDays === -1 ? "" : "s"} overdue` : r.inDays === 0 ? "today" : r.inDays === 1 ? "tomorrow" : `in ${r.inDays} days`;
+  return `${r.kind === "interview" ? "Interview" : "Follow up"} ${when}`;
 }
