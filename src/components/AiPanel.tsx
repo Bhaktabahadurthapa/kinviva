@@ -88,8 +88,25 @@ export function AiPanel({
                 </blockquote>
               ))}
             </details>
-          ) : (
+          ) : (slot.web ?? []).length === 0 ? (
             <span>no document passages matched</span>
+          ) : null}
+          {(slot.web ?? []).length > 0 && (
+            <details open>
+              <summary>
+                {slot.web!.length} source{slot.web!.length > 1 ? "s" : ""} found (papers and web). The answer uses only the ones it cites.
+              </summary>
+              {slot.web!.map((w, i) => (
+                <blockquote key={i}>
+                  <cite>
+                    <button className="link-btn" onClick={() => void api.openExternal(w.url).catch(() => undefined)} title={w.url}>
+                      {w.title}
+                    </button>
+                  </cite>
+                  {w.snippet.length > 200 ? w.snippet.slice(0, 200) + "…" : w.snippet}
+                </blockquote>
+              ))}
+            </details>
           )}
         </footer>
       )}

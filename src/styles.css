@@ -2544,3 +2544,8 @@ body, button, input, textarea, select { font-feature-settings: "zero" 0, "calt" 
 .overlay .sp-now { background: rgba(20, 26, 29, 0.78); color: #fff; }
 .overlay .sp-line { text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
 .overlay .sp-heard { color: rgba(255, 255, 255, .55); }
+
+/* Source links under an answer */
+.link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--signal, #6d5efc); text-align: left; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.link-btn:hover { text-decoration-thickness: 2px; }
+.panel-meta details { margin-top: 6px; }
