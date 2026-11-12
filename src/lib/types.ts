@@ -132,6 +132,18 @@ export interface Settings {
   context_chars: number;
   use_documents: boolean;
   web_search: boolean;
+  web_provider: "tavily" | "firecrawl";
+  apify_actor: string;
+  apify_input: string;
+  web_daily_limit: number;
+  jobs_digest_enabled: boolean;
+  jobs_digest_time: string;
+  send_daily_cap: number;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  from_name: string;
+  from_email: string;
   question_detection: boolean;
   question_cooldown_secs: number;
   auto_assist: AutoMode;

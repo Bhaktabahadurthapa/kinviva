@@ -380,6 +380,92 @@ pub fn open_link(url: String) -> R<()> {
     cmd.arg(p.as_str()).spawn().map(|_| ()).map_err(|e| format!("Could not open the link: {e}"))
 }
 
+/// Reads one stored value of the job workspace (resume, tracker, preferences and so on).
+#[tauri::command]
+pub fn jobs_kv_get(state: State<AppState>, key: String) -> R<Option<String>> {
+    crate::agent::kv_get(&state.db, &key)
+}
+
+/// Stores one value of the job workspace.
+#[tauri::command]
+pub fn jobs_kv_set(state: State<AppState>, key: String, value: String) -> R<()> {
+    crate::agent::kv_set(&state.db, &key, &value)
+}
+
+/// Runs the morning search now (the same one that runs at the chosen time) and returns today's digest.
+#[tauri::command]
+pub async fn jobs_digest_run_now(app: tauri::AppHandle, state: State<'_, AppState>) -> R<crate::agent::Digest> {
+    let d = crate::agent::run_digest(&state, &today_key(), now_ms()).await?;
+    let _ = tauri::Emitter::emit(&app, "jobs-digest-ready", d.jobs.len());
+    Ok(d)
+}
+
+static SEND_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+fn smtp_cfg(state: &AppState) -> R<crate::mailer::SmtpCfg> {
+    let s = state.settings();
+    let pw = secrets::get("smtp_password")?.unwrap_or_default();
+    crate::mailer::SmtpCfg::new(&s.smtp_host, s.smtp_port, &s.smtp_user, &pw)
+}
+
+/// Sends one application by email, with the resume (and letter) attached, from your own mail account.
+/// Called only after you approve this exact message. Refuses past the daily cap and never sends the same application twice.
+/// Returns how many applications have been sent today, including this one.
+#[tauri::command]
+#[allow(clippy::too_many_arguments)]
+pub async fn jobs_send_email(state: State<'_, AppState>, app_id: String, to: String, subject: String, body: String, resume: crate::jobs::RDoc, template: String, letter: Option<String>, letter_heading: String) -> R<u32> {
+    let s = state.settings();
+    let cfg = smtp_cfg(&state)?;
+    let _guard = SEND_LOCK.lock().await;
+    let day = today_key();
+    let log = crate::mailer::parse_log(crate::agent::kv_get(&state.db, "sendlog")?.as_deref());
+    crate::mailer::may_send(&log, &app_id, &day, s.send_daily_cap)?;
+    let resume_docx = crate::jobs::render_resume_docx(&resume, &template)?;
+    let letter_docx = match letter.as_deref().filter(|l| !l.trim().is_empty()) {
+        Some(l) => Some(export::render(&crate::jobs::plain_doc("Cover letter", &letter_heading, l), "docx")?),
+        None => None,
+    };
+    let name = if resume.name.trim().is_empty() { "Resume".to_string() } else { format!("{} resume", resume.name.trim()) };
+    let atts = crate::mailer::attachments(resume_docx, &name, letter_docx, &format!("{} cover letter", resume.name.trim()));
+    let msg = crate::mailer::build_message(&s.from_name, &s.from_email, &to, &subject, &body, &atts)?;
+    tokio::task::spawn_blocking(move || crate::mailer::send(&cfg, &msg)).await.map_err(|e| e.to_string())??;
+    let entry = crate::mailer::SendEntry { app_id, to: to.trim().to_string(), subject: subject.chars().take(200).collect(), day: day.clone(), at_ms: now_ms() };
+    let log = crate::mailer::with_entry(log, entry);
+    crate::agent::kv_set(&state.db, "sendlog", &serde_json::to_string(&log).map_err(|e| e.to_string())?)?;
+    Ok(crate::mailer::sent_today(&log, &day))
+}
+
+/// Sends a short test message to your own address to check the mail settings. Does not count toward the daily cap.
+#[tauri::command]
+pub async fn smtp_test(state: State<'_, AppState>) -> R<String> {
+    let s = state.settings();
+    let cfg = smtp_cfg(&state)?;
+    let msg = crate::mailer::build_message(&s.from_name, &s.from_email, &s.from_email, "Kinviva mail test", "This is a test from Kinviva. Your mail settings work.", &[])?;
+    tokio::task::spawn_blocking(move || crate::mailer::send(&cfg, &msg)).await.map_err(|e| e.to_string())??;
+    Ok(format!("Test sent to {}.", s.from_email))
+}
+
+/// Saves the resume and cover letter as Word files in a folder you chose, ready to upload to an employer's form.
+#[tauri::command]
+pub fn pack_export(dir: String, resume: crate::jobs::RDoc, template: String, letter: Option<String>, letter_heading: String, stem: String) -> R<Vec<String>> {
+    let d = std::path::PathBuf::from(&dir);
+    if !d.is_dir() {
+        return Err("Choose a folder that exists.".into());
+    }
+    let stem = crate::mailer::safe_filename(&stem);
+    let stem = if stem.is_empty() { "Application".to_string() } else { stem };
+    let mut written = Vec::new();
+    let r = d.join(format!("{stem} resume.docx"));
+    std::fs::write(&r, crate::jobs::render_resume_docx(&resume, &template)?).map_err(|e| format!("Could not write file: {e}"))?;
+    written.push(r.to_string_lossy().to_string());
+    if let Some(l) = letter.as_deref().filter(|l| !l.trim().is_empty()) {
+        let p = d.join(format!("{stem} cover letter.docx"));
+        std::fs::write(&p, export::render(&crate::jobs::plain_doc("Cover letter", &letter_heading, l), "docx")?).map_err(|e| format!("Could not write file: {e}"))?;
+        written.push(p.to_string_lossy().to_string());
+    }
+    Ok(written)
+}
+
 /// Reads the text of a resume file (PDF, Word, text) so the user can check it before using it.
 #[tauri::command]
 pub fn resume_read(path: String) -> R<String> {
@@ -387,13 +473,53 @@ pub fn resume_read(path: String) -> R<String> {
     Ok(x.text.chars().take(30000).collect())
 }
 
-/// Finds open roles in the public job feeds for the chosen categories.
+/// Finds open roles in the public job feeds for the chosen categories. With `use_apify` set it also runs
+/// the user's own Apify actor, and with Firecrawl set up it reads the page of a few listings that came without a description.
 #[tauri::command]
-pub async fn jobs_search(query: crate::jobs::JobsQuery) -> R<crate::jobs::JobsReport> {
-    if query.categories.is_empty() && query.keywords.trim().is_empty() && query.boards.is_empty() {
+pub async fn jobs_search(state: State<'_, AppState>, query: crate::jobs::JobsQuery) -> R<crate::jobs::JobsReport> {
+    if query.categories.is_empty() && query.keywords.trim().is_empty() && query.boards.is_empty() && !query.use_apify {
         return Err("Choose at least one category, type a keyword, or add a company board.".into());
     }
-    Ok(crate::jobs::search(&query).await)
+    let mut notes: Vec<String> = Vec::new();
+    let mut extra = Vec::new();
+    if query.use_apify {
+        match apify_jobs(&state, &query).await {
+            Ok(j) => extra = j,
+            Err(e) => notes.push(e),
+        }
+    }
+    let mut report = crate::jobs::search(&query, extra).await;
+    report.errors.extend(notes);
+    Ok(report)
+}
+
+fn today_key() -> String {
+    chrono::Local::now().format("%Y-%m-%d").to_string()
+}
+
+pub async fn apify_jobs(state: &AppState, q: &crate::jobs::JobsQuery) -> R<Vec<crate::jobs::Job>> {
+    let s = state.settings();
+    if s.apify_actor.trim().is_empty() {
+        return Err("Apify: add an actor name in Settings → Web providers.".into());
+    }
+    let token = secrets::get("apify_api_token")?.ok_or("Apify: add your Apify token in Settings → Web providers.")?;
+    let input = crate::webintel::build_input(&s.apify_input, &q.keywords, &q.location, 25)?;
+    crate::webintel::spend_call(&state.data_dir, &today_key(), s.web_daily_limit)?;
+    let body = crate::webintel::apify_run(crate::webintel::APIFY_BASE, &token, &s.apify_actor, &input, &tokio_util::sync::CancellationToken::new()).await.map_err(|e| format!("Apify: {e}"))?;
+    let mut jobs = crate::webintel::parse_apify_jobs(&body, "Apify");
+    // Firecrawl only fills in missing descriptions, a few per search, and only when it is set up.
+    if let Some(key) = secrets::get("firecrawl_api_key").ok().flatten() {
+        for j in jobs.iter_mut().filter(|j| j.description.trim().is_empty()).take(5) {
+            if crate::webintel::spend_call(&state.data_dir, &today_key(), s.web_daily_limit).is_err() {
+                break;
+            }
+            if let Ok(t) = crate::webintel::firecrawl_scrape(crate::webintel::FIRECRAWL_BASE, &key, &j.url, &tokio_util::sync::CancellationToken::new()).await {
+                j.description = t.chars().take(6000).collect();
+            }
+        }
+    }
+    jobs.retain(|j| !j.description.trim().is_empty());
+    Ok(jobs)
 }
 
 /// Rewrites the user's resume for one job using only what the resume already says.

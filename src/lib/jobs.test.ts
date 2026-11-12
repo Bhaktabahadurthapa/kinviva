@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agentDue, ageLabel, extractSkills, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen, reminderLabel, reminders, resumeChecks, scoreLabel, type Application, type Job } from "./jobs";
+import { DIGEST_KEY, agentDue, defaultBody, defaultSubject, digestRows, findEmails, parseDigest, parseSendLog, sentOn, ageLabel, extractSkills, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen, reminderLabel, reminders, resumeChecks, scoreLabel, type Application, type Job } from "./jobs";
 
 const RESUME = `Jane Doe
 jane@example.com | +1 512 555 0100
@@ -132,5 +132,36 @@ describe("reminders", () => {
     expect(a.interview).toBe("2026-11-12");
     expect(a.followUp).toBeUndefined();
     expect(a.letter).toBe("Dear");
+  });
+});
+
+describe("morning digest and sending helpers", () => {
+  it("finds the addresses a posting names", () => {
+    expect(findEmails("Apply: Careers@Acme.com. Or hr@beta.io, or careers@acme.com!")).toEqual(["careers@acme.com", "hr@beta.io"]);
+    expect(findEmails("no address, 100% remote")).toEqual([]);
+  });
+  it("reads a stored digest and send log safely", () => {
+    expect(parseDigest("nope")).toBeNull();
+    expect(parseDigest(null)).toBeNull();
+    const d = parseDigest(JSON.stringify({ day: "2026-11-12", at_ms: 5, total: 9, jobs: [J("a"), { bad: 1 }] }))!;
+    expect(d.jobs.map((j) => j.id)).toEqual(["a"]);
+    expect(d.total).toBe(9);
+    expect(parseSendLog("x")).toEqual([]);
+    expect(sentOn(parseSendLog(JSON.stringify([{ app_id: "a", day: "d1", to: "", subject: "", at_ms: 1 }, { app_id: "b", day: "d2", to: "", subject: "", at_ms: 1 }])), "d1")).toBe(1);
+    expect(DIGEST_KEY).toBe("digest");
+  });
+  it("hides skipped and already-started jobs and puts the best match first", () => {
+    const strong = { ...J("strong"), title: "DevOps Engineer", description: "AWS Kubernetes Terraform Docker CI/CD" };
+    const weak = { ...J("weak"), title: "Chef", description: "Cooking" };
+    const d = { day: "d", at_ms: 1, total: 3, jobs: [weak, strong, J("skip"), J("started")] };
+    const rows = digestRows(d, RESUME, ["skip"], [A({ id: "started" })]);
+    expect(rows.map((r) => r.job.id)).toEqual(["strong", "weak"]);
+    expect(digestRows(null, RESUME, [], [])).toEqual([]);
+  });
+  it("writes a sensible default subject and body", () => {
+    expect(defaultSubject("SRE", "Jane Doe")).toBe("Application: SRE, Jane Doe");
+    expect(defaultBody("Dear Team,\nHi.", "SRE", "Acme", "Jane")).toBe("Dear Team,\nHi.");
+    expect(defaultBody(undefined, "SRE", "Acme", "Jane")).toContain("SRE position at Acme");
+    expect(defaultBody("  ", "SRE", "", "Jane")).not.toContain("at ");
   });
 });

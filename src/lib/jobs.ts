@@ -169,6 +169,12 @@ export interface Application {
   resume?: string;
   /** Cover letter for this job, if you made one. */
   letter?: string;
+  /** Where the application goes by email, if the posting names an address. */
+  contact?: string;
+  /** You approved this job for preparation. */
+  approved?: boolean;
+  /** When the application was sent by email from Kinviva. */
+  sentAt?: number;
   /** Interview date, YYYY-MM-DD. */
   interview?: string;
   /** Day to follow up, YYYY-MM-DD. */
@@ -185,13 +191,15 @@ export interface JobPrefs {
   location: string;
   /** With a location set, also show remote jobs open to people there. */
   includeRemote: boolean;
+  /** Also collect listings with your Apify actor (uses your Apify account). */
+  useApify: boolean;
   /** Search again by itself when you open Jobs and the last search is old. Only while Kinviva is open. */
   agent: boolean;
   /** Resume layout used for the preview and the saved file. */
   template: TemplateId;
 }
 
-export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", location: "", includeRemote: true, agent: false, template: "classic" };
+export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", location: "", includeRemote: true, useApify: false, agent: false, template: "classic" };
 export const SEEN_KEY = "ml.jobs.seen1";
 export const LAST_KEY = "ml.jobs.last1";
 export const AGENT_EVERY_MS = 12 * 3_600_000;
@@ -207,7 +215,7 @@ export function parseApps(raw: string | null): Application[] {
     if (!Array.isArray(v)) return [];
     return v
       .filter((a) => a && typeof a.id === "string" && typeof a.title === "string" && (STATUSES as readonly string[]).includes(a.status))
-      .map((a) => ({ id: a.id, title: a.title, company: String(a.company ?? ""), url: String(a.url ?? ""), status: a.status as Status, score: Number(a.score) || 0, notes: String(a.notes ?? ""), resume: typeof a.resume === "string" ? a.resume : undefined, letter: typeof a.letter === "string" ? a.letter : undefined, interview: isDay(a.interview) ? a.interview : undefined, followUp: isDay(a.followUp) ? a.followUp : undefined, updated: Number(a.updated) || 0 }));
+      .map((a) => ({ id: a.id, title: a.title, company: String(a.company ?? ""), url: String(a.url ?? ""), status: a.status as Status, score: Number(a.score) || 0, notes: String(a.notes ?? ""), resume: typeof a.resume === "string" ? a.resume : undefined, letter: typeof a.letter === "string" ? a.letter : undefined, contact: typeof a.contact === "string" ? a.contact : undefined, approved: a.approved === true ? true : undefined, sentAt: typeof a.sentAt === "number" ? a.sentAt : undefined, interview: isDay(a.interview) ? a.interview : undefined, followUp: isDay(a.followUp) ? a.followUp : undefined, updated: Number(a.updated) || 0 }));
   } catch {
     return [];
   }
@@ -224,6 +232,7 @@ export function parsePrefs(raw: string | null): JobPrefs {
       boards: typeof v.boards === "string" ? v.boards : "",
       location: typeof v.location === "string" ? v.location.slice(0, 80) : "",
       includeRemote: v.includeRemote !== false,
+      useApify: v.useApify === true,
       agent: v.agent === true,
       template: TEMPLATES.some((t) => t.id === v.template) ? (v.template as TemplateId) : "classic",
     };
@@ -295,4 +304,69 @@ export function reminders(apps: Application[], now = Date.now(), ahead = 7): Rem
 export function reminderLabel(r: Reminder): string {
   const when = r.inDays < 0 ? `${-r.inDays} day${r.inDays === -1 ? "" : "s"} overdue` : r.inDays === 0 ? "today" : r.inDays === 1 ? "tomorrow" : `in ${r.inDays} days`;
   return `${r.kind === "interview" ? "Interview" : "Follow up"} ${when}`;
+}
+
+/** Email addresses named in a job description, first five, without duplicates. */
+export function findEmails(text: string): string[] {
+  const out: string[] = [];
+  for (const m of text.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g)) {
+    const e = m[0].replace(/[.]+$/, "");
+    if (!out.includes(e.toLowerCase()) && out.length < 5) out.push(e.toLowerCase());
+  }
+  return out;
+}
+
+export const DIGEST_KEY = "digest";
+export const SKIPPED_KEY = "skipped";
+export const SENDLOG_KEY = "sendlog";
+
+export interface Digest {
+  day: string;
+  at_ms: number;
+  jobs: Job[];
+  total: number;
+}
+
+export function parseDigest(raw: string | null): Digest | null {
+  try {
+    const v = JSON.parse(raw ?? "null") as Partial<Digest> | null;
+    if (!v || typeof v.day !== "string" || !Array.isArray(v.jobs)) return null;
+    return { day: v.day, at_ms: Number(v.at_ms) || 0, total: Number(v.total) || v.jobs.length, jobs: v.jobs.filter((j): j is Job => !!j && typeof j.id === "string" && typeof j.title === "string" && typeof j.url === "string") };
+  } catch {
+    return null;
+  }
+}
+
+export interface SendEntry {
+  app_id: string;
+  to: string;
+  subject: string;
+  day: string;
+  at_ms: number;
+}
+
+export function parseSendLog(raw: string | null): SendEntry[] {
+  try {
+    const v = JSON.parse(raw ?? "[]");
+    return Array.isArray(v) ? v.filter((e): e is SendEntry => !!e && typeof e.app_id === "string" && typeof e.day === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export const sentOn = (log: SendEntry[], day: string) => log.filter((e) => e.day === day).length;
+
+/** What the digest shows: jobs you have not skipped or already started, best match first. */
+export function digestRows(d: Digest | null, resume: string, skipped: string[], apps: Application[]): { job: Job; match: Match }[] {
+  if (!d) return [];
+  const hide = new Set([...skipped, ...apps.map((a) => a.id)]);
+  return d.jobs.filter((j) => !hide.has(j.id)).map((job) => ({ job, match: matchJob(resume, job) })).sort((a, b) => b.match.score - a.match.score);
+}
+
+export const defaultSubject = (title: string, name: string) => `Application: ${title}${name ? `, ${name}` : ""}`.slice(0, 200);
+
+/** The message body: your cover letter if you wrote one, otherwise a short plain note. */
+export function defaultBody(letter: string | undefined, title: string, company: string, name: string): string {
+  if (letter?.trim()) return letter.trim();
+  return `Dear Hiring Team,\n\nPlease find my resume attached for the ${title} position${company ? ` at ${company}` : ""}. I would welcome the chance to talk about how my experience fits the role.\n\nSincerely,\n${name}`;
 }
