@@ -90,6 +90,8 @@ export const api = {
   discoverTrends: () => invoke<Trend[]>("discover_trends"),
   openLink: (url: string) => invoke<void>("open_link", { url }),
   resumeRead: (path: string) => invoke<string>("resume_read", { path }),
+  jobsApifySearch: (actor: string, input: string) => invoke<JobsReport>("jobs_apify_search", { actor, input }),
+  jobsFirecrawlFetch: (url: string) => invoke<string>("jobs_firecrawl_fetch", { url }),
   jobsSearch: (query: { categories: string[]; keywords: string; remote_only: boolean; boards: string[] }) => invoke<JobsReport>("jobs_search", { query }),
   jobsTailor: (requestId: string, resume: string, title: string, company: string, description: string) =>
     invoke<[string, string[]]>("jobs_tailor", { requestId, resume, title, company, description }),

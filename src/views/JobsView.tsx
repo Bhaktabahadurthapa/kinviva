@@ -39,6 +39,44 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
   const [tailor, setTailor] = useState<{ jobId: string; text: string; changes: string[] } | null>(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [apifyKey, setApifyKey] = useState("");
+  const [firecrawlKey, setFirecrawlKey] = useState("");
+  const [actor, setActor] = useState("");
+  const [actorInput, setActorInput] = useState("{}");
+  const [providerBusy, setProviderBusy] = useState(false);
+  const [enriching, setEnriching] = useState<string | null>(null);
+  const [keysConfigured, setKeysConfigured] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    void api.secretStatus().then(setKeysConfigured).catch(() => {});
+  }, []);
+  const saveKey = async (name: "apify_api_key" | "firecrawl_api_key", value: string) => {
+    if (!value.trim()) return;
+    try {
+      await api.setSecret(name, value.trim());
+      setKeysConfigured((s) => ({ ...s, [name]: true }));
+      if (name === "apify_api_key") setApifyKey("");
+      else setFirecrawlKey("");
+      setNote("API key saved to your system credential store.");
+    } catch (e) { fail(e); }
+  };
+  const searchApify = async () => {
+    if (!window.confirm("Run this Apify Actor now? Kinviva sets a $0.50 maximum charge for the run; provider usage may still consume credits.")) return;
+    setProviderBusy(true);
+    try {
+      const next = await api.jobsApifySearch(actor, actorInput);
+      setReport((prev) => ({ jobs: [...(prev?.jobs ?? []), ...next.jobs.filter(j => !prev?.jobs.some(p => p.url === j.url))], errors: [...(prev?.errors ?? []), ...next.errors] }));
+      setSection("find");
+      setNote(`Imported ${next.jobs.length} job(s) from Apify.`);
+    } catch (e) { fail(e); } finally { setProviderBusy(false); }
+  };
+  const enrichJob = async (job: Job) => {
+    setEnriching(job.id);
+    try {
+      const description = await api.jobsFirecrawlFetch(job.url);
+      setReport(prev => prev ? { ...prev, jobs: prev.jobs.map(j => j.id === job.id ? { ...j, description } : j) } : prev);
+      setNote("Full job description loaded from Firecrawl. Review it before tailoring.");
+    } catch (e) { fail(e); } finally { setEnriching(null); }
+  };
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const reqRef = useRef<string | null>(null);
 
@@ -204,6 +242,26 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
               <button className="btn btn-primary" onClick={() => void search()} disabled={searching}>{searching ? "Searching…" : "Search jobs"}</button>
               <span className="hint">Looks only at public job feeds that allow it. It does not use LinkedIn or Indeed.</span>
             </div>
+            <details className="dash-card">
+              <summary>External job sources: Apify and Firecrawl (optional)</summary>
+              <p className="hint">Use your own API keys. They are stored in your operating system's credential store, never in browser localStorage. External providers receive the Actor input or selected job URL; your resume is not sent to them.</p>
+              <div className="disc-row">
+                <input type="password" value={apifyKey} onChange={e => setApifyKey(e.target.value)} placeholder={keysConfigured.apify_api_key ? "Apify key saved — enter to replace" : "Apify API key"} aria-label="Apify API key" autoComplete="off" />
+                <button className="btn" disabled={!apifyKey.trim()} onClick={() => void saveKey("apify_api_key", apifyKey)}>Save Apify key</button>
+              </div>
+              <div className="disc-row">
+                <input type="password" value={firecrawlKey} onChange={e => setFirecrawlKey(e.target.value)} placeholder={keysConfigured.firecrawl_api_key ? "Firecrawl key saved — enter to replace" : "Firecrawl API key"} aria-label="Firecrawl API key" autoComplete="off" />
+                <button className="btn" disabled={!firecrawlKey.trim()} onClick={() => void saveKey("firecrawl_api_key", firecrawlKey)}>Save Firecrawl key</button>
+              </div>
+              <h3>Import from Apify Actor</h3>
+              <p className="hint">Choose and review a job-search Actor in Apify first. Input fields depend on that Actor. Each manual run is capped at $0.50 and 50 results. Mapping requires title, company, and a public HTTPS job URL.</p>
+              <input value={actor} onChange={e => setActor(e.target.value)} placeholder="owner~job-search-actor" aria-label="Apify Actor ID" />
+              <textarea rows={4} value={actorInput} onChange={e => setActorInput(e.target.value)} aria-label="Apify Actor JSON input" spellCheck={false} />
+              <div className="disc-row">
+                <button className="btn btn-primary" disabled={providerBusy || !keysConfigured.apify_api_key || !actor.trim()} onClick={() => void searchApify()}>{providerBusy ? "Importing…" : "Run Actor and import jobs"}</button>
+                <span className="hint">Firecrawl enrichment is available on each job below.</span>
+              </div>
+            </details>
             {!resume.trim() && <p className="hint">Add your resume under My resume to see a match for each job.</p>}
           </section>
 
@@ -243,6 +301,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                           <button className="btn btn-primary" onClick={() => void doTailor(job, match.score)} disabled={busy}>{busy ? "Tailoring…" : "Tailor my resume and prepare"}</button>
                           {busy && reqRef.current && <button className="btn btn-sm" onClick={() => void api.aiCancel(reqRef.current!).catch(() => undefined)}>Cancel</button>}
                           <button className="btn" onClick={() => (upsert(job, {}, match.score), setNote("Saved to your tracker."))}>Save job</button>
+                          <button className="btn" disabled={enriching === job.id || !keysConfigured.firecrawl_api_key} onClick={() => void enrichJob(job)}>{enriching === job.id ? "Reading JD…" : "Fetch full JD (Firecrawl)"}</button>
                           <button className="btn" onClick={() => void api.openLink(job.url).catch(fail)}>Open the application page</button>
                         </div>
                         {tailor?.jobId === job.id && <TailorPanel job={job} master={resume} t={tailor} onChange={(text) => (setTailor({ ...tailor, text }), upsert(job, { resume: text }, match.score))} onExport={exportResume} onApplied={() => (setStatus(job.id, "applied"), setNote("Marked as applied in your tracker."))} onLetter={(letter) => upsert(job, { letter }, match.score)} onNote={setNote} onError={fail} />}
