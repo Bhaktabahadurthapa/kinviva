@@ -145,7 +145,7 @@ To build it yourself instead, create a normal app you can drag into Applications
 ./scripts/build-mac-app.sh
 ```
 
-This creates `dist-mac/Kinviva.app` and `dist-mac/Kinviva_0.1.6_aarch64.dmg`.
+This creates `dist-mac/Kinviva.app` and `dist-mac/Kinviva_0.1.7_aarch64.dmg`.
 Open the DMG, drag **Kinviva** onto **Applications**, then open it from
 Launchpad. On first start macOS asks for **Microphone** and **Screen & System
 Audio Recording** permission; allow both, then quit and reopen the app once.

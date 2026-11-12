@@ -1,6 +1,6 @@
 # Privacy and consent
 
-Plain statement of what Kinviva does with your data. Written from the code as of version 0.1.6. If the code changes, this file changes with it.
+Plain statement of what Kinviva does with your data. Written from the code as of version 0.1.7. If the code changes, this file changes with it.
 
 ## The app (Community Edition)
 
