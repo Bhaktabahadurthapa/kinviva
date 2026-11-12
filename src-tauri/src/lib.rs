@@ -9,6 +9,7 @@ pub mod db;
 pub mod demo;
 pub mod discover;
 pub mod jobs;
+mod job_connectors;
 pub mod edition;
 pub mod migrate;
 pub mod docs;
@@ -244,6 +245,8 @@ pub fn run() {
             commands::open_link,
             commands::resume_read,
             commands::jobs_search,
+            commands::jobs_apify_search,
+            commands::jobs_firecrawl_fetch,
             commands::jobs_tailor,
             commands::resume_export,
             commands::jobs_cover_letter,
