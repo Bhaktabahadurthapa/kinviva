@@ -396,6 +396,18 @@ pub async fn jobs_search(query: crate::jobs::JobsQuery) -> R<crate::jobs::JobsRe
     Ok(crate::jobs::search(&query).await)
 }
 
+/// User-initiated run of a configured Apify Actor. API key stays in OS credentials.
+#[tauri::command]
+pub async fn jobs_apify_search(actor: String, input: String) -> R<crate::jobs::JobsReport> {
+    crate::job_connectors::apify_jobs(&actor, &input).await
+}
+
+/// User-initiated enrichment of one official job description.
+#[tauri::command]
+pub async fn jobs_firecrawl_fetch(url: String) -> R<String> {
+    crate::job_connectors::firecrawl_job(&url).await
+}
+
 /// Rewrites the user's resume for one job using only what the resume already says.
 /// Returns the new resume text and the model's short list of changes.
 #[tauri::command]
