@@ -32,7 +32,7 @@ fn forget(name: &str) {
         map.remove(name);
     }
 }
-pub const ALLOWED: &[&str] = &["deepgram_api_key", "llm_api_key", "web_search_key"];
+pub const ALLOWED: &[&str] = &["deepgram_api_key", "llm_api_key", "web_search_key", "apify_api_key", "firecrawl_api_key"];
 
 fn entry(name: &str) -> Result<keyring::Entry, String> {
     if !ALLOWED.contains(&name) {
