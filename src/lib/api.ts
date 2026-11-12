@@ -91,7 +91,7 @@ export const api = {
   discoverTrends: () => invoke<Trend[]>("discover_trends"),
   openLink: (url: string) => invoke<void>("open_link", { url }),
   resumeRead: (path: string) => invoke<string>("resume_read", { path }),
-  jobsSearch: (query: { categories: string[]; keywords: string; remote_only: boolean; location: string; include_remote: boolean; boards: string[] }) => invoke<JobsReport>("jobs_search", { query }),
+  jobsSearch: (query: { categories: string[]; keywords: string; remote_only: boolean; location: string; include_remote: boolean; use_apify: boolean; boards: string[] }) => invoke<JobsReport>("jobs_search", { query }),
   jobsTailor: (requestId: string, resume: string, title: string, company: string, description: string) =>
     invoke<[string, string[]]>("jobs_tailor", { requestId, resume, title, company, description }),
   jobsCoverLetter: (requestId: string, resume: string, title: string, company: string, description: string) =>

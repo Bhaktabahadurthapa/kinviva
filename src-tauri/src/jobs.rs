@@ -49,6 +49,9 @@ pub struct JobsQuery {
     /// With a location set, also show remote jobs you could do from there.
     #[serde(default = "yes")]
     pub include_remote: bool,
+    /// Also collect listings with the user's Apify actor (uses their Apify account and the daily call limit).
+    #[serde(default)]
+    pub use_apify: bool,
     /// Company boards the user added, like "greenhouse:stripe" or "lever:netflix".
     #[serde(default)]
     pub boards: Vec<String>,
@@ -340,7 +343,7 @@ fn muse_location(input: &str) -> Option<String> {
 
 type Task = std::pin::Pin<Box<dyn std::future::Future<Output = (String, Result<Vec<Job>, String>)> + Send>>;
 
-pub async fn search(q: &JobsQuery) -> JobsReport {
+pub async fn search(q: &JobsQuery, extra: Vec<Job>) -> JobsReport {
     let mut tasks: Vec<Task> = Vec::new();
     let remotive_slugs: std::collections::BTreeSet<&str> = CATEGORIES.iter().filter(|c| q.categories.iter().any(|i| i == c.0)).map(|c| c.2).collect();
     let muse_cats: std::collections::BTreeSet<&str> = CATEGORIES.iter().filter(|c| q.categories.iter().any(|i| i == c.0)).map(|c| c.3).collect();
@@ -389,12 +392,16 @@ pub async fn search(q: &JobsQuery) -> JobsReport {
     let words = category_words(&q.categories);
     let place = parse_place(&q.location);
     let mut seen = std::collections::HashSet::new();
-    for (name, r) in join_all(tasks).await {
+    let mut results = join_all(tasks).await;
+    if !extra.is_empty() {
+        results.push(("Apify".to_string(), Ok(extra)));
+    }
+    for (name, r) in results {
         match r {
             Ok(jobs) => {
                 for j in jobs {
                     // Category feeds are already filtered by the source; the open feeds are filtered here by title.
-                    let from_category_feed = j.source == "Remotive" || j.source == "The Muse";
+                    let from_category_feed = j.source == "Remotive" || j.source == "The Muse" || j.source == "Apify";
                     if !from_category_feed && !title_fits(&j.title, &words, &q.keywords) {
                         continue;
                     }

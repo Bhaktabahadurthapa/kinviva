@@ -185,13 +185,15 @@ export interface JobPrefs {
   location: string;
   /** With a location set, also show remote jobs open to people there. */
   includeRemote: boolean;
+  /** Also collect listings with your Apify actor (uses your Apify account). */
+  useApify: boolean;
   /** Search again by itself when you open Jobs and the last search is old. Only while Kinviva is open. */
   agent: boolean;
   /** Resume layout used for the preview and the saved file. */
   template: TemplateId;
 }
 
-export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", location: "", includeRemote: true, agent: false, template: "classic" };
+export const DEFAULT_PREFS: JobPrefs = { categories: ["devops"], keywords: "", remoteOnly: false, boards: "", location: "", includeRemote: true, useApify: false, agent: false, template: "classic" };
 export const SEEN_KEY = "ml.jobs.seen1";
 export const LAST_KEY = "ml.jobs.last1";
 export const AGENT_EVERY_MS = 12 * 3_600_000;
@@ -224,6 +226,7 @@ export function parsePrefs(raw: string | null): JobPrefs {
       boards: typeof v.boards === "string" ? v.boards : "",
       location: typeof v.location === "string" ? v.location.slice(0, 80) : "",
       includeRemote: v.includeRemote !== false,
+      useApify: v.useApify === true,
       agent: v.agent === true,
       template: TEMPLATES.some((t) => t.id === v.template) ? (v.template as TemplateId) : "classic",
     };

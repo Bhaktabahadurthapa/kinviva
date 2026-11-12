@@ -6,6 +6,7 @@ use crate::docs;
 use crate::llm::{self, LlmConfig, LlmError};
 use crate::prompts::{self, Action, PromptInput};
 use crate::secrets;
+use crate::webintel;
 use crate::websearch;
 use crate::state::{AiSlot, AppState};
 use serde::Serialize;
@@ -217,12 +218,15 @@ pub fn start_with(
     let passage_count = passages.len();
     let passage_list = passages.clone();
     let web_endpoint = settings.web_search.then_some(()).and(web_query);
+    let web_provider = settings.web_provider.clone();
+    let web_limit = settings.web_daily_limit;
+    let web_dir = state.data_dir.clone();
     tauri::async_runtime::spawn(async move {
         let state = app2.state::<AppState>();
         let mut web_refs: Vec<crate::db::SourceRef> = Vec::new();
         if let Some(query) = web_endpoint {
             // Search the web first (optional); a failure never blocks the answer.
-            match web_results(&query, &cancel).await {
+            match web_results(&query, &cancel, &web_provider, &web_dir, web_limit).await {
                 Ok(found) if !found.is_empty() => {
                     web_refs = found
                         .iter()
@@ -316,14 +320,24 @@ fn web_query_for(action: Action, transcript: &str, focus: Option<&str>, question
     (!q.is_empty()).then_some(q)
 }
 
-/// General web results (Tavily, only when a key is saved) plus research papers (OpenAlex, no key).
+/// General web results (Tavily or Firecrawl, only when a key is saved) plus research papers (OpenAlex, no key).
 /// Either part may fail without blocking the other; an error is returned only when nothing was found.
-async fn web_results(query: &str, cancel: &CancellationToken) -> Result<Vec<websearch::WebSource>, String> {
-    let key = secrets::get("web_search_key").ok().flatten();
+/// Firecrawl calls count against the user's daily limit.
+async fn web_results(query: &str, cancel: &CancellationToken, provider: &str, dir: &std::path::Path, daily_limit: u32) -> Result<Vec<websearch::WebSource>, String> {
     let web = async {
-        match &key {
-            Some(k) => websearch::search(websearch::DEFAULT_ENDPOINT, k, query, cancel).await,
-            None => Ok(Vec::new()),
+        if provider == "firecrawl" {
+            match secrets::get("firecrawl_api_key").ok().flatten() {
+                Some(k) => {
+                    webintel::spend_call(dir, &chrono::Local::now().format("%Y-%m-%d").to_string(), daily_limit)?;
+                    webintel::firecrawl_search(webintel::FIRECRAWL_BASE, &k, query, 4, cancel).await
+                }
+                None => Ok(Vec::new()),
+            }
+        } else {
+            match secrets::get("web_search_key").ok().flatten() {
+                Some(k) => websearch::search(websearch::DEFAULT_ENDPOINT, &k, query, cancel).await,
+                None => Ok(Vec::new()),
+            }
         }
     };
     let (web, papers) = tokio::join!(web, websearch::scholar_search(websearch::SCHOLAR_ENDPOINT, query, cancel));

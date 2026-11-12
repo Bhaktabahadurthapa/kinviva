@@ -382,11 +382,41 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
         {s.web_search && (
           <>
             <p className="hint">
-              Sends only the question being answered (not the whole meeting) to find peer-reviewed papers (OpenAlex, no key needed) and, if you add a Tavily key from tavily.com, general web pages. A few snippets are added to the request and the answer lists the sources it used. Sources can still be wrong or off-topic, so check them.
+              Sends only the question being answered (not the whole meeting) to find peer-reviewed papers (OpenAlex, no key needed) and, if you add a key below, web pages. A few snippets are added to the request and the answer lists the sources it used. Sources can still be wrong or off-topic, so check them. Web research is never evidence about your own live systems.
             </p>
-            <KeyField name="web_search_key" label="Tavily API key (optional, for web pages)" has={!!secrets.web_search_key} onChange={loadSecrets} />
+            <label className="field">
+              <span>Web pages from</span>
+              <select value={s.web_provider} onChange={(e) => set("web_provider", e.target.value as Settings["web_provider"])}>
+                <option value="tavily">Tavily</option>
+                <option value="firecrawl">Firecrawl</option>
+              </select>
+            </label>
+            {s.web_provider === "tavily" ? (
+              <KeyField name="web_search_key" label="Tavily API key (optional, for web pages)" has={!!secrets.web_search_key} onChange={loadSecrets} />
+            ) : (
+              <KeyField name="firecrawl_api_key" label="Firecrawl API key" has={!!secrets.firecrawl_api_key} onChange={loadSecrets} />
+            )}
           </>
         )}
+        <h3>Web providers (optional, paid by you)</h3>
+        <p className="hint">
+          Firecrawl reads public web pages. Apify runs a collection tool (an "actor") you choose, for example to gather job listings. Both use your own account and key, which is stored in your computer's secure credential store. They run only when you press a button that uses them, never during a meeting, and stop at the daily limit below. They may charge your account; Kinviva does not see or change your bill.
+        </p>
+        <KeyField name="firecrawl_api_key" label="Firecrawl API key" has={!!secrets.firecrawl_api_key} onChange={loadSecrets} />
+        <KeyField name="apify_api_token" label="Apify API token" has={!!secrets.apify_api_token} onChange={loadSecrets} />
+        <label className="field">
+          <span>Apify actor for job listings</span>
+          <input value={s.apify_actor} placeholder="username~actor-name" onChange={(e) => set("apify_actor", e.target.value)} />
+        </label>
+        <label className="field">
+          <span>Actor input (JSON, optional)</span>
+          <textarea rows={3} value={s.apify_input} placeholder={'{"queries":["{{keywords}}"],"location":"{{location}}","maxItems":{{limit}}}'} onChange={(e) => set("apify_input", e.target.value)} />
+        </label>
+        <p className="hint">{"{{keywords}}, {{location}} and {{limit}} are filled in for you. Every actor expects its own input, so copy the shape from its page on Apify."}</p>
+        <label className="field">
+          <span>Most provider calls per day</span>
+          <input type="number" min={0} max={500} value={s.web_daily_limit} onChange={(e) => set("web_daily_limit", Math.max(0, Math.min(500, Number(e.target.value) || 0)))} />
+        </label>
       </section>
       )}
 

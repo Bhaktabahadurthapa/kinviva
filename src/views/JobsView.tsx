@@ -70,7 +70,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
     setReport(null);
     setOpenId(null);
     try {
-      const r = await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, location: prefs.location, include_remote: prefs.includeRemote, boards: parseBoards(prefs.boards) });
+      const r = await api.jobsSearch({ categories: prefs.categories, keywords: prefs.keywords, remote_only: prefs.remoteOnly, location: prefs.location, include_remote: prefs.includeRemote, use_apify: prefs.useApify, boards: parseBoards(prefs.boards) });
       const seen = parseSeen(read(SEEN_KEY));
       const last = read(LAST_KEY);
       setFresh(newJobIds(r.jobs, seen, last !== null));
@@ -233,6 +233,7 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
             <div className="disc-row">
               <input value={prefs.keywords} onChange={(e) => setPrefs({ ...prefs, keywords: e.target.value })} placeholder="Words in the job title, separated by commas. For example: kubernetes, platform" aria-label="Keywords" />
             </div>
+            <label className="check"><input type="checkbox" checked={prefs.useApify} onChange={(e) => setPrefs({ ...prefs, useApify: e.target.checked })} /> Also collect listings with my Apify actor (set up in Settings; uses my Apify account and counts toward my daily limit)</label>
             <label className="check"><input type="checkbox" checked={prefs.agent} onChange={(e) => setPrefs({ ...prefs, agent: e.target.checked })} /> Job agent: search again by itself when I open Jobs, about every 12 hours</label>
             {prefs.agent && <p className="hint">It runs only while Kinviva is open, uses the choices above, and marks jobs that are new since your last search. It never applies for you.</p>}
             <details>

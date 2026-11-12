@@ -69,6 +69,14 @@ pub struct Settings {
     pub use_documents: bool,
     /// Search the web (Tavily, with the user's own key) for answers. Off by default.
     pub web_search: bool,
+    /// Which service finds web pages for answers: "tavily" or "firecrawl". Papers (OpenAlex) are always searched when web_search is on.
+    pub web_provider: String,
+    /// Apify actor used to collect job listings, as "username~actor-name". Empty means not set up.
+    pub apify_actor: String,
+    /// JSON input sent to that actor. {{keywords}}, {{location}} and {{limit}} are filled in. Empty uses a common shape.
+    pub apify_input: String,
+    /// Most paid-provider calls (Firecrawl and Apify) Kinviva will make in one day.
+    pub web_daily_limit: u32,
     // Assist
     pub question_detection: bool,
     pub question_cooldown_secs: u32,
@@ -118,6 +126,10 @@ impl Default for Settings {
             context_chars: 6000,
             use_documents: true,
             web_search: false,
+            web_provider: "tavily".into(),
+            apify_actor: String::new(),
+            apify_input: String::new(),
+            web_daily_limit: 20,
             question_detection: false,
             question_cooldown_secs: 20,
             auto_assist: "explain_reply".into(),

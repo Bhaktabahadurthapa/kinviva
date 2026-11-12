@@ -9,6 +9,7 @@ pub mod db;
 pub mod demo;
 pub mod discover;
 pub mod jobs;
+pub mod webintel;
 pub mod edition;
 pub mod migrate;
 pub mod docs;

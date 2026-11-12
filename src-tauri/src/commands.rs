@@ -387,13 +387,53 @@ pub fn resume_read(path: String) -> R<String> {
     Ok(x.text.chars().take(30000).collect())
 }
 
-/// Finds open roles in the public job feeds for the chosen categories.
+/// Finds open roles in the public job feeds for the chosen categories. With `use_apify` set it also runs
+/// the user's own Apify actor, and with Firecrawl set up it reads the page of a few listings that came without a description.
 #[tauri::command]
-pub async fn jobs_search(query: crate::jobs::JobsQuery) -> R<crate::jobs::JobsReport> {
-    if query.categories.is_empty() && query.keywords.trim().is_empty() && query.boards.is_empty() {
+pub async fn jobs_search(state: State<'_, AppState>, query: crate::jobs::JobsQuery) -> R<crate::jobs::JobsReport> {
+    if query.categories.is_empty() && query.keywords.trim().is_empty() && query.boards.is_empty() && !query.use_apify {
         return Err("Choose at least one category, type a keyword, or add a company board.".into());
     }
-    Ok(crate::jobs::search(&query).await)
+    let mut notes: Vec<String> = Vec::new();
+    let mut extra = Vec::new();
+    if query.use_apify {
+        match apify_jobs(&state, &query).await {
+            Ok(j) => extra = j,
+            Err(e) => notes.push(e),
+        }
+    }
+    let mut report = crate::jobs::search(&query, extra).await;
+    report.errors.extend(notes);
+    Ok(report)
+}
+
+fn today_key() -> String {
+    chrono::Local::now().format("%Y-%m-%d").to_string()
+}
+
+async fn apify_jobs(state: &AppState, q: &crate::jobs::JobsQuery) -> R<Vec<crate::jobs::Job>> {
+    let s = state.settings();
+    if s.apify_actor.trim().is_empty() {
+        return Err("Apify: add an actor name in Settings → Web providers.".into());
+    }
+    let token = secrets::get("apify_api_token")?.ok_or("Apify: add your Apify token in Settings → Web providers.")?;
+    let input = crate::webintel::build_input(&s.apify_input, &q.keywords, &q.location, 25)?;
+    crate::webintel::spend_call(&state.data_dir, &today_key(), s.web_daily_limit)?;
+    let body = crate::webintel::apify_run(crate::webintel::APIFY_BASE, &token, &s.apify_actor, &input, &tokio_util::sync::CancellationToken::new()).await.map_err(|e| format!("Apify: {e}"))?;
+    let mut jobs = crate::webintel::parse_apify_jobs(&body, "Apify");
+    // Firecrawl only fills in missing descriptions, a few per search, and only when it is set up.
+    if let Some(key) = secrets::get("firecrawl_api_key").ok().flatten() {
+        for j in jobs.iter_mut().filter(|j| j.description.trim().is_empty()).take(5) {
+            if crate::webintel::spend_call(&state.data_dir, &today_key(), s.web_daily_limit).is_err() {
+                break;
+            }
+            if let Ok(t) = crate::webintel::firecrawl_scrape(crate::webintel::FIRECRAWL_BASE, &key, &j.url, &tokio_util::sync::CancellationToken::new()).await {
+                j.description = t.chars().take(6000).collect();
+            }
+        }
+    }
+    jobs.retain(|j| !j.description.trim().is_empty());
+    Ok(jobs)
 }
 
 /// Rewrites the user's resume for one job using only what the resume already says.
