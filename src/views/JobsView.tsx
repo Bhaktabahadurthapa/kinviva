@@ -1,19 +1,32 @@
+import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, errorText } from "../lib/api";
+import { JobsToday } from "../components/JobsToday";
 import { ResumeFormat } from "../components/ResumeFormat";
+import { SendPanel } from "../components/SendPanel";
+import { loadWorkspace } from "../lib/jobsStore";
+import type { Settings } from "../lib/types";
 import { chooseSavePath, safeName } from "../lib/download";
 import { diffLines, parseResume, type TemplateId } from "../lib/resume";
 import {
-  APPS_KEY, CATEGORIES, LAST_KEY, PREFS_KEY, RESUME_KEY, SEEN_KEY, STATUSES, STATUS_LABEL, ageLabel, agentDue, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen,
+  APPS_KEY, CATEGORIES, DIGEST_KEY, SENDLOG_KEY, SKIPPED_KEY, digestRows, findEmails, todayKey, parseDigest, parseSendLog, sentOn, LAST_KEY, PREFS_KEY, RESUME_KEY, SEEN_KEY, STATUSES, STATUS_LABEL, ageLabel, agentDue, matchJob, mergeSeen, newClaims, newJobIds, parseApps, parseBoards, parsePrefs, parseSeen,
   reminderLabel, reminders, scoreLabel,
-  type Application, type Job, type JobsReport, type Status,
+  type Application, type Digest, type Job, type JobsReport, type SendEntry, type Status,
 } from "../lib/jobs";
 
-type Section = "resume" | "find" | "tracker";
-const SECTIONS: [Section, string][] = [["resume", "My resume"], ["find", "Find jobs"], ["tracker", "Tracker"]];
+type Section = "today" | "resume" | "find" | "tracker";
+const SECTIONS: [Section, string][] = [["today", "Today"], ["resume", "My resume"], ["find", "Find jobs"], ["tracker", "Tracker"]];
+
+// The job workspace is kept in the app's database. `stored` holds what was loaded from it; browser storage is
+// only a read-only fallback for an earlier version's data (it is copied into the database once) and a mirror.
+const DB_NAME: Record<string, string> = { [RESUME_KEY]: "resume", [APPS_KEY]: "apps", [PREFS_KEY]: "prefs", [SEEN_KEY]: "seen", [LAST_KEY]: "last" };
+let stored: Record<string, string | null> = {};
+const timers = new Map<string, number>();
 
 function read(key: string): string | null {
+  const name = DB_NAME[key];
+  if (name && stored[name] !== undefined) return stored[name];
   try {
     return localStorage.getItem(key);
   } catch {
@@ -21,16 +34,32 @@ function read(key: string): string | null {
   }
 }
 function write(key: string, value: string) {
+  const name = DB_NAME[key];
+  if (name) {
+    stored[name] = value;
+    const t = timers.get(name);
+    if (t) window.clearTimeout(t);
+    timers.set(name, window.setTimeout(() => void api.jobsKvSet(name, value).catch(() => undefined), 400));
+  }
   try {
     localStorage.setItem(key, value);
   } catch {
-    /* storage unavailable: it still works until the window closes */
+    /* storage unavailable: the database still has it */
   }
 }
 
-/** Find jobs, see how well your resume fits, tailor it to one job from what it already says, and track where you applied. */
+/** Loads the saved workspace, then shows it. */
 export default function JobsView({ onError }: { onError: (m: string) => void }) {
-  const [section, setSection] = useState<Section>("resume");
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    void loadWorkspace().then((w) => (stored = w)).catch(() => (stored = {})).finally(() => setReady(true));
+  }, []);
+  return ready ? <JobsWorkspace onError={onError} /> : <p className="hint arch-loading">Loading…</p>;
+}
+
+/** Find jobs, see how well your resume fits, tailor it to one job from what it already says, and track where you applied. */
+function JobsWorkspace({ onError }: { onError: (m: string) => void }) {
+  const [section, setSection] = useState<Section>("today");
   const [resume, setResume] = useState(() => read(RESUME_KEY) ?? "");
   const [apps, setApps] = useState<Application[]>(() => parseApps(read(APPS_KEY)));
   const [prefs, setPrefs] = useState(() => parsePrefs(read(PREFS_KEY)));
@@ -43,6 +72,28 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
   const [note, setNote] = useState("");
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const reqRef = useRef<string | null>(null);
+  const [digest, setDigest] = useState<Digest | null>(null);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  const [sendLog, setSendLog] = useState<SendEntry[]>([]);
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [runningDigest, setRunningDigest] = useState(false);
+  const [approving, setApproving] = useState<string | null>(null);
+
+  const loadToday = useCallback(() => {
+    void api.jobsKvGet(DIGEST_KEY).then((t) => setDigest(parseDigest(t))).catch(() => undefined);
+    void api.jobsKvGet(SKIPPED_KEY).then((t) => { try { const v = JSON.parse(t ?? "[]"); setSkipped(Array.isArray(v) ? v.filter((x: unknown) => typeof x === "string") : []); } catch { setSkipped([]); } }).catch(() => undefined);
+    void api.jobsKvGet(SENDLOG_KEY).then((t) => setSendLog(parseSendLog(t))).catch(() => undefined);
+    void api.getSettings().then(setSettings).catch(() => undefined);
+  }, []);
+  useEffect(() => loadToday(), [loadToday]);
+  useEffect(() => {
+    const un = listen("jobs-digest-ready", () => loadToday());
+    const un2 = listen<string>("jobs-digest-failed", (e) => onError(`Morning job search: ${String(e.payload)}`));
+    return () => {
+      void un.then((f) => f()).catch(() => undefined);
+      void un2.then((f) => f()).catch(() => undefined);
+    };
+  }, [loadToday, onError]);
 
   useEffect(() => write(RESUME_KEY, resume), [resume]);
   useEffect(() => write(APPS_KEY, JSON.stringify(apps)), [apps]);
@@ -53,6 +104,47 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
     () => (report?.jobs ?? []).map((j) => ({ job: j, match: matchJob(resume, j) })).sort((a, b) => (sort === "match" ? b.match.score - a.match.score : (b.job.posted_ms ?? 0) - (a.job.posted_ms ?? 0))),
     [report, resume, sort],
   );
+
+  const runDigest = async () => {
+    setRunningDigest(true);
+    try {
+      setDigest(await api.jobsDigestRunNow());
+    } catch (e) {
+      onError(errorText(e));
+    } finally {
+      setRunningDigest(false);
+    }
+  };
+  const skip = (id: string) => {
+    const next = [...new Set([id, ...skipped])].slice(0, 2000);
+    setSkipped(next);
+    void api.jobsKvSet(SKIPPED_KEY, JSON.stringify(next)).catch(() => undefined);
+  };
+  /** Approve: tailor the resume and write the cover letter, then park the pack in the tracker for review. Nothing is sent. */
+  const approve = async (job: Job, score: number) => {
+    if (!resume.trim()) return onError("Add your resume first (My resume).");
+    setApproving(job.id);
+    try {
+      const [text] = await api.jobsTailor(crypto.randomUUID(), resume, job.title, job.company, job.description);
+      let letter: string | undefined;
+      try {
+        letter = await api.jobsCoverLetter(crypto.randomUUID(), text, job.title, job.company, job.description);
+      } catch (e) {
+        if (errorText(e) !== "Cancelled.") onError(`The resume is ready, but the cover letter failed: ${errorText(e)}`);
+      }
+      upsert(job, { status: "preparing", resume: text, letter, approved: true, contact: findEmails(job.description)[0] }, score);
+      setNote(`Prepared for ${job.title}. Review and send it in the Tracker.`);
+    } catch (e) {
+      if (errorText(e) !== "Cancelled.") onError(errorText(e));
+    } finally {
+      setApproving(null);
+    }
+  };
+  const onSent = (app: Application, count: number, to: string, subject: string) => {
+    setApps((all) => all.map((x) => (x.id === app.id ? { ...x, status: "applied", sentAt: Date.now(), updated: Date.now() } : x)));
+    setSendLog((l) => [{ app_id: app.id, to, subject, day: todayKey(), at_ms: Date.now() }, ...l]);
+    setNote(`Sent to ${to}. That is ${count} sent today.`);
+  };
 
   const pickFile = async () => {
     try {
@@ -183,6 +275,21 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
         <li className={apps.some((a) => a.status === "applied" || a.status === "interview" || a.status === "offer") ? "done" : ""}><button onClick={() => setSection("tracker")}><b>4</b> Apply and track</button></li>
       </ol>
       {note && <p className="hint" role="status">{note}</p>}
+
+      {section === "today" && (
+        <JobsToday
+          digest={digest}
+          rows={digestRows(digest, resume, skipped, apps)}
+          hasResume={!!resume.trim()}
+          running={runningDigest}
+          busyId={approving}
+          scheduleOn={!!settings?.jobs_digest_enabled}
+          onRun={() => void runDigest()}
+          onApprove={(j, sc) => void approve(j, sc)}
+          onSkip={skip}
+          onOpen={(u) => void api.openLink(u).catch(fail)}
+        />
+      )}
 
       {section === "resume" && (
         <section className="dash-card">
@@ -323,6 +430,22 @@ export default function JobsView({ onError }: { onError: (m: string) => void }) 
                     </select>
                     <label className="jb-date">Interview <input type="date" value={a.interview ?? ""} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, interview: e.target.value || undefined } : x)))} /></label>
                     <label className="jb-date">Follow up <input type="date" value={a.followUp ?? ""} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, followUp: e.target.value || undefined } : x)))} /></label>
+                    {a.status === "preparing" && a.resume && (
+                      <details className="jb-sendbox">
+                        <summary>Review and send</summary>
+                        <SendPanel
+                          app={a}
+                          master={resume}
+                          template={prefs.template}
+                          settings={settings}
+                          sentToday={sentOn(sendLog, todayKey())}
+                          onSent={(n, to, subj) => onSent(a, n, to, subj)}
+                          onPatch={(patch) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, ...patch, updated: Date.now() } : x)))}
+                          onNote={setNote}
+                          onError={fail}
+                        />
+                      </details>
+                    )}
                     <input value={a.notes} placeholder="Notes" aria-label={`Notes for ${a.title}`} onChange={(e) => setApps((all) => all.map((x) => (x.id === a.id ? { ...x, notes: e.target.value } : x)))} />
                     <div className="disc-row">
                       {a.url && <button className="btn btn-sm" onClick={() => void api.openLink(a.url).catch(fail)}>Open page</button>}

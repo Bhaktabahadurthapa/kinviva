@@ -107,6 +107,7 @@ const SECTIONS: [SectionKey, string][] = [
 export function SettingsView({ onError, onSaved }: { onError: (m: string) => void; onSaved: (s: Settings) => void }) {
   const [s, setS] = useState<Settings | null>(null);
   const [secrets, setSecrets] = useState<Record<string, boolean>>({});
+  const [mailNote, setMailNote] = useState("");
   const [sec, setSec] = useState<SectionKey>("audio");
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
   const [nativeAvailable, setNativeAvailable] = useState(false);
@@ -417,6 +418,32 @@ export function SettingsView({ onError, onSaved }: { onError: (m: string) => voi
           <span>Most provider calls per day</span>
           <input type="number" min={0} max={500} value={s.web_daily_limit} onChange={(e) => set("web_daily_limit", Math.max(0, Math.min(500, Number(e.target.value) || 0)))} />
         </label>
+        <h3>Job applications</h3>
+        <p className="hint">
+          Kinviva can search for jobs each morning and, only after you approve each one, send the application by email from your own account. It never applies on its own and does not send to job sites' forms. The morning search runs only while Kinviva is open: add Kinviva to your Mac's Login Items (System Settings → General → Login Items) so it starts when you sign in.
+        </p>
+        <label className="check">
+          <input type="checkbox" checked={s.jobs_digest_enabled} onChange={(e) => set("jobs_digest_enabled", e.target.checked)} />
+          Search for new jobs every morning
+        </label>
+        <label className="field">
+          <span>Time (this computer's clock)</span>
+          <input type="time" value={s.jobs_digest_time} onChange={(e) => set("jobs_digest_time", e.target.value || "07:00")} />
+        </label>
+        <label className="field">
+          <span>Most applications sent per day</span>
+          <input type="number" min={0} max={50} value={s.send_daily_cap} onChange={(e) => set("send_daily_cap", Math.max(0, Math.min(50, Number(e.target.value) || 0)))} />
+        </label>
+        <label className="field"><span>Your name (shown as the sender)</span><input value={s.from_name} onChange={(e) => set("from_name", e.target.value)} /></label>
+        <label className="field"><span>Your email address</span><input type="email" value={s.from_email} onChange={(e) => set("from_email", e.target.value)} placeholder="you@example.com" /></label>
+        <label className="field"><span>Mail server</span><input value={s.smtp_host} onChange={(e) => set("smtp_host", e.target.value)} placeholder="smtp.gmail.com" /></label>
+        <label className="field"><span>Port (587 or 465)</span><input type="number" value={s.smtp_port} onChange={(e) => set("smtp_port", Math.max(1, Math.min(65535, Number(e.target.value) || 587)))} /></label>
+        <label className="field"><span>Mail user name</span><input value={s.smtp_user} onChange={(e) => set("smtp_user", e.target.value)} placeholder="usually your email address" /></label>
+        <KeyField name="smtp_password" label="Mail password (Gmail and some others need an app password)" has={!!secrets.smtp_password} onChange={loadSecrets} />
+        <div className="disc-row">
+          <button className="btn" onClick={() => void (async () => { try { await persist(s); setMailNote(await api.smtpTest()); } catch (e) { setMailNote(errorText(e)); } })()}>Send a test message to myself</button>
+          {mailNote && <span className="hint" role="status">{mailNote}</span>}
+        </div>
       </section>
       )}
 

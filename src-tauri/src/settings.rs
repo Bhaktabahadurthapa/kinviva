@@ -75,6 +75,18 @@ pub struct Settings {
     pub apify_actor: String,
     /// JSON input sent to that actor. {{keywords}}, {{location}} and {{limit}} are filled in. Empty uses a common shape.
     pub apify_input: String,
+    /// Run the saved job search every morning while Kinviva is running.
+    pub jobs_digest_enabled: bool,
+    /// Time of day for the morning search, like "07:00" (this computer's local time).
+    pub jobs_digest_time: String,
+    /// Most job applications Kinviva will send by email in one day, and only after you approve each one.
+    pub send_daily_cap: u32,
+    /// Outgoing mail server for applications you approve: host, port, user name, and the name and address shown as sender. The password is in the credential store.
+    pub smtp_host: String,
+    pub smtp_port: u16,
+    pub smtp_user: String,
+    pub from_name: String,
+    pub from_email: String,
     /// Most paid-provider calls (Firecrawl and Apify) Kinviva will make in one day.
     pub web_daily_limit: u32,
     // Assist
@@ -130,6 +142,14 @@ impl Default for Settings {
             apify_actor: String::new(),
             apify_input: String::new(),
             web_daily_limit: 20,
+            jobs_digest_enabled: false,
+            jobs_digest_time: "07:00".into(),
+            send_daily_cap: 10,
+            smtp_host: String::new(),
+            smtp_port: 587,
+            smtp_user: String::new(),
+            from_name: String::new(),
+            from_email: String::new(),
             question_detection: false,
             question_cooldown_secs: 20,
             auto_assist: "explain_reply".into(),

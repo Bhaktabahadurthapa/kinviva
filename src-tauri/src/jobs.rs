@@ -16,16 +16,22 @@ use std::time::Duration;
 const DESC_CHARS: usize = 6000;
 const MAX_JOBS: usize = 150;
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Job {
     pub id: String,
     pub title: String,
+    #[serde(default)]
     pub company: String,
+    #[serde(default)]
     pub location: String,
     pub url: String,
+    #[serde(default)]
     pub description: String,
+    #[serde(default)]
     pub source: String,
+    #[serde(default)]
     pub posted_ms: Option<i64>,
+    #[serde(default)]
     pub remote: bool,
 }
 

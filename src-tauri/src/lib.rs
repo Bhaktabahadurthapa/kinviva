@@ -8,7 +8,9 @@ pub mod commands;
 pub mod db;
 pub mod demo;
 pub mod discover;
+pub mod agent;
 pub mod jobs;
+pub mod mailer;
 pub mod webintel;
 pub mod edition;
 pub mod migrate;
@@ -133,6 +135,42 @@ fn auto_refresh_discover(app: tauri::AppHandle) {
     });
 }
 
+/// The morning job search: once a day at the time the user chose, while Kinviva is running. If Kinviva was
+/// closed or asleep at that time it runs as soon as it is running again the same day. Off until the user turns it on.
+fn morning_job_search(app: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+            let state = app.state::<AppState>();
+            let settings = state.settings();
+            if !settings.jobs_digest_enabled {
+                continue;
+            }
+            use chrono::Timelike;
+            let now = chrono::Local::now();
+            let today = now.format("%Y-%m-%d").to_string();
+            let last_day = agent::kv_get(&state.db, "digest").ok().flatten().and_then(|t| serde_json::from_str::<agent::Digest>(&t).ok()).map(|d| d.day);
+            if !agent::digest_due(true, &settings.jobs_digest_time, now.hour(), now.minute(), last_day.as_deref(), &today) {
+                continue;
+            }
+            match agent::run_digest(&state, &today, commands::now_ms()).await {
+                Ok(d) => {
+                    log::info!("Morning job search: {} new of {}", d.jobs.len(), d.total);
+                    agent::notify(d.jobs.len());
+                    let _ = app.emit("jobs-digest-ready", d.jobs.len());
+                }
+                Err(e) => {
+                    // Remember the attempt for today so a failure does not retry every minute; the user can run it by hand.
+                    log::warn!("Morning job search failed: {e}");
+                    let failed = agent::Digest { day: today, at_ms: commands::now_ms(), jobs: Vec::new(), total: 0 };
+                    let _ = agent::kv_set(&state.db, "digest", &serde_json::to_string(&failed).unwrap_or_default());
+                    let _ = app.emit("jobs-digest-failed", e);
+                }
+            }
+        }
+    });
+}
+
 /// Shows the answer overlay while the main window is minimized or hidden, and
 /// hides it again when the window returns. An overlay the user opened by hand is left alone.
 fn watch_main_window(app: tauri::AppHandle) {
@@ -198,6 +236,7 @@ pub fn run() {
             }
             watch_main_window(app.handle().clone());
             auto_refresh_discover(app.handle().clone());
+            morning_job_search(app.handle().clone());
             for err in shortcuts::apply(app.handle(), &settings.shortcuts) {
                 eprintln!("shortcut: {err}");
             }
@@ -243,6 +282,12 @@ pub fn run() {
             commands::discover_trends,
             commands::open_external,
             commands::open_link,
+            commands::jobs_kv_get,
+            commands::jobs_kv_set,
+            commands::jobs_digest_run_now,
+            commands::jobs_send_email,
+            commands::smtp_test,
+            commands::pack_export,
             commands::resume_read,
             commands::jobs_search,
             commands::jobs_tailor,

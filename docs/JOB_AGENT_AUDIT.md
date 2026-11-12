@@ -1,5 +1,7 @@
 # Job search feature audit
 
+> **Update after the audit:** risk R1 (browser-only storage) is addressed: the resume, tracker and preferences are now stored in the local database with a one-time import. A morning search, a Today digest, an approval step and email sending (with daily cap, duplicate rule and log) were also added; see `docs/JOB_AGENT.md`. The sections below describe the code at the time of the audit (`7ef9809`) and are left unchanged.
+
 Branch `feature/web-intelligence` at `7ef9809`. Audit only: no application behavior was changed. Nothing was merged, pushed or deployed.
 
 ## How statuses are used

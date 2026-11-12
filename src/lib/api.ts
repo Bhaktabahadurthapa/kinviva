@@ -1,4 +1,4 @@
-import type { JobsReport } from "./jobs";
+import type { Digest, JobsReport } from "./jobs";
 import type { ResumeDoc } from "./resume";
 import { invoke } from "@tauri-apps/api/core";
 import type {
@@ -89,6 +89,13 @@ export const api = {
   discoverList: (kind?: string, savedOnly = false) => invoke<[DiscoverItem[], number | null]>("discover_list", { kind: kind ?? null, savedOnly }),
   discoverMark: (id: string, field: "read" | "saved", value: boolean) => invoke<void>("discover_mark", { id, field, value }),
   discoverTrends: () => invoke<Trend[]>("discover_trends"),
+  jobsKvGet: (key: string) => invoke<string | null>("jobs_kv_get", { key }),
+  jobsKvSet: (key: string, value: string) => invoke<void>("jobs_kv_set", { key, value }),
+  jobsDigestRunNow: () => invoke<Digest>("jobs_digest_run_now"),
+  jobsSendEmail: (a: { appId: string; to: string; subject: string; body: string; resume: ResumeDoc; template: string; letter?: string | null; letterHeading: string }) =>
+    invoke<number>("jobs_send_email", { appId: a.appId, to: a.to, subject: a.subject, body: a.body, resume: a.resume, template: a.template, letter: a.letter ?? null, letterHeading: a.letterHeading }),
+  smtpTest: () => invoke<string>("smtp_test"),
+  packExport: (dir: string, resume: ResumeDoc, template: string, letter: string | null, letterHeading: string, stem: string) => invoke<string[]>("pack_export", { dir, resume, template, letter, letterHeading, stem }),
   openLink: (url: string) => invoke<void>("open_link", { url }),
   resumeRead: (path: string) => invoke<string>("resume_read", { path }),
   jobsSearch: (query: { categories: string[]; keywords: string; remote_only: boolean; location: string; include_remote: boolean; use_apify: boolean; boards: string[] }) => invoke<JobsReport>("jobs_search", { query }),
